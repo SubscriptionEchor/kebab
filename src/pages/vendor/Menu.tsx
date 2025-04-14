@@ -1,10 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { PlusCircle, Save, X, Upload, ChevronDown, ChevronRight, Check, Trash2, Plus, DollarSign } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Select from 'react-select';
 import { toast } from 'sonner';
 
-// Types
+// Types (unchanged except for MenuItem)
 interface MenuItemFormData {
   title: string;
   description: string;
@@ -50,10 +50,18 @@ interface CustomOption {
   dishes: Dish[];
 }
 
-// Tab type for options panel
+interface MenuItem {
+  id: string;
+  title: string;
+  description: string;
+  category: { value: string; label: string } | null;
+  price: string;
+  imagePreview?: string | null; // Optional since we won't persist it
+}
+
 type OptionsTab = 'available' | 'custom';
 
-// Constants
+// Constants (unchanged)
 const CATEGORIES = [
   { value: 'appetizers', label: 'Appetizers' },
   { value: 'main-courses', label: 'Main Courses' },
@@ -93,7 +101,6 @@ const TAGS = [
   { value: 'local', label: 'Local' },
 ];
 
-// Sample dishes for dropdown
 const SAMPLE_DISHES = [
   { value: 'dish1', label: 'Margherita Pizza', price: '12.99' },
   { value: 'dish2', label: 'Chicken Tikka', price: '14.99' },
@@ -102,7 +109,6 @@ const SAMPLE_DISHES = [
   { value: 'dish5', label: 'Caesar Salad', price: '8.99' },
 ];
 
-// Sample available options
 const AVAILABLE_OPTIONS: OptionItem[] = [
   {
     id: '1',
@@ -147,8 +153,18 @@ export default function Menu() {
     dishes: []
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  // Initial form state
+
+  // Initialize menuItems from localStorage
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(() => {
+    const savedItems = localStorage.getItem('menuItems');
+    return savedItems ? JSON.parse(savedItems) : [];
+  });
+
+  // Save menuItems to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('menuItems', JSON.stringify(menuItems));
+  }, [menuItems]);
+
   const initialFormState: MenuItemFormData = {
     title: '',
     description: '',
@@ -169,31 +185,29 @@ export default function Menu() {
       },
     ],
   };
-  
+
   const [formData, setFormData] = useState<MenuItemFormData>(initialFormState);
-  
-  // Form handlers
+
+  // Form handlers (unchanged)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  
+
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     setFormData((prev) => ({ ...prev, [name]: checked }));
   };
-  
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
-    // Check if the file is an image
+
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload an image file');
       return;
     }
-    
-    // Check image dimensions to enforce 4:3 aspect ratio
+
     const img = new Image();
     img.onload = () => {
       const aspectRatio = img.width / img.height;
@@ -201,45 +215,43 @@ export default function Menu() {
         toast.error('Please upload an image with a 4:3 aspect ratio');
         return;
       }
-      
+
       setFormData((prev) => ({
         ...prev,
         image: file,
         imagePreview: URL.createObjectURL(file),
       }));
     };
-    
+
     img.onerror = () => {
       toast.error('Failed to load image');
     };
-    
+
     img.src = URL.createObjectURL(file);
   };
-  
+
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.currentTarget.classList.add('border-brand-primary', 'bg-brand-accent/10');
   };
-  
+
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.currentTarget.classList.remove('border-brand-primary', 'bg-brand-accent/10');
   };
-  
+
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.currentTarget.classList.remove('border-brand-primary', 'bg-brand-accent/10');
-    
+
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
-    
-    // Check if the file is an image
+
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload an image file');
       return;
     }
-    
-    // Check image dimensions to enforce 4:3 aspect ratio
+
     const img = new Image();
     img.onload = () => {
       const aspectRatio = img.width / img.height;
@@ -247,22 +259,22 @@ export default function Menu() {
         toast.error('Please upload an image with a 4:3 aspect ratio');
         return;
       }
-      
+
       setFormData((prev) => ({
         ...prev,
         image: file,
         imagePreview: URL.createObjectURL(file),
       }));
     };
-    
+
     img.onerror = () => {
       toast.error('Failed to load image');
     };
-    
+
     img.src = URL.createObjectURL(file);
   };
-  
-  // Variation handlers
+
+  // Variation handlers (unchanged)
   const handleVariationChange = (id: string, field: keyof Variation, value: string | boolean) => {
     setFormData((prev) => ({
       ...prev,
@@ -271,7 +283,7 @@ export default function Menu() {
       ),
     }));
   };
-  
+
   const addVariation = () => {
     const newId = String(formData.variations.length + 1);
     setFormData((prev) => ({
@@ -288,25 +300,25 @@ export default function Menu() {
       ],
     }));
   };
-  
+
   const removeVariation = (id: string) => {
     if (formData.variations.length <= 1) {
       toast.error('You must have at least one variation');
       return;
     }
-    
+
     setFormData((prev) => ({
       ...prev,
       variations: prev.variations.filter((v) => v.id !== id),
     }));
   };
-  
-  // Options handlers
+
+  // Options handlers (unchanged)
   const toggleOptionSelection = (optionId: string) => {
-    setAvailableOptions(prev => 
-      prev.map(option => 
-        option.id === optionId 
-          ? { ...option, selected: !option.selected } 
+    setAvailableOptions((prev) =>
+      prev.map((option) =>
+        option.id === optionId
+          ? { ...option, selected: !option.selected }
           : option
       )
     );
@@ -315,139 +327,139 @@ export default function Menu() {
   const handleOpenOptionsPanel = (variationId: string) => {
     setCurrentVariationId(variationId);
     setShowOptionsPanel(true);
-    
-    // Reset available options selection state based on the current variation's selected options
-    const currentVariation = formData.variations.find(v => v.id === variationId);
+
+    const currentVariation = formData.variations.find((v) => v.id === variationId);
     if (currentVariation && currentVariation.selectedOptions) {
-      // Update available options to show which ones are already selected
-      setAvailableOptions(prev => 
-        prev.map(option => ({
+      setAvailableOptions((prev) =>
+        prev.map((option) => ({
           ...option,
-          selected: !!currentVariation.selectedOptions?.find(o => o.id === option.id)
+          selected: !!currentVariation.selectedOptions?.find((o) => o.id === option.id),
         }))
       );
     } else {
-      // Reset all options to unselected if no options are saved for this variation
-      setAvailableOptions(prev => prev.map(option => ({ ...option, selected: false })));
+      setAvailableOptions((prev) => prev.map((option) => ({ ...option, selected: false })));
     }
-    
+
     setActiveOptionsTab('available');
   };
 
   const handleSaveOptions = () => {
     if (!currentVariationId) return;
-    
-    // Get selected options
-    const selectedOptions = availableOptions.filter(option => option.selected);
-    
-    // Update the variation with selected options
-    setFormData(prev => ({
+
+    const selectedOptions = availableOptions.filter((option) => option.selected);
+
+    setFormData((prev) => ({
       ...prev,
-      variations: prev.variations.map(variation => 
-        variation.id === currentVariationId 
-          ? { ...variation, selectedOptions } 
+      variations: prev.variations.map((variation) =>
+        variation.id === currentVariationId
+          ? { ...variation, selectedOptions }
           : variation
-      )
+      ),
     }));
-    
+
     toast.success('Options saved successfully');
     setShowOptionsPanel(false);
   };
-  
-  // Handle custom option input changes
+
   const handleCustomOptionChange = (field: keyof CustomOption, value: string) => {
-    setCustomOption(prev => ({
+    setCustomOption((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
-  
-  // Handle dish selection
+
   const handleDishSelect = (selectedOption: any) => {
     if (!selectedOption) return;
-    
+
     setCurrentDish(selectedOption);
     setNewPrice(selectedOption.price);
     setShowPriceModal(true);
   };
-  
-  // Add dish with custom price
+
   const handleAddDish = () => {
     if (!currentDish) return;
-    
+
     const newDish: Dish = {
       id: currentDish.value,
       name: currentDish.label,
       currentPrice: currentDish.price,
-      newPrice: newPrice
+      newPrice: newPrice,
     };
-    
-    setSelectedDishes(prev => [...prev, newDish]);
+
+    setSelectedDishes((prev) => [...prev, newDish]);
     setShowPriceModal(false);
     setCurrentDish(null);
     setNewPrice('');
-    
+
     toast.success('Dish added successfully');
   };
-  
-  // Remove dish from selected dishes
+
   const handleRemoveDish = (dishId: string) => {
-    setSelectedDishes(prev => prev.filter(dish => dish.id !== dishId));
+    setSelectedDishes((prev) => prev.filter((dish) => dish.id !== dishId));
   };
-  
-  // Form submission
+
+  // Modified Form submission
   const handleSubmit = () => {
     setIsLoading(true);
-    
+
     // Validate form
     if (!formData.title.trim()) {
       toast.error('Title is required');
       setIsLoading(false);
       return;
     }
-    
+
     if (!formData.category) {
       toast.error('Category is required');
       setIsLoading(false);
       return;
     }
-    
-    // Validate variations
+
     for (const variation of formData.variations) {
       if (!variation.title.trim()) {
         toast.error('Variation title is required');
         setIsLoading(false);
         return;
       }
-      
+
       if (!variation.price.trim() || isNaN(parseFloat(variation.price))) {
         toast.error('Valid price is required for all variations');
         setIsLoading(false);
         return;
       }
-      
+
       if (variation.discounted && (!variation.discountPrice.trim() || isNaN(parseFloat(variation.discountPrice)))) {
         toast.error('Valid discount price is required for discounted variations');
         setIsLoading(false);
         return;
       }
     }
-    
+
+    // Create new menu item
+    const newMenuItem: MenuItem = {
+      id: Date.now().toString(),
+      title: formData.title,
+      description: formData.description,
+      category: formData.category,
+      price: formData.variations[0].price,
+      imagePreview: formData.imagePreview, // Note: Won't persist in localStorage
+    };
+
     // Simulate API call
     setTimeout(() => {
+      setMenuItems((prev) => [...prev, { ...newMenuItem, imagePreview: null }]); // Exclude imagePreview for storage
       toast.success('Menu item saved successfully');
       setIsLoading(false);
       setShowForm(false);
       setFormData(initialFormState);
     }, 1500);
   };
-  
+
   const handleCancel = () => {
     setShowForm(false);
     setFormData(initialFormState);
   };
-  
-  // Custom styles for react-select
+
   const selectStyles = {
     control: (base: any) => ({
       ...base,
@@ -529,24 +541,84 @@ export default function Menu() {
       </div>
 
       {!showForm ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12">
-          <div className="text-center">
-            <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <PlusCircle className="h-12 w-12 text-gray-400" />
+        menuItems.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12">
+            <div className="text-center">
+              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <PlusCircle className="h-12 w-12 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No menu items yet</h3>
+              <p className="text-gray-500 max-w-md mx-auto mb-6">
+                Start building your restaurant menu by adding categories and items. Your customers will be able to browse and order from this menu.
+              </p>
+              <button
+                onClick={() => setShowForm(true)}
+                className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors inline-flex items-center"
+              >
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Add Your First Menu Item
+              </button>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No menu items yet</h3>
-            <p className="text-gray-500 max-w-md mx-auto mb-6">
-              Start building your restaurant menu by adding categories and items. Your customers will be able to browse and order from this menu.
-            </p>
-            <button
-              onClick={() => setShowForm(true)}
-              className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors inline-flex items-center"
-            >
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Add Your First Menu Item
-            </button>
           </div>
-        </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Menu Items</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Image
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Title
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Price
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Description
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {menuItems.map((item) => (
+                    <tr key={item.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {item.imagePreview ? (
+                          <img
+                            src={item.imagePreview}
+                            alt={item.title}
+                            className="h-12 w-16 object-cover rounded-md"
+                          />
+                        ) : (
+                          <div className="h-12 w-16 bg-gray-100 rounded-md flex items-center justify-center">
+                            <span className="text-gray-400">No Image</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {item.title}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {item.category?.label || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${item.price}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        <div className="max-w-xs truncate">{item.description || 'No description'}</div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
@@ -558,7 +630,7 @@ export default function Menu() {
               <X className="h-5 w-5" />
             </button>
           </div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
             <div className="space-y-6">
               {/* Title */}
@@ -576,7 +648,7 @@ export default function Menu() {
                   placeholder="Enter dish name"
                 />
               </div>
-              
+
               {/* Description */}
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
@@ -592,7 +664,7 @@ export default function Menu() {
                   placeholder="Describe your dish"
                 />
               </div>
-              
+
               {/* Category & Dietary */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -610,7 +682,7 @@ export default function Menu() {
                     styles={selectStyles}
                   />
                 </div>
-                
+
                 <div>
                   <label htmlFor="dietary" className="block text-sm font-medium text-gray-700 mb-1">
                     Dietary
@@ -627,7 +699,7 @@ export default function Menu() {
                   />
                 </div>
               </div>
-              
+
               {/* Allergens & Tags */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -646,7 +718,7 @@ export default function Menu() {
                     styles={selectStyles}
                   />
                 </div>
-                
+
                 <div>
                   <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
                     Tags
@@ -664,7 +736,7 @@ export default function Menu() {
                   />
                 </div>
               </div>
-              
+
               {/* Show in Menu Checkbox */}
               <div className="flex items-center">
                 <input
@@ -679,7 +751,7 @@ export default function Menu() {
                   Show this dish in menu
                 </label>
               </div>
-              
+
               {/* Variations Section */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Variations</h3>
@@ -697,7 +769,7 @@ export default function Menu() {
                           </button>
                         )}
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label htmlFor={`variation-title-${variation.id}`} className="block text-sm font-medium text-gray-700 mb-1">
@@ -712,7 +784,7 @@ export default function Menu() {
                             placeholder="e.g., Regular, Large, etc."
                           />
                         </div>
-                        
+
                         <div>
                           <label htmlFor={`variation-price-${variation.id}`} className="block text-sm font-medium text-gray-700 mb-1">
                             Price
@@ -727,7 +799,7 @@ export default function Menu() {
                           />
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center">
                         <input
                           type="checkbox"
@@ -740,7 +812,7 @@ export default function Menu() {
                           Discounted
                         </label>
                       </div>
-                      
+
                       {variation.discounted && (
                         <div>
                           <label htmlFor={`variation-discount-price-${variation.id}`} className="block text-sm font-medium text-gray-700 mb-1">
@@ -756,14 +828,14 @@ export default function Menu() {
                           />
                         </div>
                       )}
-                      
+
                       {/* Options Button for each variation */}
                       <div>
                         {variation.selectedOptions && variation.selectedOptions.length > 0 && (
                           <div className="mb-3 space-y-2">
                             <h5 className="text-sm font-medium text-gray-700">Selected Options:</h5>
                             <div className="space-y-2">
-                              {variation.selectedOptions.map(option => (
+                              {variation.selectedOptions.map((option) => (
                                 <div key={option.id} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
                                   <div>
                                     <p className="text-sm font-medium text-gray-900">{option.name}</p>
@@ -774,21 +846,19 @@ export default function Menu() {
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        // Remove this option
-                                        setFormData(prev => ({
+                                        setFormData((prev) => ({
                                           ...prev,
-                                          variations: prev.variations.map(v => 
-                                            v.id === variation.id 
-                                              ? { 
-                                                  ...v, 
-                                                  selectedOptions: v.selectedOptions?.filter(o => o.id !== option.id) || [] 
-                                                } 
+                                          variations: prev.variations.map((v) =>
+                                            v.id === variation.id
+                                              ? {
+                                                  ...v,
+                                                  selectedOptions: v.selectedOptions?.filter((o) => o.id !== option.id) || [],
+                                                }
                                               : v
-                                          )
+                                          ),
                                         }));
-                                        // Also update available options
-                                        setAvailableOptions(prev => 
-                                          prev.map(o => o.id === option.id ? { ...o, selected: false } : o)
+                                        setAvailableOptions((prev) =>
+                                          prev.map((o) => (o.id === option.id ? { ...o, selected: false } : o))
                                         );
                                       }}
                                       className="text-gray-400 hover:text-red-500"
@@ -805,14 +875,12 @@ export default function Menu() {
                           onClick={() => handleOpenOptionsPanel(variation.id)}
                           className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors"
                         >
-                          {variation.selectedOptions && variation.selectedOptions.length > 0 
-                            ? "Edit Options" 
-                            : "Choose Options"}
+                          {variation.selectedOptions && variation.selectedOptions.length > 0 ? 'Edit Options' : 'Choose Options'}
                         </button>
                       </div>
                     </div>
                   ))}
-                  
+
                   <button
                     onClick={addVariation}
                     className="w-full py-2 text-sm font-medium text-brand-primary border border-dashed border-brand-primary rounded-md hover:bg-brand-accent/10 transition-colors"
@@ -822,7 +890,7 @@ export default function Menu() {
                 </div>
               </div>
             </div>
-            
+
             {/* Right Column - Image Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -900,7 +968,7 @@ export default function Menu() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            
+
             <div className="flex border-b border-gray-200">
               <button
                 onClick={() => setActiveOptionsTab('available')}
@@ -923,14 +991,14 @@ export default function Menu() {
                 Add custom option
               </button>
             </div>
-            
+
             <div className="p-4 overflow-y-auto flex-1">
               {activeOptionsTab === 'available' ? (
                 <div>
                   <p className="text-sm text-gray-500 mb-4">
                     Select options to include with this variation
                   </p>
-                  
+
                   <div className="space-y-3">
                     {availableOptions.map((option) => (
                       <div
@@ -977,7 +1045,7 @@ export default function Menu() {
                       placeholder="e.g., Choose your sauce"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Description
@@ -990,7 +1058,7 @@ export default function Menu() {
                       placeholder="e.g., Select your preferred sauce"
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1004,7 +1072,7 @@ export default function Menu() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary"
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Max Quantity
@@ -1018,7 +1086,7 @@ export default function Menu() {
                       />
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Choose Dish
@@ -1032,7 +1100,7 @@ export default function Menu() {
                       styles={selectStyles}
                     />
                   </div>
-                  
+
                   {/* Selected Dishes */}
                   {selectedDishes.length > 0 && (
                     <div className="mt-4">
@@ -1061,7 +1129,7 @@ export default function Menu() {
                 </div>
               )}
             </div>
-            
+
             <div className="flex justify-end p-4 border-t border-gray-200">
               <button
                 onClick={handleSaveOptions}
@@ -1073,7 +1141,7 @@ export default function Menu() {
           </div>
         </div>
       )}
-      
+
       {/* Price Modal */}
       {showPriceModal && currentDish && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
@@ -1081,7 +1149,7 @@ export default function Menu() {
             <div className="p-4 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900">Set Price for {currentDish.label}</h2>
             </div>
-            
+
             <div className="p-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1099,7 +1167,7 @@ export default function Menu() {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   New Price
@@ -1118,7 +1186,7 @@ export default function Menu() {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex justify-end space-x-3 p-4 border-t border-gray-200">
               <button
                 onClick={() => setShowPriceModal(false)}
