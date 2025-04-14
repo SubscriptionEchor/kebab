@@ -1,0 +1,336 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base Styles */
+@layer components {
+  .table-container {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200;
+  }
+  
+  .table-header {
+    @apply px-4 py-3 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap;
+  }
+  
+  .table-cell {
+    @apply px-4 py-3 text-sm align-middle;
+  }
+  
+  .table-cell-text {
+    @apply text-gray-500 whitespace-nowrap;
+  }
+  
+  .table-cell-primary {
+    @apply text-gray-900 font-medium whitespace-nowrap;
+  }
+  
+  .status-badge {
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shadow-sm;
+  }
+  
+  .action-button {
+    @apply text-sm font-medium transition-all duration-150 whitespace-nowrap hover:scale-105 px-4 py-1.5 rounded-lg;
+  }
+  
+  .reason-cell {
+    @apply px-6 py-4 text-sm text-gray-900 max-w-md break-words;
+  }
+}
+
+/* Base HTML Elements */
+@layer base {
+  html {
+    font-family: theme('fontFamily.sans');
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: theme('fontFamily.display');
+  }
+  
+  table {
+    @apply w-full border-separate border-spacing-0;
+  }
+  
+  thead th:first-child {
+    @apply rounded-tl-lg;
+  }
+  
+  thead th:last-child {
+    @apply rounded-tr-lg;
+  }
+  
+  tbody tr:last-child td:first-child {
+    @apply rounded-bl-lg;
+  }
+  
+  tbody tr:last-child td:last-child {
+    @apply rounded-br-lg;
+  }
+  
+  .table-wrapper {
+    @apply relative;
+  }
+  
+  .table-wrapper table {
+    @apply w-full border-separate border-spacing-0;
+  }
+
+  /* Improved Table Styles */
+  .table-scroll {
+    @apply overflow-x-auto overflow-y-hidden;
+  }
+
+  .table-row-hover {
+    @apply hover:bg-gray-50 transition-colors duration-150;
+  }
+
+  .table-button {
+    @apply inline-flex items-center justify-center text-xs font-medium rounded-lg transition-colors whitespace-nowrap;
+  }
+
+  .table-button-view {
+    @apply px-4 py-1.5 text-brand-primary hover:text-brand-primary/80 bg-brand-accent/10 hover:bg-brand-accent/20 w-[90px];
+  }
+
+  .table-button-action {
+    @apply px-4 py-1.5 text-green-700 hover:text-green-800 bg-green-100 hover:bg-green-200 w-[120px] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Responsive Grid Layouts */
+  .responsive-grid {
+    @apply grid gap-4 sm:gap-6;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  }
+
+  /* Mobile-first padding */
+  .page-container {
+    @apply px-4 sm:px-6 lg:px-8 py-4 sm:py-6;
+  }
+
+  /* Improved Card Design */
+  .card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 transition-all duration-200 hover:shadow-md;
+  }
+
+  /* Responsive Typography */
+  .heading-1 {
+    @apply text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900;
+  }
+
+  .heading-2 {
+    @apply text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900;
+  }
+
+  /* Improved Form Elements */
+  .form-input {
+    @apply w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-shadow;
+  }
+
+  .form-select {
+    @apply w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-shadow bg-white appearance-none;
+  }
+
+  .form-checkbox {
+    @apply h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary transition-colors;
+  }
+
+  /* Improved Button Styles */
+  .btn {
+    @apply px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-primary text-black hover:bg-brand-primary/90 focus:ring-brand-primary;
+  }
+
+  .btn-secondary {
+    @apply btn bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500;
+  }
+
+  /* Improved Loading States */
+  .shimmer {
+    @apply relative overflow-hidden bg-gray-100 isolate;
+  }
+
+  .shimmer::after {
+    @apply absolute inset-0 -z-10;
+    content: '';
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.9) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* Improved Modal Design */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4;
+  }
+
+  .modal-content {
+    @apply bg-white rounded-lg shadow-xl max-w-2xl w-full mx-auto max-h-[90vh] flex flex-col;
+  }
+
+  .modal-header {
+    @apply p-4 sm:p-6 border-b border-gray-200;
+  }
+
+  .modal-body {
+    @apply p-4 sm:p-6 overflow-y-auto;
+  }
+
+  .modal-footer {
+    @apply p-4 sm:p-6 border-t border-gray-200 flex justify-end gap-3;
+  }
+}
+
+@keyframes shimmerWave {
+  0% {
+    transform: translateX(-100%);
+  }
+  50%, 100% {
+    transform: translateX(100%);
+  }
+}
+
+.shimmer-wave {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmerWave 2s infinite;
+  height: 100%;
+  width: 100%;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@layer utilities {
+  .fade-enter {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  
+  .fade-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 300ms ease-out, transform 300ms cubic-bezier(0.25, 0.1, 0.25, 1.5);
+  }
+  
+  .shimmer-card {
+    @apply relative overflow-hidden;
+  }
+  
+  .shimmer-card::after {
+    @apply absolute inset-0;
+    content: '';
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    animation: shimmer 2s infinite;
+  }
+  
+  .hover-lift {
+    @apply transition-transform duration-300;
+    transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1.5);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Hide scrollbars while maintaining functionality */
+  .scrollbar-none {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+
+  /* Remove tap highlight on mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Remove focus outlines */
+  .focus-none {
+    outline: none !important;
+  }
+
+  /* Remove focus outlines from interactive elements */
+  button:focus,
+  div:focus,
+  a:focus {
+    outline: none !important;
+  }
+
+  .bg-grid-pattern {
+    background-image: linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* Remove focus outlines from chart elements */
+  .recharts-sector,
+  .recharts-pie,
+  .recharts-pie-sector,
+  .recharts-wrapper,
+  .recharts-surface,
+  .recharts-tooltip-wrapper {
+    outline: none !important;
+    border: none !important;
+  }
+
+  /* Additional chart outline removal */
+  .recharts-default-tooltip {
+    border: none !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24) !important;
+  }
+
+  /* Remove focus outlines from chart elements */
+  .recharts-sector,
+  .recharts-pie,
+  .recharts-pie-sector,
+  .recharts-wrapper,
+  .recharts-surface,
+  .recharts-tooltip-wrapper {
+    outline: none !important;
+    border: none !important;
+  }
+
+  /* Additional chart outline removal */
+  .recharts-default-tooltip {
+    border: none !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24) !important;
+  }
+}
