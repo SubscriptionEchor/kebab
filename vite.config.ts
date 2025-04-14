@@ -6,15 +6,5 @@ export default defineConfig(({ mode }) => ({
   plugins: [react()],
   define: {
     'import.meta.env.DEV': JSON.stringify(mode === 'development')
-  },
-  server: {
-  
-  },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: undefined
-      }
-    }
   }
 }))
