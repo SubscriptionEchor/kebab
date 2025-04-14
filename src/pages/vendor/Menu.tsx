@@ -4,14 +4,14 @@ import { useTranslation } from 'react-i18next';
 import Select from 'react-select';
 import { toast } from 'sonner';
 
-// Types (unchanged except for MenuItem)
+// Types
 interface MenuItemFormData {
   title: string;
   description: string;
   category: { value: string; label: string } | null;
   dietary: { value: string; label: string } | null;
-  allergens: { value: string; label: string }[];
-  tags: { value: string; label: string }[];
+  allergens: readonly { value: string; label: string }[];
+  tags: readonly { value: string; label: string }[];
   showInMenu: boolean;
   image: File | null;
   imagePreview: string | null;
@@ -56,12 +56,12 @@ interface MenuItem {
   description: string;
   category: { value: string; label: string } | null;
   price: string;
-  imagePreview?: string | null; // Optional since we won't persist it
+  imagePreview?: string | null;
 }
 
 type OptionsTab = 'available' | 'custom';
 
-// Constants (unchanged)
+// Constants
 const CATEGORIES = [
   { value: 'appetizers', label: 'Appetizers' },
   { value: 'main-courses', label: 'Main Courses' },
@@ -188,7 +188,7 @@ export default function Menu() {
 
   const [formData, setFormData] = useState<MenuItemFormData>(initialFormState);
 
-  // Form handlers (unchanged)
+  // Form handlers
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -274,7 +274,7 @@ export default function Menu() {
     img.src = URL.createObjectURL(file);
   };
 
-  // Variation handlers (unchanged)
+  // Variation handlers
   const handleVariationChange = (id: string, field: keyof Variation, value: string | boolean) => {
     setFormData((prev) => ({
       ...prev,
@@ -313,7 +313,7 @@ export default function Menu() {
     }));
   };
 
-  // Options handlers (unchanged)
+  // Options handlers
   const toggleOptionSelection = (optionId: string) => {
     setAvailableOptions((prev) =>
       prev.map((option) =>
@@ -398,7 +398,7 @@ export default function Menu() {
     setSelectedDishes((prev) => prev.filter((dish) => dish.id !== dishId));
   };
 
-  // Modified Form submission
+  // Form submission
   const handleSubmit = () => {
     setIsLoading(true);
 
@@ -442,12 +442,12 @@ export default function Menu() {
       description: formData.description,
       category: formData.category,
       price: formData.variations[0].price,
-      imagePreview: formData.imagePreview, // Note: Won't persist in localStorage
+      imagePreview: formData.imagePreview,
     };
 
     // Simulate API call
     setTimeout(() => {
-      setMenuItems((prev) => [...prev, { ...newMenuItem, imagePreview: null }]); // Exclude imagePreview for storage
+      setMenuItems((prev) => [...prev, { ...newMenuItem, imagePreview: null }]);
       toast.success('Menu item saved successfully');
       setIsLoading(false);
       setShowForm(false);
@@ -710,7 +710,7 @@ export default function Menu() {
                     id="allergens"
                     options={ALLERGENS}
                     value={formData.allergens}
-                    onChange={(options) => setFormData((prev) => ({ ...prev, allergens: options || [] }))}
+                    onChange={(options) => setFormData((prev) => ({ ...prev, allergens: options }))}
                     placeholder="Select allergens"
                     isMulti
                     className="react-select-container"
@@ -727,7 +727,7 @@ export default function Menu() {
                     id="tags"
                     options={TAGS}
                     value={formData.tags}
-                    onChange={(options) => setFormData((prev) => ({ ...prev, tags: options || [] }))}
+                    onChange={(options) => setFormData((prev) => ({ ...prev, tags: options }))}
                     placeholder="Select tags"
                     isMulti
                     className="react-select-container"
