@@ -4,6 +4,7 @@ import ImageUpload from './ImageUpload';
 import QRCode from 'qrcode.react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { useState, useRef } from 'react';
 
 interface RestaurantProfileViewProps {
   formData: {
