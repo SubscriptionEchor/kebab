@@ -8,9 +8,7 @@ export default defineConfig(({ mode }) => ({
     'import.meta.env.DEV': JSON.stringify(mode === 'development')
   }
   server: {
-    headers: {
-      'Content-Type': 'application/javascript'
-    }
+  
   },
   build: {
     rollupOptions: {
