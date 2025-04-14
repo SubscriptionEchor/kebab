@@ -14,6 +14,8 @@ import RestaurantDashboard from './pages/restaurant/RestaurantDashboard';
 import RestaurantProfile from './pages/restaurant/Profile';
 import VendorProfile from './pages/restaurant/VendorProfile';
 import Ratings from './pages/restaurant/Ratings';
+import Category from './pages/vendor/Category';
+import Addons from './pages/vendor/Addons';
 import RestaurantTimings from './pages/restaurant/Timings';
 import RestaurantLocations from './pages/restaurant/Locations';
 import VendorRestaurants from './pages/VendorRestaurants';
@@ -127,6 +129,8 @@ function AppRoutes() {
           <Route path="profile" element={<RestaurantProfile />} />
           <Route path="vendor-profile" element={<VendorProfile />} />
           <Route path="ratings" element={<Ratings />} />
+          <Route path="category" element={<Category />} />
+          <Route path="addons" element={<Addons />} />
           <Route path="offers" element={<Offers />} />
          <Route path="menu" element={<Menu />} />
           <Route path="timings" element={<RestaurantTimings />} />

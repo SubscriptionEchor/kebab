@@ -1,12 +1,12 @@
-import { User, Tag, Clock, MapPin, LogOut, X, Menu, ArrowLeft, Star, Store, Key } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { User, Tag, Clock, MapPin, LogOut, X, Menu, ArrowLeft, Star, Store, Key, LayoutGrid } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom'; 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useMutation } from '@apollo/client';
 import { VENDOR_RESET_PASSWORD } from '../lib/graphql/mutations/auth';
 import LogoutDialog from './LogoutDialog';
 import { toast } from 'sonner';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, PlusSquare } from 'lucide-react';
 import { VENDOR_ROUTES } from '../constants/routes';
 import { useTranslation } from 'react-i18next';
 
@@ -16,17 +16,22 @@ const ADMIN_MENU_ITEMS = [
   { icon: Star, label: 'Ratings', path: 'ratings' },
   { icon: Tag, label: 'Offers', path: 'offers' },
   { icon: Menu, label: 'Menu', path: 'menu' },
+  { icon: LayoutGrid, label: 'Category', path: 'category' },
+  { icon: PlusSquare, label: 'Add-ons', path: 'addons' },
   { icon: Clock, label: 'Timings', path: 'timings' },
   { icon: MapPin, label: 'Locations', path: 'locations' }
 ];
 
 const VENDOR_MENU_ITEMS = [
-  { icon: User, label: 'Profile', path: 'profile' },
-  // { icon: Store, label: 'Vendor Profile', path: 'vendor-profile' },
-  { icon: Menu, label: 'Menu', path: 'menu' },
-  { icon: Tag, label: 'Offers', path: 'offers' },
+  { icon: User, label: 'Restaurant Profile', path: 'profile' },
+  { icon: Store, label: 'Vendor Profile', path: 'vendor-profile' },
   { icon: Star, label: 'Ratings', path: 'ratings' },
-  { icon: Clock, label: 'Timings', path: 'timings' }
+  { icon: Tag, label: 'Offers', path: 'offers' },
+  { icon: Menu, label: 'Menu', path: 'menu' },
+  { icon: LayoutGrid, label: 'Category', path: 'category' },
+  { icon: PlusSquare, label: 'Add-ons', path: 'addons' },
+  { icon: Clock, label: 'Timings', path: 'timings' },
+  { icon: MapPin, label: 'Locations', path: 'locations' }
 ];
 
 const getMenuItems = (userType: string | null, restaurantId: string | null) => {
