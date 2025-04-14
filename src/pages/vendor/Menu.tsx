@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { PlusCircle, Save, X, Upload, ChevronDown, ChevronRight, Check, Trash2, Plus, DollarSign } from 'lucide-react';
+import { PlusCircle, Save, X, Upload, ChevronDown, ChevronRight, Check, Trash2, Plus, DollarSign, Edit2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Select from 'react-select';
 import { toast } from 'sonner';
@@ -57,6 +57,7 @@ interface MenuItem {
   category: { value: string; label: string } | null;
   price: string;
   imagePreview?: string | null;
+  outOfStock: boolean;
 }
 
 type OptionsTab = 'available' | 'custom';
@@ -152,6 +153,7 @@ export default function Menu() {
     maxQuantity: '1',
     dishes: []
   });
+  const [editItemId, setEditItemId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Initialize menuItems from localStorage
@@ -398,6 +400,48 @@ export default function Menu() {
     setSelectedDishes((prev) => prev.filter((dish) => dish.id !== dishId));
   };
 
+  // Edit and Delete handlers
+  const handleEdit = (item: MenuItem) => {
+    setEditItemId(item.id);
+    setFormData({
+      title: item.title,
+      description: item.description,
+      category: item.category,
+      dietary: null,
+      allergens: [],
+      tags: [],
+      showInMenu: true,
+      image: null,
+      imagePreview: item.imagePreview || null,
+      variations: [
+        {
+          id: '1',
+          title: 'Regular',
+          price: item.price,
+          discounted: false,
+          discountPrice: '',
+        },
+      ],
+    });
+    setShowForm(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this menu item?')) {
+      setMenuItems((prev) => prev.filter((item) => item.id !== id));
+      toast.success('Menu item deleted successfully');
+    }
+  };
+
+  const toggleOutOfStock = (id: string) => {
+    setMenuItems((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, outOfStock: !item.outOfStock } : item
+      )
+    );
+    toast.success('Stock status updated');
+  };
+
   // Form submission
   const handleSubmit = () => {
     setIsLoading(true);
@@ -435,20 +479,29 @@ export default function Menu() {
       }
     }
 
-    // Create new menu item
+    // Create or update menu item
     const newMenuItem: MenuItem = {
-      id: Date.now().toString(),
+      id: editItemId || Date.now().toString(),
       title: formData.title,
       description: formData.description,
       category: formData.category,
       price: formData.variations[0].price,
       imagePreview: formData.imagePreview,
+      outOfStock: editItemId ? menuItems.find((item) => item.id === editItemId)?.outOfStock || false : false,
     };
 
     // Simulate API call
     setTimeout(() => {
-      setMenuItems((prev) => [...prev, { ...newMenuItem, imagePreview: null }]);
-      toast.success('Menu item saved successfully');
+      if (editItemId) {
+        setMenuItems((prev) =>
+          prev.map((item) => (item.id === editItemId ? newMenuItem : item))
+        );
+        toast.success('Menu item updated successfully');
+        setEditItemId(null);
+      } else {
+        setMenuItems((prev) => [...prev, newMenuItem]);
+        toast.success('Menu item saved successfully');
+      }
       setIsLoading(false);
       setShowForm(false);
       setFormData(initialFormState);
@@ -458,6 +511,7 @@ export default function Menu() {
   const handleCancel = () => {
     setShowForm(false);
     setFormData(initialFormState);
+    setEditItemId(null);
   };
 
   const selectStyles = {
@@ -524,7 +578,7 @@ export default function Menu() {
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Save Menu Item
+                  {editItemId ? 'Update Menu Item' : 'Save Menu Item'}
                 </>
               )}
             </button>
@@ -577,10 +631,13 @@ export default function Menu() {
                       Category
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Price
+                      Description
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Description
+                      Out of Stock
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -606,11 +663,40 @@ export default function Menu() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {item.category?.label || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ${item.price}
-                      </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         <div className="max-w-xs truncate">{item.description || 'No description'}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <button
+                          onClick={() => toggleOutOfStock(item.id)}
+                          className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-200 ease-in-out ${
+                            item.outOfStock ? 'bg-gray-200' : 'bg-brand-primary'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 rounded-full bg-white transform transition-transform duration-200 ease-in-out ${
+                              item.outOfStock ? 'translate-x-1' : 'translate-x-6'
+                            }`}
+                          />
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className="text-blue-600 hover:text-blue-800"
+                            title="Edit"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item.id)}
+                            className="text-red-600 hover:text-red-800"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -622,7 +708,7 @@ export default function Menu() {
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Add Menu Item</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{editItemId ? 'Edit Menu Item' : 'Add Menu Item'}</h2>
             <button
               onClick={handleCancel}
               className="text-gray-400 hover:text-gray-500"
