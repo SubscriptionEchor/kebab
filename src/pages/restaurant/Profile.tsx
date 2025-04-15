@@ -27,6 +27,20 @@ export default function RestaurantProfile() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const defaultLogo = 'https://placehold.co/100x100';
 
+  interface FormDataType {
+    restaurantId: string;
+    email: string;
+    phone: string;
+    name: string;
+    address: string;
+    shopType: string;
+    cuisines: string[];
+    username?: string;
+    password?: string;
+    minimumOrder?: string;
+    deliveryTime?: string;
+  }
+
   const [editRestaurant] = useMutation(EDIT_RESTAURANT, {
     // onCompleted: () => {
     //   toast.success(t('restaurantprofile.profileupdated'));
@@ -36,7 +50,7 @@ export default function RestaurantProfile() {
       toast.error(t('restaurantprofile.failedtoupdaterestaurantprofile'));
     }
   });
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataType>({
     restaurantId: '',
     email: '',
     phone: '',
@@ -122,20 +136,13 @@ export default function RestaurantProfile() {
         }
       }
 
-      const restaurantInput = {
+      const restaurantInput: any = {
         _id: formData.restaurantId,
         name: formData.name,
         phone: formData.phone,
         address: formData.address,
         shopType: restaurantData?.restaurant?.shopType || 'Restaurant',
         cuisines: formData.cuisines,
-        username: formData.username,
-        password: formData.password,
-        minimumOrder: formData.minimumOrder ? parseFloat(formData.minimumOrder) : undefined,
-        deliveryTime: formData.deliveryTime ? parseInt(formData.deliveryTime) : undefined,
-        username: restaurantData?.restaurant?.username,
-        password: restaurantData?.restaurant?.password,
-        minimumOrder: restaurantData?.restaurant?.minimumOrder,
         tax: restaurantData?.restaurant?.tax,
         isAvailable: restaurantData?.restaurant?.isAvailable,
         orderPrefix: restaurantData?.restaurant?.orderPrefix,
@@ -144,6 +151,12 @@ export default function RestaurantProfile() {
         location: restaurantData?.restaurant?.location,
         openingTimes: restaurantData?.restaurant?.openingTimes
       };
+
+      // Add optional fields if they exist
+      if (formData.username) restaurantInput.username = formData.username;
+      if (formData.password) restaurantInput.password = formData.password;
+      if (formData.minimumOrder) restaurantInput.minimumOrder = parseFloat(formData.minimumOrder);
+      if (formData.deliveryTime) restaurantInput.deliveryTime = parseInt(formData.deliveryTime);
 
       // Only include image/logo if they were changed
       if (newImageUrl) {

@@ -3,6 +3,7 @@ import { ApolloProvider } from '@apollo/client';
 import { client } from './lib/graphql/client';
 import { ZonesProvider } from './contexts/ZonesContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
+import VendorOrders from './pages/vendor/Orders';
 import VendorRestaurantsList from './pages/vendor/RestaurantsList';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
@@ -36,6 +37,7 @@ import Offers from './pages/restaurant/Offers';
 import { useEffect } from 'react';
 import i18n from './i18';
 import Menu from './pages/vendor/Menu';
+import VendorDashboardPage from './pages/vendor/Dashboard';
 type ToasterPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center';
 
 function AppRoutes() {
@@ -126,7 +128,9 @@ function AppRoutes() {
           element={<RequireAuth><VendorDashboard /></RequireAuth>}
         >
           <Route index element={<Navigate to="profile" replace />} />
+          <Route path="dashboard" element={<VendorDashboardPage />} />
           <Route path="profile" element={<RestaurantProfile />} />
+          <Route path="orders" element={<VendorOrders />} />
           <Route path="vendor-profile" element={<VendorProfile />} />
           <Route path="ratings" element={<Ratings />} />
           <Route path="category" element={<Category />} />

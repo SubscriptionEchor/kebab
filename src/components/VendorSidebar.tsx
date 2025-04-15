@@ -1,4 +1,4 @@
-import { User, Tag, Clock, MapPin, LogOut, X, Menu, ArrowLeft, Star, Store, Key, LayoutGrid } from 'lucide-react';
+import { User, Tag, Clock, MapPin, LogOut, X, Menu, ArrowLeft, Star, Store, Key, LayoutGrid, BarChart, ShoppingBag } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom'; 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,7 +11,9 @@ import { VENDOR_ROUTES } from '../constants/routes';
 import { useTranslation } from 'react-i18next';
 
 const ADMIN_MENU_ITEMS = [
+  { icon: BarChart, label: 'Dashboard', path: 'dashboard' },
   { icon: User, label: 'Restaurant Profile', path: 'profile' },
+  { icon: ShoppingBag, label: 'Orders', path: 'orders' },
   { icon: Store, label: 'Vendor Profile', path: 'vendor-profile' },
   { icon: Star, label: 'Ratings', path: 'ratings' },
   { icon: Tag, label: 'Offers', path: 'offers' },
@@ -23,7 +25,9 @@ const ADMIN_MENU_ITEMS = [
 ];
 
 const VENDOR_MENU_ITEMS = [
-  { icon: User, label: 'Restaurant Profile', path: 'profile' },
+  { icon: BarChart, label: 'Dashboard', path: 'dashboard' },
+  { icon: User, label: 'Restaurant Profile', path: 'profile' },  
+  { icon: ShoppingBag, label: 'Orders', path: 'orders' },
   { icon: Store, label: 'Vendor Profile', path: 'vendor-profile' },
   { icon: Star, label: 'Ratings', path: 'ratings' },
   { icon: Tag, label: 'Offers', path: 'offers' },
