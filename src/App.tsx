@@ -29,6 +29,7 @@ import RejectedRestaurants from './pages/restaurants/Rejected';
 import VendorDashboard from './pages/vendor/VendorDashboard';
 import VendorTimings from './pages/vendor/Timings';
 import VendorLocation from './pages/vendor/Location';
+import EventOrganizers from './pages/EventOrganizers';
 import { Toaster } from 'sonner';
 import './App.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -79,6 +80,7 @@ function AppRoutes() {
           <Route path="sections" element={<RestaurantSections />} />
           <Route path="banners" element={<Banners />} />
           <Route path="cuisines" element={<Cuisines />} />
+          <Route path="event-organizers" element={<EventOrganizers />} />
           <Route path="onboarding" element={<RestaurantOnboarding />}>
             <Route index element={<Navigate to="active" replace />} />
             <Route path="active" element={<ActiveRestaurants />} />

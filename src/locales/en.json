@@ -23,7 +23,8 @@
     "cuisines": "Cuisines",
     "banners": "Banners",
     "signout": "Sign Out",
-    "openmenu": "Open Menu"
+    "openmenu": "Open Menu",
+    "eventorganizers": "Event Organizers"
   },
   "homepage": {
     "welcomeback": "Welcome back",
@@ -915,5 +916,18 @@
     "ratings": "Ratings",
     "timings": "Timings",
     "clear": "Clear"
+  },
+  "eventOrganizers": {
+    "title": "Event Organizers",
+    "searchPlaceholder": "Search event organizer",
+    "allZones": "All Zones",
+    "id": "ID",
+    "name": "Organizer Name",
+    "eventCount": "Events Count",
+    "zone": "Zone",
+    "actions": "Actions",
+    "viewEvents": "View Events",
+    "showing": "Showing",
+    "of": "of"
   }
 }

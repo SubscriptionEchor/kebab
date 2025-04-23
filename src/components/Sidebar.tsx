@@ -1,4 +1,4 @@
-import { Home, Store, Users, Coffee, LayoutGrid, UtensilsCrossed, ImagePlus, LogOut, X, Menu, Bell } from 'lucide-react';
+import { Home, Store, Users, Coffee, LayoutGrid, UtensilsCrossed, ImagePlus, LogOut, X, Menu, Bell, Calendar } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import LogoutDialog from './LogoutDialog';
@@ -12,7 +12,8 @@ const menuItems = [
   { icon: Coffee, label: 'Restaurants', path: '/dashboard/restaurants' },
   { icon: LayoutGrid, label: 'Restaurant Section', path: '/dashboard/sections' },
   { icon: UtensilsCrossed, label: 'Cuisines', path: '/dashboard/cuisines' },
-  { icon: ImagePlus, label: 'Banners', path: '/dashboard/banners' }
+  { icon: ImagePlus, label: 'Banners', path: '/dashboard/banners' },
+  { icon: Calendar, label: 'Event Organizers', path: '/dashboard/event-organizers' }
 ];
 
 export default function Sidebar() {
