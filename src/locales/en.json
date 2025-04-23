@@ -919,15 +919,20 @@
   },
   "eventOrganizers": {
     "title": "Event Organizers",
-    "searchPlaceholder": "Search event organizer",
-    "allZones": "All Zones",
+    "searchPlaceholder": "Search organizers...",
     "id": "ID",
-    "name": "Organizer Name",
-    "eventCount": "Events Count",
-    "zone": "Zone",
+    "name": "Name",
+    "contactNumber": "Contact Number",
+    "email": "Email",
     "actions": "Actions",
-    "viewEvents": "View Events",
-    "showing": "Showing",
-    "of": "of"
+    "addOrganizer": "Add Event Organizer",
+    "createOrganizer": "Create Organizer",
+    "errors": {
+      "nameRequired": "Name is required",
+      "contactRequired": "Contact number is required",
+      "invalidContact": "Please enter a valid contact number",
+      "emailRequired": "Email is required",
+      "invalidEmail": "Please enter a valid email address"
+    }
   }
 }

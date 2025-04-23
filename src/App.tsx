@@ -30,6 +30,9 @@ import VendorDashboard from './pages/vendor/VendorDashboard';
 import VendorTimings from './pages/vendor/Timings';
 import VendorLocation from './pages/vendor/Location';
 import EventOrganizers from './pages/EventOrganizers';
+import EventOrganizerDetails from './pages/EventOrganizerDetails';
+import EventDetails from './pages/EventDetails';
+import StallDetails from './pages/StallDetails';
 import { Toaster } from 'sonner';
 import './App.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -46,7 +49,7 @@ function AppRoutes() {
 
   useEffect(() => {
     const storedLang = localStorage.getItem('selectedLanguage');
-    if (storedLang ) {
+    if (storedLang) {
       i18n.changeLanguage(storedLang);
     }
   }, [i18n]);
@@ -64,7 +67,17 @@ function AppRoutes() {
           </RequireAuth>
         } />
 
-        {/* Protected Routes */}
+        {/* Stall Details Route - Independent of Dashboard Layout */}
+        <Route
+          path="/event-organizers/:organizerId/events/:eventId/stalls/:stallId"
+          element={
+            <RequireAuth>
+              <StallDetails />
+            </RequireAuth>
+          }
+        />
+
+        {/* Protected Dashboard Routes */}
         <Route
           path="/dashboard"
           element={
@@ -81,6 +94,8 @@ function AppRoutes() {
           <Route path="banners" element={<Banners />} />
           <Route path="cuisines" element={<Cuisines />} />
           <Route path="event-organizers" element={<EventOrganizers />} />
+          <Route path="event-organizers/:organizerId" element={<EventOrganizerDetails />} />
+          <Route path="event-organizers/:organizerId/events/:eventId" element={<EventDetails />} />
           <Route path="onboarding" element={<RestaurantOnboarding />}>
             <Route index element={<Navigate to="active" replace />} />
             <Route path="active" element={<ActiveRestaurants />} />

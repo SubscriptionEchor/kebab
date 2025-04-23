@@ -1,0 +1,23 @@
+{
+  "eventOrganizers": {
+    "title": "Event Organizers",
+    "searchPlaceholder": "Search organizers...",
+    "id": "ID",
+    "name": "Name",
+    "contactNumber": "Contact Number",
+    "email": "Email",
+    "actions": "Actions",
+    "addOrganizer": "Add Event Organizer",
+    "createOrganizer": "Create Organizer",
+    "errors": {
+      "nameRequired": "Name is required",
+      "contactRequired": "Contact number is required",
+      "invalidContact": "Please enter a valid contact number",
+      "emailRequired": "Email is required",
+      "invalidEmail": "Please enter a valid email address"
+    }
+  },
+  "common": {
+    "cancel": "Cancel"
+  }
+} 

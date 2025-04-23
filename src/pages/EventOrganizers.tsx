@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { Search, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import AddEventOrganizerModal from '../components/AddEventOrganizerModal';
 
 interface EventOrganizer {
   id: string;
   name: string;
-  eventPortfolio: number; // Number of events under management
+  contactNumber: string;
+  email: string;
+  eventPortfolio: number;
   events: Array<{
     id: string;
     name: string;
@@ -15,20 +19,19 @@ interface EventOrganizer {
 
 export default function EventOrganizers() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const itemsPerPage = 10;
 
-  const handleAddOrganizer = () => {
-    // Handle add organizer logic here
-    console.log('Add new organizer');
-  };
-
   // Mock data - replace with actual API call
-  const mockOrganizers: EventOrganizer[] = [
+  const [organizers, setOrganizers] = useState<EventOrganizer[]>([
     {
       id: 'ORG-001',
       name: 'Event Masters Pro',
+      contactNumber: '+1234567890',
+      email: 'contact@eventmasters.com',
       eventPortfolio: 15,
       events: [
         { id: '1', name: 'Summer Festival', type: 'F' },
@@ -38,6 +41,8 @@ export default function EventOrganizers() {
     {
       id: 'ORG-002',
       name: 'Celebration Experts',
+      contactNumber: '+1987654321',
+      email: 'info@celebrationexperts.com',
       eventPortfolio: 8,
       events: [
         { id: '3', name: 'Food Festival', type: 'F' },
@@ -46,16 +51,29 @@ export default function EventOrganizers() {
     {
       id: 'ORG-003',
       name: 'Prime Events',
+      contactNumber: '+1122334455',
+      email: 'contact@primeevents.com',
       eventPortfolio: 12,
       events: [
         { id: '4', name: 'Tech Conference', type: 'C' },
         { id: '5', name: 'Music Festival', type: 'F' },
       ]
     },
-    // Add more mock data as needed
-  ];
+  ]);
 
-  const filteredOrganizers = mockOrganizers.filter(organizer => 
+  const handleAddOrganizer = (data: { name: string; contactNumber: string; email: string }) => {
+    const newOrganizer: EventOrganizer = {
+      id: `ORG-${String(organizers.length + 1).padStart(3, '0')}`,
+      name: data.name,
+      contactNumber: data.contactNumber,
+      email: data.email,
+      eventPortfolio: 0,
+      events: [],
+    };
+    setOrganizers([...organizers, newOrganizer]);
+  };
+
+  const filteredOrganizers = organizers.filter(organizer => 
     organizer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     organizer.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -65,6 +83,10 @@ export default function EventOrganizers() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  const handleViewEvents = (organizerId: string) => {
+    navigate(`/dashboard/event-organizers/${organizerId}`);
+  };
 
   return (
     <div className="p-6">
@@ -82,7 +104,7 @@ export default function EventOrganizers() {
             />
           </div>
           <button
-            onClick={handleAddOrganizer}
+            onClick={() => setIsModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors whitespace-nowrap"
           >
             <Plus className="h-5 w-5" />
@@ -101,6 +123,12 @@ export default function EventOrganizers() {
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t('eventOrganizers.name')}
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {t('eventOrganizers.contactNumber')}
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {t('eventOrganizers.email')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[200px]">
                 Event Portfolio
@@ -121,6 +149,12 @@ export default function EventOrganizers() {
                     {organizer.name}
                   </div>
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {organizer.contactNumber}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {organizer.email}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-2">
                     <span className="bg-brand-primary/10 text-brand-primary px-3 py-1 rounded-full text-sm">
@@ -130,7 +164,7 @@ export default function EventOrganizers() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                   <button
-                    onClick={() => {/* Handle view events */}}
+                    onClick={() => handleViewEvents(organizer.id)}
                     className="text-brand-primary hover:text-brand-primary/80 font-medium"
                   >
                     View events
@@ -167,6 +201,12 @@ export default function EventOrganizers() {
           </button>
         </div>
       </div>
+
+      <AddEventOrganizerModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleAddOrganizer}
+      />
     </div>
   );
 } 
