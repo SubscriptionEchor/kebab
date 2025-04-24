@@ -204,7 +204,8 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }: AddEventMod
       lat: defaultPosition[0],
       lng: defaultPosition[1]
     },
-    address: ''
+    address: '',
+    searchLocation: ''
   });
   const [position, setPosition] = useState<[number, number]>(defaultPosition);
   const [searchResults, setSearchResults] = useState<Array<{
@@ -249,7 +250,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }: AddEventMod
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setFormData(prev => ({ ...prev, address: value }));
+    setFormData(prev => ({ ...prev, searchLocation: value }));
     searchAddress(value);
   };
 
@@ -259,6 +260,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }: AddEventMod
     setFormData(prev => ({
       ...prev,
       address: result.display_name,
+      searchLocation: result.display_name,
       location: {
         lat: newPosition[0],
         lng: newPosition[1]
@@ -285,7 +287,8 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }: AddEventMod
         if (data.display_name) {
           setFormData(prev => ({
             ...prev,
-            address: data.display_name
+            address: data.display_name,
+            searchLocation: data.display_name
           }));
         }
       })
@@ -483,7 +486,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }: AddEventMod
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
-                    value={formData.address}
+                    value={formData.searchLocation}
                     onChange={handleAddressChange}
                     placeholder="Search for a location"
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"

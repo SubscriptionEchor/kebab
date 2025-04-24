@@ -215,7 +215,7 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-brand-primary text-black rounded-md hover:bg-brand-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isSubmitting || Object.keys(errors).length > 0}
             >
               {isSubmitting ? 'Creating...' : t('eventOrganizers.createOrganizer')}

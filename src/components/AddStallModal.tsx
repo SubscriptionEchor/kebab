@@ -7,6 +7,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import dayjs from 'dayjs';
+import { MenuItem } from '@mui/material';
 
 interface AddStallModalProps {
   isOpen: boolean;
@@ -65,7 +66,7 @@ const theme = createTheme({
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          borderRadius: '0.75rem',
+          borderRadius: '0.5rem',
           backgroundColor: '#fff',
           '&:hover .MuiOutlinedInput-notchedOutline': {
             borderColor: '#10B981',
@@ -74,6 +75,14 @@ const theme = createTheme({
             borderColor: '#10B981',
             borderWidth: '2px',
           },
+          '& .MuiInputBase-input::placeholder': {
+            color: '#9CA3AF',
+            opacity: 1,
+          },
+        },
+        input: {
+          padding: '0.75rem 1rem',
+          fontSize: '0.875rem',
         },
       },
     },
@@ -82,11 +91,66 @@ const theme = createTheme({
         root: {
           '& .MuiInputLabel-root': {
             color: '#4B5563',
+            fontSize: '0.875rem',
+            marginBottom: '0.5rem',
+            '&.Mui-focused': {
+              color: '#10B981',
+            },
           },
           '& .MuiOutlinedInput-root': {
             '&:hover fieldset': {
               borderColor: '#10B981',
             },
+          },
+        },
+      },
+    },
+    MuiSelect: {
+      styleOverrides: {
+        select: {
+          padding: '0.75rem 1rem',
+          fontSize: '0.875rem',
+          '&:focus': {
+            backgroundColor: 'transparent',
+          },
+        },
+        icon: {
+          color: '#4B5563',
+          right: '0.75rem',
+        },
+      },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          padding: '0.75rem 1rem',
+          fontSize: '0.875rem',
+          '&:hover': {
+            backgroundColor: '#F3F4F6',
+          },
+          '&.Mui-selected': {
+            backgroundColor: '#ECFDF5',
+            '&:hover': {
+              backgroundColor: '#D1FAE5',
+            },
+          },
+        },
+      },
+    },
+    MuiPopover: {
+      styleOverrides: {
+        paper: {
+          borderRadius: '0.5rem',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+          marginTop: '0.5rem',
+        },
+      },
+    },
+    MuiTimePicker: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '0.5rem',
           },
         },
       },
@@ -113,12 +177,14 @@ export default function AddStallModal({ isOpen, onClose, onSubmit }: AddStallMod
     startTime: '09:00',
     endTime: '17:00'
   });
+  const [isCommonHoursEnabled, setIsCommonHoursEnabled] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      const imageUrl = URL.createObjectURL(file);
       setFormData({ ...formData, profilePhoto: file });
-      setPreviewUrl(URL.createObjectURL(file));
+      setPreviewUrl(imageUrl);
     }
   };
 
@@ -168,9 +234,9 @@ export default function AddStallModal({ isOpen, onClose, onSubmit }: AddStallMod
       timings: Object.keys(prev.timings).reduce((acc, day) => ({
         ...acc,
         [day]: {
-          ...prev.timings[day],
           startTime: commonTiming.startTime,
-          endTime: commonTiming.endTime
+          endTime: commonTiming.endTime,
+          isOpen: true // Enable all days
         }
       }), prev.timings)
     }));
@@ -178,7 +244,44 @@ export default function AddStallModal({ isOpen, onClose, onSubmit }: AddStallMod
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    // Create new stall data
+    const newStall = {
+      id: String(Date.now()), // Generate unique ID
+      name: formData.name,
+      cuisine: formData.cuisine,
+      profilePhoto: previewUrl || '/images/default-stall.png', // Use a default image path
+      timings: formData.timings
+    };
+
+    // Submit the stall data
+    onSubmit(newStall);
+
+    // Clear form data
+    setFormData({
+      name: '',
+      cuisine: '',
+      profilePhoto: null,
+      timings: DAYS.reduce((acc, day) => ({
+        ...acc,
+        [day.id]: { startTime: '09:00', endTime: '17:00', isOpen: false }
+      }), {} as { [key: string]: { startTime: string; endTime: string; isOpen: boolean } })
+    });
+
+    // Clear preview URL and revoke object URL to prevent memory leaks
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewUrl(null);
+
+    // Reset common hours
+    setCommonTiming({
+      startTime: '09:00',
+      endTime: '17:00'
+    });
+    setIsCommonHoursEnabled(false);
+
+    // Close modal
     onClose();
   };
 
@@ -203,7 +306,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit }: AddStallMod
 
               {/* Form Content */}
               <form onSubmit={handleSubmit}>
-                <div className="px-6 py-6 space-y-6 max-h-[calc(100vh-16rem)] overflow-y-auto">
+                <div className="px-6 py-6 space-y-8 max-h-[calc(100vh-16rem)] overflow-y-auto">
                   {/* Stall Name */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
@@ -214,7 +317,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit }: AddStallMod
                       value={formData.name}
                       onChange={handleNameChange}
                       variant="outlined"
-                      placeholder="Enter stall name"
+                      placeholder="Enter your stall name"
                       required
                       InputProps={{
                         endAdornment: (
@@ -240,13 +343,29 @@ export default function AddStallModal({ isOpen, onClose, onSubmit }: AddStallMod
                       onChange={(e) => setFormData({ ...formData, cuisine: e.target.value })}
                       variant="outlined"
                       required
+                      placeholder="Select cuisine"
                       SelectProps={{
-                        native: true,
+                        native: false,
+                        displayEmpty: true,
+                        renderValue: (value) => {
+                          if (!value) {
+                            return <span className="text-gray-400">Select cuisine</span>;
+                          }
+                          return value;
+                        },
+                        MenuProps: {
+                          PaperProps: {
+                            sx: {
+                              maxHeight: 300,
+                            },
+                          },
+                        },
                       }}
                     >
-                      <option value="">Select a cuisine</option>
                       {CUISINES.map(cuisine => (
-                        <option key={cuisine} value={cuisine}>{cuisine}</option>
+                        <MenuItem key={cuisine} value={cuisine}>
+                          {cuisine}
+                        </MenuItem>
                       ))}
                     </TextField>
                   </div>
@@ -263,6 +382,10 @@ export default function AddStallModal({ isOpen, onClose, onSubmit }: AddStallMod
                             src={previewUrl}
                             alt="Preview"
                             className="w-full h-48 object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/images/default-stall.png';
+                            }}
                           />
                           <div
                             onClick={() => fileInputRef.current?.click()}
@@ -277,7 +400,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit }: AddStallMod
                       ) : (
                         <div
                           onClick={() => fileInputRef.current?.click()}
-                          className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-brand-primary hover:bg-brand-primary/5 transition-all duration-200 cursor-pointer"
+                          className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-brand-primary hover:bg-brand-primary/5 transition-all duration-200 cursor-pointer"
                         >
                           <Upload className="h-10 w-10 mx-auto text-gray-400 mb-3" />
                           <p className="text-sm text-gray-600 font-medium">Click to upload or drag and drop</p>
@@ -302,53 +425,81 @@ export default function AddStallModal({ isOpen, onClose, onSubmit }: AddStallMod
                       
                       {/* Common Time Settings */}
                       <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-                        <p className="text-sm font-medium text-gray-600">Set Common Hours</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                          <div className="col-span-1 sm:col-span-2">
-                            <TimePicker
-                              label="Common Start Time"
-                              value={dayjs(commonTiming.startTime, 'HH:mm')}
-                              onChange={(value) => {
-                                if (value) {
-                                  handleCommonTimeChange('startTime', value.format('HH:mm'));
-                                }
-                              }}
-                              ampm={false}
-                              slotProps={{
-                                textField: {
-                                  size: "small",
-                                  fullWidth: true,
-                                },
-                              }}
-                            />
-                          </div>
-                          <div className="col-span-1 sm:col-span-2">
-                            <TimePicker
-                              label="Common End Time"
-                              value={dayjs(commonTiming.endTime, 'HH:mm')}
-                              onChange={(value) => {
-                                if (value) {
-                                  handleCommonTimeChange('endTime', value.format('HH:mm'));
-                                }
-                              }}
-                              ampm={false}
-                              slotProps={{
-                                textField: {
-                                  size: "small",
-                                  fullWidth: true,
-                                },
-                              }}
-                            />
-                          </div>
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-gray-600">Set Common Hours</p>
+                          <button
+                            type="button"
+                            onClick={() => setIsCommonHoursEnabled(!isCommonHoursEnabled)}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${
+                              isCommonHoursEnabled
+                                ? 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
+                                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                            }`}
+                          >
+                            {isCommonHoursEnabled ? (
+                              <>
+                                <X className="h-4 w-4" />
+                                Disable
+                              </>
+                            ) : (
+                              <>
+                                <Check className="h-4 w-4" />
+                                Enable
+                              </>
+                            )}
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={applyCommonTiming}
-                          className="w-full sm:w-auto px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium flex items-center justify-center gap-2 border border-gray-200"
-                        >
-                          <Clock className="h-4 w-4" />
-                          Apply to All Days
-                        </button>
+                        
+                        {isCommonHoursEnabled && (
+                          <>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                              <div className="col-span-1 sm:col-span-2">
+                                <TimePicker
+                                  label="Common Start Time"
+                                  value={dayjs(commonTiming.startTime, 'HH:mm')}
+                                  onChange={(value) => {
+                                    if (value) {
+                                      handleCommonTimeChange('startTime', value.format('HH:mm'));
+                                    }
+                                  }}
+                                  ampm={false}
+                                  slotProps={{
+                                    textField: {
+                                      size: "small",
+                                      fullWidth: true,
+                                    },
+                                  }}
+                                />
+                              </div>
+                              <div className="col-span-1 sm:col-span-2">
+                                <TimePicker
+                                  label="Common End Time"
+                                  value={dayjs(commonTiming.endTime, 'HH:mm')}
+                                  onChange={(value) => {
+                                    if (value) {
+                                      handleCommonTimeChange('endTime', value.format('HH:mm'));
+                                    }
+                                  }}
+                                  ampm={false}
+                                  slotProps={{
+                                    textField: {
+                                      size: "small",
+                                      fullWidth: true,
+                                    },
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={applyCommonTiming}
+                              className="w-full sm:w-auto px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium flex items-center justify-center gap-2 border border-gray-200"
+                            >
+                              <Clock className="h-4 w-4" />
+                              Apply to All Days
+                            </button>
+                          </>
+                        )}
                       </div>
 
                       {/* Days Grid */}
