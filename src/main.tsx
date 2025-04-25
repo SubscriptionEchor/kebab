@@ -12,10 +12,10 @@ if (!rootElement) throw new Error('Root element not found');
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <I18nextProvider i18n={i18n}>
+    {/* <I18nextProvider i18n={i18n}> */}
       <BrowserRouter>
         <App />
       </BrowserRouter>
-    </I18nextProvider>
+    {/* </I18nextProvider> */}
   </React.StrictMode>
 );
