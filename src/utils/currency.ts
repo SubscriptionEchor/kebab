@@ -1,7 +1,7 @@
 /**
  * Format a price with the currency symbol from localStorage
  */
-export function formatPrice(amount: number): string {
+function formatPrice(amount: number): string {
   try {
     // Get currency config from localStorage
     const config = localStorage.getItem('kebab_currency_config');
@@ -22,7 +22,7 @@ export function formatPrice(amount: number): string {
 /**
  * Parse a price string into a number
  */
-export function parsePrice(priceString: string): number {
+function parsePrice(priceString: string): number {
   try {
     // Remove currency symbol and any whitespace
     const cleanString = priceString.replace(/[^0-9.-]+/g, '');
@@ -36,21 +36,21 @@ export function parsePrice(priceString: string): number {
 /**
  * Format a price range with currency symbol
  */
-export function formatPriceRange(min: number, max: number): string {
+function formatPriceRange(min: number, max: number): string {
   return `${formatPrice(min)} - ${formatPrice(max)}`;
 }
 
 /**
  * Calculate discount amount
  */
-export function calculateDiscount(price: number, discountPercentage: number): number {
+function calculateDiscount(price: number, discountPercentage: number): number {
   return price * (discountPercentage / 100);
 }
 
 /**
  * Format price with discount
  */
-export function formatPriceWithDiscount(price: number, discountPercentage: number): string {
+function formatPriceWithDiscount(price: number, discountPercentage: number): string {
   const discountedPrice = price - calculateDiscount(price, discountPercentage);
   return formatPrice(discountedPrice);
 }

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Search, ChevronLeft, ChevronRight, Plus, Eye, Pencil, Copy, Check } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Search, ChevronLeft, ChevronRight, Plus, Eye, Pencil, Copy, Check, MoreVertical } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import AddEventOrganizerModal from '../components/AddEventOrganizerModal';
@@ -20,6 +20,70 @@ interface EventOrganizer {
     type: string;
   }>;
 }
+
+interface KebabMenuProps {
+  onEdit: () => void;
+  onView: () => void;
+}
+
+const KebabMenu: React.FC<KebabMenuProps> = ({ onEdit, onView }) => {
+  const { t } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+        className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+      >
+        <MoreVertical className="h-4 w-4" />
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+              setIsOpen(false);
+            }}
+            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            <Pencil className="h-4 w-4" />
+            {t('eventOrganizers.editOrganizer')}
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onView();
+              setIsOpen(false);
+            }}
+            className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            <Eye className="h-4 w-4" />
+            {t('eventOrganizers.viewDetails')}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function EventOrganizers() {
   const { t } = useTranslation();
@@ -232,26 +296,10 @@ export default function EventOrganizers() {
                     >
                       {t('eventOrganizers.viewEvents')}
                     </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditOrganizer(organizer.id);
-                      }}
-                      className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-                      title={t('eventOrganizers.editOrganizer')}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleViewDetails(organizer.id);
-                      }}
-                      className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-                      title={t('eventOrganizers.viewDetails')}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
+                    <KebabMenu
+                      onEdit={() => handleEditOrganizer(organizer.id)}
+                      onView={() => handleViewDetails(organizer.id)}
+                    />
                   </div>
                 </td>
               </tr>

@@ -26,7 +26,7 @@ export interface BannerTemplate {
   name: string;
   elements: BannerTemplateElement[];
 }
-export interface BannerInput {
+interface BannerInput {
   templateId: string;
   elements: BannerElement[];
 }

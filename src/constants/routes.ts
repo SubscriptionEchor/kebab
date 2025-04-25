@@ -13,7 +13,7 @@ export const VENDOR_ROUTES = {
   LOCATIONS: 'locations'
 } as const;
 
-export const ADMIN_MENU_ITEMS = [
+const ADMIN_MENU_ITEMS = [
   { icon: 'User', label: 'Restaurant Profile', path: VENDOR_ROUTES.PROFILE },
   { icon: 'BarChart', label: 'Dashboard', path: VENDOR_ROUTES.DASHBOARD },
   { icon: 'ShoppingBag', label: 'Orders', path: VENDOR_ROUTES.ORDERS },
@@ -27,7 +27,7 @@ export const ADMIN_MENU_ITEMS = [
   { icon: 'MapPin', label: 'Locations', path: VENDOR_ROUTES.LOCATIONS }
 ];
 
-export const VENDOR_MENU_ITEMS = [
+const VENDOR_MENU_ITEMS = [
   { icon: 'BarChart', label: 'Dashboard', path: VENDOR_ROUTES.DASHBOARD },
   { icon: 'User', label: 'Profile', path: VENDOR_ROUTES.PROFILE },
   { icon: 'ShoppingBag', label: 'Orders', path: VENDOR_ROUTES.ORDERS },

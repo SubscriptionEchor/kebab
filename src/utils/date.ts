@@ -56,7 +56,7 @@ export function formatDate(timestamp: string, dateOnly = false): string {
 /**
  * Format date with timezone (e.g. "Feb 18, 2:54 PM GMT+05:30")
  */
-export function formatWithTimezone(dateString: string): string {
+function formatWithTimezone(dateString: string): string {
   try {
     const timestamp = parseInt(dateString);
     if (isNaN(timestamp)) return 'N/A';
@@ -75,7 +75,7 @@ export function formatWithTimezone(dateString: string): string {
 /**
  * Format relative time (e.g. "2 hours ago")
  */
-export function formatRelativeTime(dateString: string): string {
+function formatRelativeTime(dateString: string): string {
   try {
     const timestamp = parseInt(dateString);
     if (isNaN(timestamp)) return 'N/A';
@@ -91,14 +91,14 @@ export function formatRelativeTime(dateString: string): string {
 /**
  * Format duration in a human readable way
  */
-export function formatDuration(milliseconds: number): string {
+function formatDuration(milliseconds: number): string {
   return moment.duration(milliseconds).humanize();
 }
 
 /**
  * Format date with a custom format
  */
-export function formatCustom(dateString: string, format: string): string {
+function formatCustom(dateString: string, format: string): string {
   try {
     const timestamp = parseInt(dateString);
     if (isNaN(timestamp)) return 'N/A';
@@ -115,6 +115,6 @@ export function formatCustom(dateString: string, format: string): string {
 /**
  * Get timezone offset for display
  */
-export function getTimezoneOffset(): string {
+function getTimezoneOffset(): string {
   return moment().format('Z');
 }

@@ -9,4 +9,4 @@ export const APPLICATION_STATUS = {
   REQUESTED_CHANGES: 'REQUESTED_CHANGES'
 } as const;
 
-export type ApplicationStatus = typeof APPLICATION_STATUS[keyof typeof APPLICATION_STATUS];
+type ApplicationStatus = typeof APPLICATION_STATUS[keyof typeof APPLICATION_STATUS];

@@ -60,7 +60,7 @@ import { config } from '../../constants';
 //   }
 // });
 
-export const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
+const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
   if (graphQLErrors) {
     graphQLErrors.forEach(error => {
       console.error(

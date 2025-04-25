@@ -28,7 +28,7 @@ export const UPDATE_RESTAURANT_APPLICATION_STATUS = gql`
   }
 `;
 
-export const getOptimisticResponse = (
+const getOptimisticResponse = (
   applicationId: string,
   status: string,
   reason: string
@@ -55,4 +55,4 @@ export const getOptimisticResponse = (
 });
 
 // Alias for approve action to maintain backward compatibility
-export const APPROVE_RESTAURANT_APPLICATION = UPDATE_RESTAURANT_APPLICATION_STATUS;
+const APPROVE_RESTAURANT_APPLICATION = UPDATE_RESTAURANT_APPLICATION_STATUS;

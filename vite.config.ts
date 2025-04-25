@@ -1,23 +1,29 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
-import { loadEnv } from 'vite'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import { loadEnv } from 'vite';
 
-// https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
-  // Load env file based on `mode` in the current working directory.
-  const env = loadEnv(mode, process.cwd(), '')
-
+  const env = loadEnv(mode, process.cwd(), '');
   return {
     plugins: [react()],
     define: {
       'import.meta.env.DEV': JSON.stringify(mode === 'development'),
-      // Expose env variables
-      'process.env': env
+      'process.env': {
+        // Only expose VITE_ prefixed variables
+        ...Object.keys(env).reduce((acc, key) => {
+          if (key.startsWith('VITE_')) {
+            acc[key] = env[key];
+          }
+          return acc;
+        }, {}),
+      },
     },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
+        '@components': path.resolve(__dirname, './src/components'),
+        '@utils': path.resolve(__dirname, './src/utils'),
         '@components': path.resolve(__dirname, './src/components'),
         '@utils': path.resolve(__dirname, './src/utils'),
         '@assets': path.resolve(__dirname, './src/assets'),
@@ -27,20 +33,12 @@ export default defineConfig(({ command, mode }) => {
     server: {
       port: 5173,
       strictPort: true,
-      host: true, // Listen on all addresses
+      host: true,
       cors: true,
-      proxy: {
-        // Add your API proxies here if needed
-        // '/api': {
-        //   target: 'your-api-url',
-        //   changeOrigin: true,
-        //   secure: false,
-        // }
-      },
     },
     build: {
       outDir: 'dist',
-      sourcemap: command === 'serve',
+      sourcemap: true, // Enable for debugging, set to false for production
       rollupOptions: {
         output: {
           manualChunks: {
@@ -51,20 +49,17 @@ export default defineConfig(({ command, mode }) => {
               'leaflet',
               'react-leaflet',
             ],
-            // Add more chunks as needed
           },
-          // Ensure clean chunk names
           chunkFileNames: 'assets/[name]-[hash].js',
           entryFileNames: 'assets/[name]-[hash].js',
-          assetFileNames: 'assets/[name]-[hash].[ext]'
-        }
+          assetFileNames: 'assets/[name]-[hash].[ext]',
+        },
       },
-      // Optimize build
-      target: 'esnext',
+      target: 'es2020', // Conservative for compatibility
       minify: 'esbuild',
       cssMinify: true,
       cssCodeSplit: true,
-      assetsInlineLimit: 4096, // 4kb
+      assetsInlineLimit: 4096,
     },
     optimizeDeps: {
       include: [
@@ -77,12 +72,11 @@ export default defineConfig(({ command, mode }) => {
     },
     css: {
       devSourcemap: true,
-      // Add preprocessor options if needed
-      // preprocessorOptions: {
-      //   scss: {
-      //     additionalData: `@import "@/styles/variables.scss";`
-      //   }
-      // }
-    }
-  }
-})
+      preprocessorOptions: {
+        css: {
+          additionalData: `@import "leaflet/dist/leaflet.css";`,
+        },
+      },
+    },
+  };
+});

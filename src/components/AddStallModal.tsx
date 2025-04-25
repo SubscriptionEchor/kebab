@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { X, Upload, Clock, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
@@ -24,6 +24,17 @@ interface AddStallModalProps {
       };
     };
   }) => void;
+  initialData?: {
+    name: string;
+    cuisine: string;
+    timings: {
+      [key: string]: {
+        startTime: string;
+        endTime: string;
+        isOpen: boolean;
+      };
+    };
+  };
 }
 
 const DAYS = [
@@ -155,15 +166,15 @@ const theme = createTheme({
   },
 });
 
-export default function AddStallModal({ isOpen, onClose, onSubmit }: AddStallModalProps) {
+export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }: AddStallModalProps) {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
-    name: '',
-    cuisine: '',
+    name: initialData?.name || '',
+    cuisine: initialData?.cuisine || '',
     profilePhoto: null as File | null,
-    timings: DAYS.reduce((acc, day) => ({
+    timings: initialData?.timings || DAYS.reduce((acc, day) => ({
       ...acc,
       [day.id]: { startTime: '09:00', endTime: '17:00', isOpen: false }
     }), {} as { [key: string]: { startTime: string; endTime: string; isOpen: boolean } })
@@ -175,6 +186,29 @@ export default function AddStallModal({ isOpen, onClose, onSubmit }: AddStallMod
     endTime: '17:00'
   });
   const [isCommonHoursEnabled, setIsCommonHoursEnabled] = useState(false);
+
+  // Reset form when modal is closed or initialData changes
+  useEffect(() => {
+    if (!isOpen) {
+      setFormData({
+        name: '',
+        cuisine: '',
+        profilePhoto: null,
+        timings: DAYS.reduce((acc, day) => ({
+          ...acc,
+          [day.id]: { startTime: '09:00', endTime: '17:00', isOpen: false }
+        }), {} as { [key: string]: { startTime: string; endTime: string; isOpen: boolean } })
+      });
+      setPreviewUrl(null);
+    } else if (initialData) {
+      setFormData(prev => ({
+        ...prev,
+        name: initialData.name,
+        cuisine: initialData.cuisine,
+        timings: initialData.timings
+      }));
+    }
+  }, [isOpen, initialData]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
