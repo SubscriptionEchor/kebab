@@ -24,8 +24,6 @@ export default defineConfig(({ command, mode }) => {
         '@': path.resolve(__dirname, './src'),
         '@components': path.resolve(__dirname, './src/components'),
         '@utils': path.resolve(__dirname, './src/utils'),
-        '@components': path.resolve(__dirname, './src/components'),
-        '@utils': path.resolve(__dirname, './src/utils'),
         '@assets': path.resolve(__dirname, './src/assets'),
         '@styles': path.resolve(__dirname, './src/styles'),
       },
@@ -38,7 +36,7 @@ export default defineConfig(({ command, mode }) => {
     },
     build: {
       outDir: 'dist',
-      sourcemap: true, // Enable for debugging, set to false for production
+      sourcemap: true,
       rollupOptions: {
         output: {
           manualChunks: {
@@ -48,6 +46,20 @@ export default defineConfig(({ command, mode }) => {
               'react-router-dom',
               'leaflet',
               'react-leaflet',
+              '@mui/material',
+              '@emotion/react',
+              '@emotion/styled',
+              'framer-motion',
+              'recharts',
+              '@nivo/core',
+              '@nivo/pie',
+            ],
+            utils: [
+              'lodash',
+              'moment',
+              'moment-timezone',
+              'i18next',
+              'react-i18next',
             ],
           },
           chunkFileNames: 'assets/[name]-[hash].js',
@@ -55,11 +67,12 @@ export default defineConfig(({ command, mode }) => {
           assetFileNames: 'assets/[name]-[hash].[ext]',
         },
       },
-      target: 'es2020', // Conservative for compatibility
+      target: 'es2020',
       minify: 'esbuild',
       cssMinify: true,
       cssCodeSplit: true,
       assetsInlineLimit: 4096,
+      chunkSizeWarningLimit: 1000,
     },
     optimizeDeps: {
       include: [
@@ -68,6 +81,9 @@ export default defineConfig(({ command, mode }) => {
         'react-router-dom',
         'leaflet',
         'react-leaflet',
+        '@mui/material',
+        '@emotion/react',
+        '@emotion/styled',
       ],
     },
     css: {
