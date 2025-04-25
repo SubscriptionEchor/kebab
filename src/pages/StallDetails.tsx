@@ -31,13 +31,13 @@ export default function StallDetails() {
   const { t } = useTranslation();
   const { organizerId, eventId, stallId } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   console.log('StallDetails - Mounted with params:', { organizerId, eventId, stallId });
-  console.log('StallDetails - Auth status:', { isAuthenticated, user });
+  console.log('StallDetails - Auth status:', { isAuthenticated });
 
   useEffect(() => {
     const checkAccess = async () => {

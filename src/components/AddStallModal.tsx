@@ -79,6 +79,12 @@ const theme = createTheme({
             color: '#9CA3AF',
             opacity: 1,
           },
+          '& .MuiInputAdornment-root .MuiIconButton-root': {
+            color: '#4B5563',
+          },
+          '& .MuiOutlinedInput-input': {
+            padding: '0.75rem 1rem',
+          },
         },
         input: {
           padding: '0.75rem 1rem',
@@ -143,15 +149,6 @@ const theme = createTheme({
           borderRadius: '0.5rem',
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
           marginTop: '0.5rem',
-        },
-      },
-    },
-    MuiTimePicker: {
-      styleOverrides: {
-        root: {
-          '& .MuiOutlinedInput-root': {
-            borderRadius: '0.5rem',
-          },
         },
       },
     },
@@ -245,17 +242,16 @@ export default function AddStallModal({ isOpen, onClose, onSubmit }: AddStallMod
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Create new stall data
-    const newStall = {
-      id: String(Date.now()), // Generate unique ID
+    if (!formData.profilePhoto) {
+      return; // Handle error case
+    }
+
+    onSubmit({
       name: formData.name,
       cuisine: formData.cuisine,
-      profilePhoto: previewUrl || '/images/default-stall.png', // Use a default image path
+      profilePhoto: formData.profilePhoto,
       timings: formData.timings
-    };
-
-    // Submit the stall data
-    onSubmit(newStall);
+    });
 
     // Clear form data
     setFormData({
@@ -341,25 +337,14 @@ export default function AddStallModal({ isOpen, onClose, onSubmit }: AddStallMod
                       fullWidth
                       value={formData.cuisine}
                       onChange={(e) => setFormData({ ...formData, cuisine: e.target.value })}
-                      variant="outlined"
-                      required
-                      placeholder="Select cuisine"
+                      label={t('addStall.cuisine')}
                       SelectProps={{
-                        native: false,
-                        displayEmpty: true,
-                        renderValue: (value) => {
-                          if (!value) {
-                            return <span className="text-gray-400">Select cuisine</span>;
+                        renderValue: (value: unknown) => {
+                          if (typeof value === 'string') {
+                            return value;
                           }
-                          return value;
-                        },
-                        MenuProps: {
-                          PaperProps: {
-                            sx: {
-                              maxHeight: 300,
-                            },
-                          },
-                        },
+                          return '';
+                        }
                       }}
                     >
                       {CUISINES.map(cuisine => (
