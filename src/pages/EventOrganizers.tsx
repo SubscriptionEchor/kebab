@@ -1,14 +1,18 @@
 import { useState } from 'react';
-import { Search, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Plus, Eye, Pencil, Copy, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import AddEventOrganizerModal from '../components/AddEventOrganizerModal';
+import ViewOrganizerDetailsModal from '../components/ViewOrganizerDetailsModal';
+import EditEventOrganizerModal from '../components/EditEventOrganizerModal';
 
 interface EventOrganizer {
   id: string;
   name: string;
   contactNumber: string;
   email: string;
+  username: string;
+  password: string;
   eventPortfolio: number;
   events: Array<{
     id: string;
@@ -23,6 +27,10 @@ export default function EventOrganizers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedOrganizer, setSelectedOrganizer] = useState<EventOrganizer | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const itemsPerPage = 10;
 
   // Mock data - replace with actual API call
@@ -32,6 +40,8 @@ export default function EventOrganizers() {
       name: 'Event Masters Pro',
       contactNumber: '+1234567890',
       email: 'contact@eventmasters.com',
+      username: 'eventmasters',
+      password: '********',
       eventPortfolio: 15,
       events: [
         { id: '1', name: 'Summer Festival', type: 'F' },
@@ -43,6 +53,8 @@ export default function EventOrganizers() {
       name: 'Celebration Experts',
       contactNumber: '+1987654321',
       email: 'info@celebrationexperts.com',
+      username: 'celebration',
+      password: '********',
       eventPortfolio: 8,
       events: [
         { id: '3', name: 'Food Festival', type: 'F' },
@@ -53,6 +65,8 @@ export default function EventOrganizers() {
       name: 'Prime Events',
       contactNumber: '+1122334455',
       email: 'contact@primeevents.com',
+      username: 'primeevents',
+      password: '********',
       eventPortfolio: 12,
       events: [
         { id: '4', name: 'Tech Conference', type: 'C' },
@@ -61,16 +75,24 @@ export default function EventOrganizers() {
     },
   ]);
 
-  const handleAddOrganizer = (data: { name: string; contactNumber: string; email: string }) => {
+  const handleAddOrganizer = (data: { name: string; contactNumber: string; email: string; username: string; password: string }) => {
     const newOrganizer: EventOrganizer = {
       id: `ORG-${String(organizers.length + 1).padStart(3, '0')}`,
       name: data.name,
       contactNumber: data.contactNumber,
       email: data.email,
+      username: data.username,
+      password: data.password,
       eventPortfolio: 0,
       events: [],
     };
     setOrganizers([...organizers, newOrganizer]);
+  };
+
+  const handleCopyId = (id: string) => {
+    navigator.clipboard.writeText(id);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const filteredOrganizers = organizers.filter(organizer => 
@@ -86,6 +108,35 @@ export default function EventOrganizers() {
 
   const handleViewEvents = (organizerId: string) => {
     navigate(`/dashboard/event-organizers/${organizerId}`);
+  };
+
+  const handleViewDetails = (organizerId: string) => {
+    const organizer = organizers.find(org => org.id === organizerId);
+    if (organizer) {
+      setSelectedOrganizer(organizer);
+      setIsDetailsModalOpen(true);
+    }
+  };
+
+  const handleEditOrganizer = (organizerId: string) => {
+    const organizer = organizers.find(org => org.id === organizerId);
+    if (organizer) {
+      setSelectedOrganizer(organizer);
+      setIsEditModalOpen(true);
+    }
+  };
+
+  const handleUpdateOrganizer = (updatedData: { name: string; contactNumber: string; email: string; username: string; password: string }) => {
+    if (selectedOrganizer) {
+      const updatedOrganizers = organizers.map(org => 
+        org.id === selectedOrganizer.id 
+          ? { ...org, ...updatedData }
+          : org
+      );
+      setOrganizers(updatedOrganizers);
+      setIsEditModalOpen(false);
+      setSelectedOrganizer(null);
+    }
   };
 
   return (
@@ -108,7 +159,7 @@ export default function EventOrganizers() {
             className="flex items-center gap-2 px-4 py-2 bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors whitespace-nowrap"
           >
             <Plus className="h-5 w-5" />
-            Add Event Organizer
+            {t('eventOrganizers.addOrganizer')}
           </button>
         </div>
       </div>
@@ -118,57 +169,90 @@ export default function EventOrganizers() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[100px]">
                 {t('eventOrganizers.id')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[250px]">
                 {t('eventOrganizers.name')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('eventOrganizers.contactNumber')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('eventOrganizers.email')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[200px]">
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">
                 Event Portfolio
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[150px]">
+              <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[200px]">
                 {t('eventOrganizers.actions')}
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {paginatedOrganizers.map((organizer) => (
-              <tr key={organizer.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {organizer.id}
+              <tr 
+                key={organizer.id} 
+                className="hover:bg-gray-50 cursor-pointer"
+                onClick={() => handleViewDetails(organizer.id)}
+              >
+                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                  <div className="flex items-center gap-2">
+                    {organizer.id}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopyId(organizer.id);
+                      }}
+                      className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                      title={copiedId === organizer.id ? "Copied!" : "Copy ID"}
+                    >
+                      {copiedId === organizer.id ? (
+                        <Check className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-4 py-2 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">
                     {organizer.name}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {organizer.contactNumber}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {organizer.email}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-4 py-2 whitespace-nowrap">
                   <div className="flex items-center gap-2">
-                    <span className="bg-brand-primary/10 text-brand-primary px-3 py-1 rounded-full text-sm">
+                    <span className="bg-brand-primary/10 text-brand-primary px-2 py-0.5 rounded-full text-xs">
                       {organizer.eventPortfolio} Events
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                  <button
-                    onClick={() => handleViewEvents(organizer.id)}
-                    className="text-brand-primary hover:text-brand-primary/80 font-medium"
-                  >
-                    View events
-                  </button>
+                <td className="px-4 py-2 whitespace-nowrap text-right text-sm">
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewEvents(organizer.id);
+                      }}
+                      className="px-3 py-1.5 bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors text-sm font-medium"
+                    >
+                      {t('eventOrganizers.viewEvents')}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditOrganizer(organizer.id);
+                      }}
+                      className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                      title={t('eventOrganizers.editOrganizer')}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewDetails(organizer.id);
+                      }}
+                      className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                      title={t('eventOrganizers.viewDetails')}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -179,7 +263,11 @@ export default function EventOrganizers() {
       {/* Pagination */}
       <div className="flex items-center justify-between mt-4 text-sm text-gray-700">
         <div>
-          Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredOrganizers.length)} of {filteredOrganizers.length} organizers
+          {t('eventOrganizers.pagination.showing', {
+            start: (currentPage - 1) * itemsPerPage + 1,
+            end: Math.min(currentPage * itemsPerPage, filteredOrganizers.length),
+            total: filteredOrganizers.length
+          })}
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -190,7 +278,10 @@ export default function EventOrganizers() {
             <ChevronLeft className="h-5 w-5" />
           </button>
           <span>
-            Page {currentPage} of {totalPages}
+            {t('eventOrganizers.pagination.page', {
+              current: currentPage,
+              total: totalPages
+            })}
           </span>
           <button
             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
@@ -206,6 +297,25 @@ export default function EventOrganizers() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleAddOrganizer}
+      />
+
+      <ViewOrganizerDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => {
+          setIsDetailsModalOpen(false);
+          setSelectedOrganizer(null);
+        }}
+        organizer={selectedOrganizer}
+      />
+
+      <EditEventOrganizerModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedOrganizer(null);
+        }}
+        organizer={selectedOrganizer}
+        onSubmit={handleUpdateOrganizer}
       />
     </div>
   );

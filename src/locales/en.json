@@ -925,14 +925,27 @@
     "contactNumber": "Contact Number",
     "email": "Email",
     "actions": "Actions",
+    "viewEvents": "View Events",
+    "viewDetails": "View Details",
+    "editOrganizer": "Edit Organizer",
     "addOrganizer": "Add Event Organizer",
     "createOrganizer": "Create Organizer",
-    "errors": {
+    "editTitle": "Edit Event Organizer",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "validation": {
       "nameRequired": "Name is required",
       "contactRequired": "Contact number is required",
-      "invalidContact": "Please enter a valid contact number",
       "emailRequired": "Email is required",
-      "invalidEmail": "Please enter a valid email address"
+      "emailInvalid": "Invalid email format",
+      "usernameRequired": "Username is required",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 6 characters"
+    },
+    "pagination": {
+      "showing": "Showing {{start}} to {{end}} of {{total}} organizers",
+      "page": "Page {{current}} of {{total}}"
     }
   }
 }

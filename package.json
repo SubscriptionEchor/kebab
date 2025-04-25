@@ -45,7 +45,7 @@
     "@types/canvas-confetti": "^1.6.4",
     "@types/leaflet": "^1.9.8",
     "@types/lodash": "^4.14.202",
-    "@types/node": "^20.11.19",
+    "@types/node": "^20.17.31",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",

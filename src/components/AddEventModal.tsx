@@ -59,6 +59,31 @@ const theme = createTheme({
         },
       },
     },
+    MuiList: {
+      styleOverrides: {
+        root: {
+          padding: '0.5rem',
+        },
+      },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          borderRadius: '0.375rem',
+          margin: '0.125rem 0',
+          '&:hover': {
+            backgroundColor: '#F3F4F6',
+          },
+          '&.Mui-selected': {
+            backgroundColor: '#10B981',
+            color: '#FFFFFF',
+            '&:hover': {
+              backgroundColor: '#059669',
+            },
+          },
+        },
+      },
+    },
   },
 });
 
@@ -85,6 +110,19 @@ interface AddEventModalProps {
     };
     address: string;
   }) => void;
+  initialData?: {
+    name: string;
+    startDate: string;
+    startTime: string;
+    endDate: string;
+    endTime: string;
+    location: {
+      lat: number;
+      lng: number;
+    };
+    address: string;
+  };
+  isEditing?: boolean;
 }
 
 function SetViewOnClick({ coords }: { coords: [number, number] }) {
@@ -192,7 +230,7 @@ function TimeDisplay({ startTime, endTime }: { startTime: string; endTime: strin
   );
 }
 
-export default function AddEventModal({ isOpen, onClose, onSubmit }: AddEventModalProps) {
+export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, isEditing = false }: AddEventModalProps) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
@@ -218,6 +256,18 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }: AddEventMod
   // Character limits
   const EVENT_NAME_LIMIT = 50;
   const ADDRESS_LIMIT = 200;
+
+  // Initialize form data with initialData if provided
+  useEffect(() => {
+    if (initialData && isEditing) {
+      setFormData(prev => ({
+        ...prev,
+        ...initialData,
+        searchLocation: initialData.address
+      }));
+      setPosition([initialData.location.lat, initialData.location.lng]);
+    }
+  }, [initialData, isEditing]);
 
   // Debounced search function
   const searchAddress = debounce(async (query: string) => {
@@ -332,242 +382,279 @@ export default function AddEventModal({ isOpen, onClose, onSubmit }: AddEventMod
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900">Add New Event</h2>
-              <button
-                onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Event Name */}
-              <div>
-                <TextField
-                  label="Event Name"
-                  value={formData.name}
-                  onChange={handleEventNameChange}
-                  fullWidth
-                  required
-                  variant="outlined"
-                  inputProps={{
-                    maxLength: EVENT_NAME_LIMIT
-                  }}
-                  helperText={`${formData.name.length}/${EVENT_NAME_LIMIT} characters`}
-                  FormHelperTextProps={{
-                    sx: {
-                      marginLeft: 'auto',
-                      marginRight: 0,
-                      textAlign: 'right',
-                      color: formData.name.length === EVENT_NAME_LIMIT ? 'error.main' : 'text.secondary'
-                    }
-                  }}
-                />
+        <div
+          className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto py-6 ${
+            isOpen ? 'block' : 'hidden'
+          }`}
+        >
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 my-auto relative">
+            <div className="max-h-[85vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white z-10 pb-6 border-b mb-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-2xl font-semibold">
+                      {isEditing ? 'Edit Event' : 'Add New Event'}
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {isEditing 
+                        ? 'Update the event information below'
+                        : 'Fill in the details to create a new event'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={onClose}
+                    className="text-gray-500 hover:text-gray-700 p-1 hover:bg-gray-100 rounded transition-colors"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
 
-              {/* Date Selection */}
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                  {/* Start Date */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Start Date
-                    </label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <input
-                        type="date"
-                        value={formData.startDate}
-                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {/* End Date */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      End Date
-                    </label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <input
-                        type="date"
-                        value={formData.endDate}
-                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-                        required
-                      />
-                    </div>
-                  </div>
+              <form onSubmit={handleSubmit} className="space-y-8">
+                {/* Event Name */}
+                <div>
+                  <TextField
+                    label="Event Name"
+                    value={formData.name}
+                    onChange={handleEventNameChange}
+                    fullWidth
+                    required
+                    variant="outlined"
+                    inputProps={{
+                      maxLength: EVENT_NAME_LIMIT
+                    }}
+                    helperText={`${formData.name.length}/${EVENT_NAME_LIMIT} characters`}
+                    FormHelperTextProps={{
+                      sx: {
+                        marginLeft: 'auto',
+                        marginRight: 0,
+                        textAlign: 'right',
+                        color: formData.name.length === EVENT_NAME_LIMIT ? 'error.main' : 'text.secondary'
+                      }
+                    }}
+                  />
                 </div>
 
-                {/* Calendar View */}
-                {formData.startDate && formData.endDate && (
-                  <DateRangeCalendar
-                    startDate={formData.startDate}
-                    endDate={formData.endDate}
-                  />
-                )}
-              </div>
-
-              {/* Time Selection */}
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                  {/* Start Time */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Start Time
-                    </label>
-                    <TimePicker
-                      value={formData.startTime ? dayjs(formData.startTime, 'HH:mm') : null}
-                      onChange={handleStartTimeChange}
-                      ampm={false}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          required: true,
-                          InputProps: {
-                            startAdornment: (
-                              <Clock className="h-5 w-5 text-gray-400 mr-2" />
-                            ),
-                          },
-                        },
-                      }}
-                      format="HH:mm"
-                    />
-                  </div>
-
-                  {/* End Time */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      End Time
-                    </label>
-                    <TimePicker
-                      value={formData.endTime ? dayjs(formData.endTime, 'HH:mm') : null}
-                      onChange={handleEndTimeChange}
-                      ampm={false}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          required: true,
-                          InputProps: {
-                            startAdornment: (
-                              <Clock className="h-5 w-5 text-gray-400 mr-2" />
-                            ),
-                          },
-                        },
-                      }}
-                      format="HH:mm"
-                    />
-                  </div>
-                </div>
-
-                {/* Time Display */}
-                {formData.startTime && formData.endTime && (
-                  <TimeDisplay
-                    startTime={formData.startTime}
-                    endTime={formData.endTime}
-                  />
-                )}
-              </div>
-
-              {/* Location Search */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Search Location
-                </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
-                    type="text"
-                    value={formData.searchLocation}
-                    onChange={handleAddressChange}
-                    placeholder="Search for a location"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-                  />
-                  {/* Search Results Dropdown */}
-                  {showResults && searchResults.length > 0 && (
-                    <div className="absolute z-10 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 max-h-60 overflow-auto">
-                      {searchResults.map((result, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          onClick={() => handleResultSelect(result)}
-                          className="w-full px-4 py-3 text-sm text-left hover:bg-gray-50 focus:outline-none focus:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
-                        >
-                          <p className="font-medium text-gray-900">{result.display_name}</p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {result.lat}, {result.lon}
-                          </p>
-                        </button>
-                      ))}
+                {/* Date Selection */}
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* Start Date */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Start Date
+                      </label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <input
+                          type="date"
+                          value={formData.startDate}
+                          onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                          required
+                        />
+                      </div>
                     </div>
+
+                    {/* End Date */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        End Date
+                      </label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <input
+                          type="date"
+                          value={formData.endDate}
+                          onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Calendar View */}
+                  {formData.startDate && formData.endDate && (
+                    <DateRangeCalendar
+                      startDate={formData.startDate}
+                      endDate={formData.endDate}
+                    />
                   )}
                 </div>
-              </div>
 
-              {/* Map */}
-              <div className="h-72 w-full rounded-lg overflow-hidden border border-gray-200">
-                <MapContainer
-                  center={position}
-                  zoom={13}
-                  style={{ height: '100%', width: '100%' }}
-                >
-                  <TileLayer
-                    url={TILE_URL}
-                    attribution="Kebab Maps"
-                  />
-                  <Marker position={position} icon={icon} />
-                  <SetViewOnClick coords={position} />
-                  <MapClickHandler onMapClick={handleMapClick} />
-                </MapContainer>
-              </div>
+                {/* Time Selection */}
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* Start Time */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Start Time
+                      </label>
+                      <TimePicker
+                        value={formData.startTime ? dayjs(formData.startTime, 'HH:mm') : null}
+                        onChange={handleStartTimeChange}
+                        ampm={false}
+                        minutesStep={15}
+                        skipDisabled
+                        views={['hours', 'minutes']}
+                        slotProps={{
+                          textField: {
+                            fullWidth: true,
+                            required: true,
+                            InputProps: {
+                              startAdornment: (
+                                <Clock className="h-5 w-5 text-gray-400 mr-2" />
+                              ),
+                            },
+                          },
+                          popper: {
+                            sx: {
+                              '& .MuiPaper-root': {
+                                border: '1px solid #E5E7EB',
+                              },
+                            },
+                          },
+                        }}
+                        format="HH:mm"
+                      />
+                    </div>
 
-              {/* Address */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Address
-                </label>
-                <div className="relative">
-                  <textarea
-                    value={formData.address}
-                    onChange={handleAddressTextChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-                    rows={3}
-                    required
-                    maxLength={ADDRESS_LIMIT}
-                  />
-                  <div className={`text-xs mt-1 text-right ${
-                    formData.address.length === ADDRESS_LIMIT ? 'text-red-500' : 'text-gray-500'
-                  }`}>
-                    {formData.address.length}/{ADDRESS_LIMIT} characters
+                    {/* End Time */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        End Time
+                      </label>
+                      <TimePicker
+                        value={formData.endTime ? dayjs(formData.endTime, 'HH:mm') : null}
+                        onChange={handleEndTimeChange}
+                        ampm={false}
+                        minutesStep={15}
+                        skipDisabled
+                        views={['hours', 'minutes']}
+                        slotProps={{
+                          textField: {
+                            fullWidth: true,
+                            required: true,
+                            InputProps: {
+                              startAdornment: (
+                                <Clock className="h-5 w-5 text-gray-400 mr-2" />
+                              ),
+                            },
+                          },
+                          popper: {
+                            sx: {
+                              '& .MuiPaper-root': {
+                                border: '1px solid #E5E7EB',
+                              },
+                            },
+                          },
+                        }}
+                        format="HH:mm"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Time Display */}
+                  {formData.startTime && formData.endTime && (
+                    <TimeDisplay
+                      startTime={formData.startTime}
+                      endTime={formData.endTime}
+                    />
+                  )}
+                </div>
+
+                {/* Location Search */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Search Location
+                  </label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      type="text"
+                      value={formData.searchLocation}
+                      onChange={handleAddressChange}
+                      placeholder="Search for a location"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                    />
+                    {/* Search Results Dropdown */}
+                    {showResults && searchResults.length > 0 && (
+                      <div className="absolute z-10 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 max-h-60 overflow-auto">
+                        {searchResults.map((result, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => handleResultSelect(result)}
+                            className="w-full px-4 py-3 text-sm text-left hover:bg-gray-50 focus:outline-none focus:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+                          >
+                            <p className="font-medium text-gray-900">{result.display_name}</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {result.lat}, {result.lon}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
 
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-4 pt-4">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-3 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 transition-colors"
-                >
-                  Add Event
-                </button>
-              </div>
-            </form>
+                {/* Map */}
+                <div className="h-72 w-full rounded-lg overflow-hidden border border-gray-200">
+                  <MapContainer
+                    center={position}
+                    zoom={13}
+                    style={{ height: '100%', width: '100%' }}
+                  >
+                    <TileLayer
+                      url={TILE_URL}
+                      attribution="Kebab Maps"
+                    />
+                    <Marker position={position} icon={icon} />
+                    <SetViewOnClick coords={position} />
+                    <MapClickHandler onMapClick={handleMapClick} />
+                  </MapContainer>
+                </div>
+
+                {/* Address */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Address
+                  </label>
+                  <div className="relative">
+                    <textarea
+                      value={formData.address}
+                      onChange={handleAddressTextChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                      rows={3}
+                      required
+                      maxLength={ADDRESS_LIMIT}
+                    />
+                    <div className={`text-xs mt-1 text-right ${
+                      formData.address.length === ADDRESS_LIMIT ? 'text-red-500' : 'text-gray-500'
+                    }`}>
+                      {formData.address.length}/{ADDRESS_LIMIT} characters
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 transition-colors"
+                  >
+                    {isEditing ? 'Update Event' : 'Add Event'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </LocalizationProvider>
