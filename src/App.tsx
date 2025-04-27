@@ -42,6 +42,17 @@ import { useEffect } from 'react';
 import i18n from './i18';
 import Menu from './pages/vendor/Menu';
 import VendorDashboardPage from './pages/vendor/Dashboard';
+import StallLayout from './pages/stall/StallLayout';
+import StallDashboard from './pages/stall/Dashboard';
+import StallProfile from './pages/stall/Profile';
+import StallOrders from './pages/stall/Orders';
+import StallRatings from './pages/stall/Ratings';
+import StallTimings from './pages/stall/Timings';
+import StallLocation from './pages/stall/Location';
+import StallVendorProfile from './pages/stall/VendorProfile';
+import StallCategory from './pages/stall/Category';
+import StallAddons from './pages/stall/Addons';
+import StallOffers from './pages/stall/Offers';
 type ToasterPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center';
 
 function AppRoutes() {
@@ -156,6 +167,29 @@ function AppRoutes() {
          <Route path="menu" element={<Menu />} />
           <Route path="timings" element={<RestaurantTimings />} />
           <Route path="locations" element={<RestaurantLocations />} />
+        </Route>
+
+        {/* Stall Management Routes */}
+        <Route
+          path="/event-organizers/:organizerId/events/:eventId/stalls/:stallId"
+          element={
+            <RequireAuth>
+              <StallLayout />
+            </RequireAuth>
+          }
+        >
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<StallDashboard />} />
+          <Route path="profile" element={<StallProfile />} />
+          <Route path="vendor-profile" element={<StallVendorProfile />} />
+          <Route path="orders" element={<StallOrders />} />
+          <Route path="menu" element={<Menu />} />
+          <Route path="category" element={<StallCategory />} />
+          <Route path="addons" element={<StallAddons />} />
+          <Route path="offers" element={<StallOffers />} />
+          <Route path="ratings" element={<StallRatings />} />
+          <Route path="timings" element={<StallTimings />} />
+          <Route path="location" element={<StallLocation />} />
         </Route>
 
         {/* Catch-All Route */}
