@@ -5,18 +5,20 @@ import { Calendar, DollarSign, ShoppingBag, Filter, X } from 'lucide-react';
 import { toast } from 'sonner';
 import moment from 'moment';
 import { getCurrencySymbol } from '../../utils/currency';
+import { useQuery } from '@apollo/client';
+import { DASHBOARD } from '../../lib/graphql/queries/dashboard';
 
 // Mock data for the dashboard
 const generateMockData = (days = 30) => {
   const data = [];
   const today = moment();
   const currencySymbol = getCurrencySymbol();
-  
+
   for (let i = 0; i < days; i++) {
     const date = moment(today).subtract(i, 'days');
     const orders = Math.floor(Math.random() * 50) + 10;
     const sales = (Math.random() * 1000 + 500).toFixed(2);
-    
+
     data.push({
       date: date.format('YYYY-MM-DD'),
       displayDate: date.format('MMM DD'),
@@ -24,13 +26,13 @@ const generateMockData = (days = 30) => {
       sales: parseFloat(sales),
     });
   }
-  
+
   return data.reverse();
 };
 
 export default function VendorDashboardPage() {
   const { restaurantId } = useParams();
-  const [dateRange, setDateRange] = useState<'all' | 'today' | 'week' | 'month' | 'year' | 'custom'>('month');
+  const [dateRange, setDateRange] = useState<' ' | 'all' | 'today' | 'week' | 'month' | 'year' | 'custom'>(' ');
   const [startDate, setStartDate] = useState<string>(moment().subtract(30, 'days').format('YYYY-MM-DD'));
   const [endDate, setEndDate] = useState<string>(moment().format('YYYY-MM-DD'));
   const [showCustomDateModal, setShowCustomDateModal] = useState(false);
@@ -40,6 +42,13 @@ export default function VendorDashboardPage() {
   const [chartData, setChartData] = useState<any[]>([]);
   const currencySymbol = getCurrencySymbol();
   const modalRef = useRef<HTMLDivElement>(null);
+  const { data, error, loading } = useQuery(DASHBOARD, {
+    variables: {
+      restaurant: restaurantId,
+      startingDate: startDate,
+      endingDate: endDate
+    }
+  })
 
   // Calculate total orders and sales
   const totalOrders = chartData.reduce((sum, item) => sum + item.orders, 0);
@@ -48,7 +57,7 @@ export default function VendorDashboardPage() {
   // Update date range based on selection
   useEffect(() => {
     const today = moment();
-    
+
     switch (dateRange) {
       case 'today':
         setStartDate(today.format('YYYY-MM-DD'));
@@ -99,14 +108,14 @@ export default function VendorDashboardPage() {
 
   const fetchData = () => {
     setIsLoading(true);
-    
+
     // Simulate API call with setTimeout
     setTimeout(() => {
       // Generate mock data based on date range
       const start = moment(startDate);
       const end = moment(endDate);
       const daysDiff = end.diff(start, 'days') + 1;
-      
+
       setChartData(generateMockData(daysDiff));
       setIsLoading(false);
     }, 800);
@@ -143,53 +152,48 @@ export default function VendorDashboardPage() {
         <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
         <div className="flex items-center space-x-2">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex">
-            <button
+            {/* <button
               onClick={() => setDateRange('today')}
-              className={`px-3 py-2 text-sm font-medium ${
-                dateRange === 'today' 
-                  ? 'bg-brand-primary text-black' 
-                  : 'text-gray-700 hover:bg-gray-50'
-              } transition-colors rounded-l-lg`}
+              className={`px-3 py-2 text-sm font-medium ${dateRange === 'today'
+                ? 'bg-brand-primary text-black'
+                : 'text-gray-700 hover:bg-gray-50'
+                } transition-colors rounded-l-lg`}
             >
               Today
-            </button>
-            <button
+            </button> */}
+            {/* <button
               onClick={() => setDateRange('week')}
-              className={`px-3 py-2 text-sm font-medium ${
-                dateRange === 'week' 
-                  ? 'bg-brand-primary text-black' 
-                  : 'text-gray-700 hover:bg-gray-50'
-              } transition-colors`}
+              className={`px-3 py-2 text-sm font-medium ${dateRange === 'week'
+                ? 'bg-brand-primary text-black'
+                : 'text-gray-700 hover:bg-gray-50'
+                } transition-colors`}
             >
               Week
-            </button>
-            <button
+            </button> */}
+            {/* <button
               onClick={() => setDateRange('month')}
-              className={`px-3 py-2 text-sm font-medium ${
-                dateRange === 'month' 
-                  ? 'bg-brand-primary text-black' 
-                  : 'text-gray-700 hover:bg-gray-50'
-              } transition-colors`}
+              className={`px-3 py-2 text-sm font-medium ${dateRange === 'month'
+                ? 'bg-brand-primary text-black'
+                : 'text-gray-700 hover:bg-gray-50'
+                } transition-colors`}
             >
               Month
-            </button>
-            <button
+            </button> */}
+            {/* <button
               onClick={() => setDateRange('year')}
-              className={`px-3 py-2 text-sm font-medium ${
-                dateRange === 'year' 
-                  ? 'bg-brand-primary text-black' 
-                  : 'text-gray-700 hover:bg-gray-50'
-              } transition-colors`}
+              className={`px-3 py-2 text-sm font-medium ${dateRange === 'year'
+                ? 'bg-brand-primary text-black'
+                : 'text-gray-700 hover:bg-gray-50'
+                } transition-colors`}
             >
               Year
-            </button>
+            </button> */}
             <button
               onClick={() => setDateRange('custom')}
-              className={`px-3 py-2 text-sm font-medium ${
-                dateRange === 'custom' 
-                  ? 'bg-brand-primary text-black' 
-                  : 'text-gray-700 hover:bg-gray-50'
-              } transition-colors rounded-r-lg flex items-center`}
+              className={`px-3 py-2 text-sm font-medium ${dateRange === 'custom'
+                ? 'bg-brand-primary text-black'
+                : 'text-gray-700 hover:bg-gray-50'
+                } transition-colors rounded-r-lg flex items-center`}
             >
               <Filter className="h-4 w-4 mr-1" />
               Custom
@@ -216,7 +220,7 @@ export default function VendorDashboardPage() {
                 {isLoading ? (
                   <div className="h-8 w-24 bg-gray-200 animate-pulse rounded"></div>
                 ) : (
-                  totalOrders.toLocaleString()
+                  data?.getDashboardTotal?.totalOrders
                 )}
               </h3>
             </div>
@@ -225,7 +229,7 @@ export default function VendorDashboardPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -234,7 +238,7 @@ export default function VendorDashboardPage() {
                 {isLoading ? (
                   <div className="h-8 w-32 bg-gray-200 animate-pulse rounded"></div>
                 ) : (
-                  formatCurrency(totalSales)
+                  formatCurrency(data?.getDashboardTotal?.totalSales)
                 )}
               </h3>
             </div>
@@ -246,7 +250,7 @@ export default function VendorDashboardPage() {
       </div>
 
       {/* Chart */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Overview</h3>
         <div className="h-[400px]">
           {isLoading ? (
@@ -260,16 +264,16 @@ export default function VendorDashboardPage() {
                 margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="displayDate" 
-                  angle={-45} 
-                  textAnchor="end" 
-                  height={60} 
+                <XAxis
+                  dataKey="displayDate"
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
                   tick={{ fontSize: 12 }}
                 />
                 <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
                 <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
-                <Tooltip 
+                <Tooltip
                   formatter={(value, name) => {
                     if (name === 'sales') return [formatCurrency(value as number), 'Sales'];
                     return [value, 'Orders'];
@@ -282,7 +286,7 @@ export default function VendorDashboardPage() {
             </ResponsiveContainer>
           )}
         </div>
-      </div>
+      </div> */}
 
       {/* Custom Date Range Modal */}
       {showCustomDateModal && (
@@ -297,7 +301,7 @@ export default function VendorDashboardPage() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            
+
             <div className="p-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -310,7 +314,7 @@ export default function VendorDashboardPage() {
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   End Date
@@ -323,7 +327,7 @@ export default function VendorDashboardPage() {
                 />
               </div>
             </div>
-            
+
             <div className="flex justify-end gap-3 p-4 border-t border-gray-200">
               <button
                 onClick={() => setShowCustomDateModal(false)}
