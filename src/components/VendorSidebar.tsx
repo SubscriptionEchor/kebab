@@ -1,5 +1,5 @@
 import { User, Tag, Clock, MapPin, LogOut, X, Menu, ArrowLeft, Star, Store, Key, LayoutGrid, BarChart, ShoppingBag } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom'; 
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useMutation } from '@apollo/client';
@@ -19,21 +19,21 @@ const ADMIN_MENU_ITEMS = [
   { icon: Tag, label: 'Offers', path: 'offers' },
   { icon: Menu, label: 'Menu', path: 'menu' },
   { icon: LayoutGrid, label: 'Category', path: 'category' },
-  { icon: PlusSquare, label: 'Add-ons', path: 'addons' },
+  { icon: PlusSquare, label: 'Option Set', path: 'addons' },
   { icon: Clock, label: 'Timings', path: 'timings' },
   { icon: MapPin, label: 'Locations', path: 'locations' }
 ];
 
 const VENDOR_MENU_ITEMS = [
   { icon: BarChart, label: 'Dashboard', path: 'dashboard' },
-  { icon: User, label: 'Restaurant Profile', path: 'profile' },  
+  { icon: User, label: 'Restaurant Profile', path: 'profile' },
   { icon: ShoppingBag, label: 'Orders', path: 'orders' },
   { icon: Store, label: 'Vendor Profile', path: 'vendor-profile' },
   { icon: Star, label: 'Ratings', path: 'ratings' },
   { icon: Tag, label: 'Offers', path: 'offers' },
   { icon: Menu, label: 'Menu', path: 'menu' },
   { icon: LayoutGrid, label: 'Category', path: 'category' },
-  { icon: PlusSquare, label: 'Add-ons', path: 'addons' },
+  { icon: PlusSquare, label: 'Option Set', path: 'addons' },
   { icon: Clock, label: 'Timings', path: 'timings' },
   { icon: MapPin, label: 'Locations', path: 'locations' }
 ];

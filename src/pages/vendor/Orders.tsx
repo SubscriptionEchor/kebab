@@ -6,6 +6,8 @@ import Pagination from '../../components/Pagination';
 import OrderDetailsModal from '../../components/OrderDetailsModal';
 import { getCurrencySymbol } from '../../utils/currency';
 import { formatDate } from '../../utils/date';
+import { useQuery } from '@apollo/client';
+import { REST_ORDERS } from '../../lib/graphql/queries/orders';
 
 // Mock data for orders
 const generateMockOrders = (count = 50) => {
@@ -17,36 +19,36 @@ const generateMockOrders = (count = 50) => {
     'Chicken Wings', 'French Fries', 'Onion Rings', 'Mozzarella Sticks',
     'Chocolate Cake', 'Cheesecake', 'Ice Cream', 'Apple Pie'
   ];
-  
+
   const orders = [];
   const currencySymbol = getCurrencySymbol();
-  
+
   for (let i = 1; i <= count; i++) {
     const numItems = Math.floor(Math.random() * 5) + 1;
     const items = [];
     let subtotal = 0;
-    
+
     for (let j = 0; j < numItems; j++) {
       const dishName = dishes[Math.floor(Math.random() * dishes.length)];
       const price = parseFloat((Math.random() * 15 + 5).toFixed(2));
       const quantity = Math.floor(Math.random() * 3) + 1;
-      
+
       items.push({
         id: `item-${i}-${j}`,
         name: dishName,
         price: price,
         quantity: quantity
       });
-      
+
       subtotal += price * quantity;
     }
-    
+
     const tax = subtotal * 0.1; // 10% tax
     const total = subtotal + tax;
     const status = statuses[Math.floor(Math.random() * statuses.length)];
     const date = new Date();
     date.setDate(date.getDate() - Math.floor(Math.random() * 30));
-    
+
     orders.push({
       id: `ORD-${10000 + i}`,
       items: items,
@@ -63,7 +65,7 @@ const generateMockOrders = (count = 50) => {
       customerPhone: `+1 ${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`
     });
   }
-  
+
   return orders.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 };
 
@@ -77,38 +79,46 @@ export default function VendorOrders() {
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const rowsPerPage = 10;
   const currencySymbol = getCurrencySymbol();
-  
+  const { data, error, loading } = useQuery(REST_ORDERS, {
+    variables: {
+      "restaurant": restaurantId,
+      "page": 1,
+      "rows": 10,
+      "search": null
+    }
+  })
+
   // Generate mock orders
   const mockOrders = useMemo(() => generateMockOrders(), []);
-  
+
   // Filter orders based on search query and status filter
   const filteredOrders = useMemo(() => {
     return mockOrders.filter(order => {
-      const matchesSearch = 
+      const matchesSearch =
         order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.itemsDisplay.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.status.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-      
+
       return matchesSearch && matchesStatus;
     });
   }, [mockOrders, searchQuery, statusFilter]);
-  
+
   // Paginate orders
   const paginatedOrders = useMemo(() => {
     const startIndex = (currentPage - 1) * rowsPerPage;
     return filteredOrders.slice(startIndex, startIndex + rowsPerPage);
   }, [filteredOrders, currentPage]);
-  
+
   const totalPages = Math.ceil(filteredOrders.length / rowsPerPage);
-  
+
   const handleViewOrder = (order: any) => {
     setSelectedOrder(order);
     setShowOrderDetails(true);
   };
-  
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Delivered':
@@ -123,7 +133,7 @@ export default function VendorOrders() {
         return 'bg-yellow-100 text-yellow-800 ring-1 ring-yellow-600/20';
     }
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -141,7 +151,7 @@ export default function VendorOrders() {
               </span>
               <ChevronDown className="h-4 w-4 ml-2" />
             </button>
-            
+
             {showStatusFilter && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
                 <button
@@ -201,7 +211,7 @@ export default function VendorOrders() {
               </div>
             )}
           </div>
-          
+
           {/* Search Input */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -247,8 +257,8 @@ export default function VendorOrders() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {paginatedOrders.map((order) => (
-                <tr 
-                  key={order.id} 
+                <tr
+                  key={order.id}
                   className="hover:bg-gray-50 transition-colors cursor-pointer"
                   onClick={() => handleViewOrder(order)}
                 >
@@ -297,20 +307,20 @@ export default function VendorOrders() {
             </tbody>
           </table>
         </div>
-        
+
         {/* Empty State */}
         {filteredOrders.length === 0 && (
           <div className="text-center py-12">
             <ShoppingBag className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              {searchQuery || statusFilter !== 'all' 
+              {searchQuery || statusFilter !== 'all'
                 ? "Try adjusting your search or filter criteria"
                 : "When customers place orders, they will appear here"}
             </p>
           </div>
         )}
-        
+
         {/* Pagination */}
         {filteredOrders.length > 0 && (
           <div className="px-4 py-3 bg-white border-t border-gray-200">
@@ -322,17 +332,17 @@ export default function VendorOrders() {
           </div>
         )}
       </div>
-      
+
       {/* Order Details Modal */}
       <OrderDetailsModal
         isOpen={showOrderDetails}
         onClose={() => setShowOrderDetails(false)}
         order={selectedOrder}
       />
-      
+
       {/* Click outside handler for status filter */}
       {showStatusFilter && (
-        <div 
+        <div
           className="fixed inset-0 z-0"
           onClick={() => setShowStatusFilter(false)}
         />
