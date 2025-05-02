@@ -203,6 +203,7 @@ export default function Menu() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [variations, setVariations] = useState([])
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [CREATE_NEW_MENU] = useMutation(CREATE_MENU)
   const [UPDATE_NEW_MENU] = useMutation(UPDATE_MENU)
@@ -588,8 +589,10 @@ export default function Menu() {
   };
 
   const confirmDelete = async () => {
+
     try {
       if (!itemToDelete) return;
+      setIsDeleting(true);
 
       const { data } = await DELETE_NEW_MENU({
         variables: {
@@ -604,6 +607,8 @@ export default function Menu() {
       setItemToDelete(null);
     } catch (error) {
       toast.error('Failed to delete menu item');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -1641,6 +1646,7 @@ export default function Menu() {
               <p className="text-gray-500 mb-6">Are you sure you want to delete this menu item? This action cannot be undone.</p>
               <div className="flex justify-end space-x-3">
                 <button
+                  disabled={isDeleting}
                   onClick={() => {
                     setShowDeleteModal(false);
                     setItemToDelete(null);
@@ -1651,9 +1657,17 @@ export default function Menu() {
                 </button>
                 <button
                   onClick={confirmDelete}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
+                  disabled={isDeleting}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
-                  Delete
+                  {isDeleting ? (
+                    <>
+                      <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      Deleting...
+                    </>
+                  ) : (
+                    'Delete'
+                  )}
                 </button>
               </div>
             </div>
