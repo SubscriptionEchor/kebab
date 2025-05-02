@@ -767,6 +767,27 @@ export default function Menu() {
             ? prev.map((item: any) => item._id === updatedItem._id ? updatedItem : item)
             : [...prev, updatedItem]
         );
+        setFormData({
+          internalName: "",
+          title: '',
+          description: '',
+          category: null,
+          dietary: null,
+          allergens: [],
+          tags: [],
+          showInMenu: true,
+          image: null,
+          imagePreview: null,
+          variations: [
+            {
+              id: '1',
+              title: 'Regular',
+              price: '',
+              discounted: false,
+              discountPrice: '',
+            },
+          ]
+        })
 
         setShowForm(false);
         toast.success(`Menu item ${formData?.id ? 'updated' : 'created'} successfully`);
@@ -882,7 +903,30 @@ export default function Menu() {
                 Start building your restaurant menu by adding categories and items. Your customers will be able to browse and order from this menu.
               </p>
               <button
-                onClick={() => setShowForm(true)}
+                onClick={() => {
+                  setFormData({
+                    internalName: "",
+                    title: '',
+                    description: '',
+                    category: null,
+                    dietary: null,
+                    allergens: [],
+                    tags: [],
+                    showInMenu: true,
+                    image: null,
+                    imagePreview: null,
+                    variations: [
+                      {
+                        id: '1',
+                        title: 'Regular',
+                        price: '',
+                        discounted: false,
+                        discountPrice: '',
+                      },
+                    ]
+                  })
+                  setShowForm(true)
+                }}
                 className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors inline-flex items-center"
               >
                 <PlusCircle className="h-4 w-4 mr-2" />
