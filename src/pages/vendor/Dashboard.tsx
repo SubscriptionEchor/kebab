@@ -250,7 +250,7 @@ export default function VendorDashboardPage() {
       </div>
 
       {/* Chart */}
-      {/* <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Overview</h3>
         <div className="h-[400px]">
           {isLoading ? (
@@ -286,7 +286,7 @@ export default function VendorDashboardPage() {
             </ResponsiveContainer>
           )}
         </div>
-      </div> */}
+      </div> 
 
       {/* Custom Date Range Modal */}
       {showCustomDateModal && (
