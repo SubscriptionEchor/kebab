@@ -143,7 +143,7 @@ export default function VendorDashboardPage() {
   };
 
   const formatCurrency = (value: number) => {
-    return `${currencySymbol}${value.toFixed(2)}`;
+    return `${currencySymbol}${value?.toFixed(2)||0}`;
   };
 
   return (
