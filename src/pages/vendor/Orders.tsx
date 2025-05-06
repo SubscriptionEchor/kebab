@@ -93,18 +93,11 @@ export default function VendorOrders() {
 
   // Filter orders based on search query and status filter
   const filteredOrders = useMemo(() => {
-    return mockOrders.filter(order => {
-      const matchesSearch =
-        order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.itemsDisplay.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.status.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
+    return data?.ordersByRestId.filter(order => {
+      const matchesStatus = statusFilter === 'all' || order.orderStatus === statusFilter;
+      return matchesStatus;
     });
-  }, [mockOrders, searchQuery, statusFilter]);
+  }, [data?.ordersByRestId, statusFilter]);
 
   // Paginate orders
   const paginatedOrders = useMemo(() => {

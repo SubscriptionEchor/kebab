@@ -7,6 +7,7 @@ query OrdersByRestId($restaurant: String!, $page: Int, $rows: Int, $search: Stri
     orderStatus
     paymentMethod
     items {
+    title
       food
       quantity
       specialInstructions
