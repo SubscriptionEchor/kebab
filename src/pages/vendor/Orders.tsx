@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Search, Filter, ShoppingBag, Clock, CreditCard, ChevronDown, Eye } from 'lucide-react';
 import { toast } from 'sonner';
@@ -6,8 +6,10 @@ import Pagination from '../../components/Pagination';
 import OrderDetailsModal from '../../components/OrderDetailsModal';
 import { getCurrencySymbol } from '../../utils/currency';
 import { formatDate } from '../../utils/date';
-import { useQuery } from '@apollo/client';
+import { useLazyQuery, useQuery } from '@apollo/client';
 import { REST_ORDERS } from '../../lib/graphql/queries/orders';
+import moment from 'moment';
+import { debounce } from 'lodash';
 
 // Mock data for orders
 const generateMockOrders = (count = 50) => {
@@ -79,33 +81,60 @@ export default function VendorOrders() {
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const rowsPerPage = 10;
   const currencySymbol = getCurrencySymbol();
-  const { data, error, loading } = useQuery(REST_ORDERS, {
-    variables: {
-      "restaurant": restaurantId,
-      "page": 1,
-      "rows": 10,
-      "search": null
-    }
-  })
+
+  const [getOrders, { data }] = useLazyQuery(REST_ORDERS, {
+    fetchPolicy: 'cache-and-network'
+  });
+
+  const [debouncedSearch] = useState(() => {
+    const func = (value: string) => {
+      getOrders({
+        variables: {
+          restaurant: restaurantId,
+          page: currentPage,
+          rows: rowsPerPage,
+          search: value || null
+        }
+      });
+    };
+    return debounce(func, 500);
+  });
+
+  // // Initial fetch
+  // useEffect(() => {
+  //   getOrders({
+  //     variables: {
+  //       restaurant: restaurantId,
+  //       page: currentPage,
+  //       rows: rowsPerPage,
+  //       search: searchQuery || null
+  //     }
+  //   });
+  // }, [getOrders, restaurantId, currentPage, rowsPerPage]);
+
+  // Effect to handle debounced search
+  useEffect(() => {
+    debouncedSearch(searchQuery);
+    return () => debouncedSearch.cancel();
+  }, [searchQuery, restaurantId, currentPage, rowsPerPage, debouncedSearch]);
 
   // Generate mock orders
   const mockOrders = useMemo(() => generateMockOrders(), []);
 
   // Filter orders based on search query and status filter
   const filteredOrders = useMemo(() => {
-    return data?.ordersByRestId.filter(order => {
+    return data?.ordersByRestId?.filter(order => {
       const matchesStatus = statusFilter === 'all' || order.orderStatus === statusFilter;
       return matchesStatus;
-    });
+    }) || []
   }, [data?.ordersByRestId, statusFilter]);
-
   // Paginate orders
-  const paginatedOrders = useMemo(() => {
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    return filteredOrders.slice(startIndex, startIndex + rowsPerPage);
-  }, [filteredOrders, currentPage]);
+  // const paginatedOrders = useMemo(() => {
+  //   const startIndex = (currentPage - 1) * rowsPerPage;
+  //   return filteredOrders.slice(startIndex, startIndex + rowsPerPage);
+  // }, [filteredOrders, currentPage]);
 
-  const totalPages = Math.ceil(filteredOrders.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredOrders?.length / rowsPerPage);
 
   const handleViewOrder = (order: any) => {
     setSelectedOrder(order);
@@ -249,7 +278,7 @@ export default function VendorOrders() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedOrders.map((order) => (
+              {filteredOrders.map((order) => (
                 <tr
                   key={order.id}
                   className="hover:bg-gray-50 transition-colors cursor-pointer"
@@ -258,12 +287,12 @@ export default function VendorOrders() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <ShoppingBag className="h-5 w-5 text-gray-400 mr-2" />
-                      <span className="text-sm font-medium text-gray-900">{order.id}</span>
+                      <span className="text-sm font-medium text-gray-900">{order.orderId}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900 max-w-xs truncate">
-                      {order.items.map(item => `${item.name} (${item.quantity})`).join(', ')}
+                      {order.items.map(item => `${item.title} (${item.quantity})`).join(', ')}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -274,13 +303,13 @@ export default function VendorOrders() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                      {order.status}
+                      {order.orderStatus}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center text-sm text-gray-500">
                       <Clock className="h-4 w-4 mr-1 text-gray-400" />
-                      {formatDate(order.updatedAt)}
+                      {moment(order.updatedAt).utc().format("YYYY-MM-DD HH:mm")}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

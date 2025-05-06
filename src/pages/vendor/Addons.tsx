@@ -171,7 +171,7 @@ export default function Addons() {
       ...addon,
       maxQuantity: addon?.maxQty,
       minQuantity: addon?.minQty,
-      dishes: addon?.dishes?.map((item: any) => ({ ...item, title: item?.name, isActive: item?.active, currentPrice: item?.price, newPrice: item?.price }))
+      dishes: addon?.dishes?.map((item: any, index: number) => ({ ...item, id: index + 1, title: item?.name, isActive: item?.active, currentPrice: item?.price, newPrice: item?.price }))
 
     });
     setShowForm(true);
@@ -370,6 +370,7 @@ export default function Addons() {
       dishes: prev.dishes.filter(dish => dish.id !== dishId)
     }));
   };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">

@@ -6,19 +6,31 @@ query OrdersByRestId($restaurant: String!, $page: Int, $rows: Int, $search: Stri
     orderId
     orderStatus
     paymentMethod
+    updatedAt
     items {
-    title
+      title
       food
       quantity
       specialInstructions
+      variation {
+        price
+        title
+      }
+      addons {
+        options {
+          price
+ 
+        }
+      }
     }
     user {
       name
-      addresses {
-        deliveryAddress
-        details
-        label
-      }
+      phone
+    }
+    deliveryAddress {
+      deliveryAddress
+      details
+      label
     }
     orderAmount
     taxationAmount
