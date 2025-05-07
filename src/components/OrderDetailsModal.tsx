@@ -26,7 +26,7 @@ interface OrderDetails {
 interface OrderDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  order: OrderDetails | null;
+  order: any | null;
 }
 
 export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetailsModalProps) {
@@ -88,7 +88,7 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {order?.items.map((item) => {
+                  {order?.items.map((item: any) => {
                     let addonPrice = (item.addons?.reduce((addOnSum, addon) => {
                       const optsTotal = addon.options?.reduce((optSum, opt) => optSum + opt.price, 0) ?? 0;
                       return addOnSum + optsTotal;
@@ -112,8 +112,8 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                          {formatCurrency(((item.variation?.price ?? 0)
-                            + addonPrice ?? 0) * item?.quantity)}
+                          {formatCurrency(((item?.variation?.price || 0)
+                            + (addonPrice || 0)) * item?.quantity)}
                         </td>
                       </tr>
                     )
