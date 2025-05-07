@@ -105,8 +105,8 @@ export default function Addons() {
 
   // Filter addons based on search query
   const filteredAddons = useMemo(() => {
-    return addons.filter(addon =>
-      addon.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    return addons?.filter(addon =>
+      addon?.title?.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [addons, searchQuery]);
 
   // Custom styles for react-selec
