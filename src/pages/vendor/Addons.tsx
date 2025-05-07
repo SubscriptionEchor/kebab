@@ -241,7 +241,8 @@ export default function Addons() {
               "internalName": formData?.internalName,
               "maxQty": parseFloat(formData?.maxQuantity),
               "minQty": parseFloat(formData?.minQuantity),
-              "optionData": formData?.dishes?.map((item) => ({
+              "optionData": formData?.dishes?.map((item: any) => ({
+                _id: item?._id,
                 active: item?.isActive,
                 displayPrice: item?.displayPrice,
                 foodId: item?.foodId,
