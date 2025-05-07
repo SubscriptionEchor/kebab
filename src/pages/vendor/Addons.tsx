@@ -377,7 +377,7 @@ export default function Addons() {
         <h1 className="text-2xl font-semibold text-gray-900">Menu Option Set</h1>
         {!showForm && (
           <div className="flex items-center space-x-4">
-            {addons.length > 0 && (
+            {addons?.length > 0 && (
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -564,7 +564,7 @@ export default function Addons() {
             </div>
           </div>
         </div>
-      ) : addons.length === 0 ? (
+      ) : addons?.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12">
           <div className="text-center">
             <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
