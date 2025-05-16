@@ -1,18 +1,20 @@
 import { ChevronRight, Home } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function StallBreadcrumbs() {
+  const { t } = useTranslation();
   const location = useLocation();
   const paths = location.pathname.split('/').filter(Boolean);
   
   // Get the stall name from the state if available
-  const stallName = location.state?.stallName || 'Stall Details';
+  const stallName = location.state?.stallName || t('breadcrumbs.stallDetails');
 
   const breadcrumbs = [
-    { name: 'Dashboard', path: '/dashboard', icon: Home },
-    { name: 'Vendors', path: '/dashboard/vendors' },
-    { name: 'Stalls', path: `/dashboard/vendors/${paths[2]}/stalls` },
-    { name: stallName, path: location.pathname },
+    { name: t('breadcrumbs.dashboard'), path: '/dashboard', icon: Home },
+    { name: t('breadcrumbs.vendors'),   path: '/dashboard/vendors' },
+    { name: t('breadcrumbs.stalls'),    path: `/dashboard/vendors/${paths[2]}/stalls` },
+    { name: stallName,                  path: location.pathname },
   ];
 
   return (

@@ -1,4 +1,5 @@
-import { t } from 'i18next';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 
 interface DeleteConfirmationProps {
@@ -18,6 +19,8 @@ export default function DeleteConfirmation({
   message,
   isDeleting
 }: DeleteConfirmationProps) {
+  const { t } = useTranslation();
+
   if (!isOpen) return null;
 
   return (
@@ -42,7 +45,7 @@ export default function DeleteConfirmation({
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
           >
-           {t('common.cancel')} 
+            {t('common.cancel')}
           </button>
           <button
             onClick={onConfirm}
@@ -52,10 +55,10 @@ export default function DeleteConfirmation({
             {isDeleting ? (
               <>
                 <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                {t('delete.delete')}
+                {t('common.deleting')}
               </>
             ) : (
-             t('common.delete') 
+              t('common.delete')
             )}
           </button>
         </div>

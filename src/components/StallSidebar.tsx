@@ -1,27 +1,42 @@
-import { ArrowLeft, User, Clock, MapPin, Store, Star, ShoppingBag, Menu, BarChart2, Tag, LayoutGrid, PlusSquare } from 'lucide-react';
+// src/components/StallSidebar.tsx
+import {
+  ArrowLeft,
+  User,
+  Clock,
+  MapPin,
+  Store,
+  Star,
+  ShoppingBag,
+  Menu,
+  BarChart2,
+  Tag,
+  LayoutGrid,
+  PlusSquare
+} from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const menuItems = ([
-  { icon: BarChart2, label: 'Dashboard', path: 'dashboard' },
-  { icon: User, label: 'Stall Profile', path: 'profile' },
-  { icon: Store, label: 'Vendor Profile', path: 'vendor-profile' },
-  { icon: ShoppingBag, label: 'Orders', path: 'orders' },
-  { icon: Menu, label: 'Menu', path: 'menu' },
-  { icon: LayoutGrid, label: 'Category', path: 'category' },
-  { icon: PlusSquare, label: 'Add-ons', path: 'addons' },
-  { icon: Tag, label: 'Offers', path: 'offers' },
-  { icon: Star, label: 'Ratings', path: 'ratings' },
-  { icon: Clock, label: 'Timings', path: 'timings' },
-  { icon: MapPin, label: 'Location', path: 'location' }
+  { icon: BarChart2, labelKey: 'stall.menu.dashboard',      path: 'dashboard'      },
+  { icon: User,       labelKey: 'stall.menu.stallProfile',   path: 'profile'        },
+  { icon: Store,      labelKey: 'stall.menu.vendorProfile',  path: 'vendor-profile' },
+  { icon: ShoppingBag,labelKey: 'stall.menu.orders',         path: 'orders'         },
+  { icon: Menu,       labelKey: 'stall.menu.menu',           path: 'menu'           },
+  { icon: LayoutGrid, labelKey: 'stall.menu.category',       path: 'category'       },
+  { icon: PlusSquare, labelKey: 'stall.menu.addOns',         path: 'addons'         },
+  { icon: Tag,        labelKey: 'stall.menu.offers',         path: 'offers'         },
+  { icon: Star,       labelKey: 'stall.menu.ratings',        path: 'ratings'        },
+  { icon: Clock,      labelKey: 'stall.menu.timings',        path: 'timings'        },
+  { icon: MapPin,     labelKey: 'stall.menu.location',       path: 'location'       }
 ] as const).map((item, i) => ({
   ...item,
-  delay: i * 100,
+  delay: i * 100
 }));
 
 export default function StallSidebar() {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-
   const currentPath = location.pathname.split('/').pop();
 
   return (
@@ -33,7 +48,7 @@ export default function StallSidebar() {
           className="flex items-center text-gray-700 hover:text-gray-900 transition-colors"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
-          <span className="font-medium">Back to Dashboard</span>
+          <span className="font-medium">{t('stall.sidebar.backToDashboard')}</span>
         </button>
       </div>
 
@@ -51,12 +66,10 @@ export default function StallSidebar() {
                   ? 'bg-brand-accent text-black'
                   : 'text-gray-700 hover:bg-gray-100'
               } fade-enter fade-enter-active`}
-              style={{
-                transitionDelay: `${item.delay}ms`,
-              }}
+              style={{ transitionDelay: `${item.delay}ms` }}
             >
               <Icon className="mr-3 h-5 w-5" />
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           );
         })}
@@ -69,9 +82,9 @@ export default function StallSidebar() {
           className="flex w-full items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100"
         >
           <ArrowLeft className="mr-3 h-5 w-5" />
-          Back to Admin
+          {t('stall.sidebar.backToAdmin')}
         </button>
       </div>
     </div>
   );
-} 
+}

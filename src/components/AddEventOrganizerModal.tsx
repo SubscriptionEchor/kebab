@@ -49,7 +49,7 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
     switch (name) {
       case 'name':
         if (!value.trim()) return t('eventOrganizers.errors.nameRequired');
-        if (value.length < 2) return 'Name must be at least 2 characters long';
+        if (value.length < 2) return t('eventOrganizers.errors.nameMinLength');
         return undefined;
       case 'contactNumber':
         if (!value.trim()) return t('eventOrganizers.errors.contactRequired');
@@ -60,14 +60,14 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('eventOrganizers.errors.invalidEmail');
         return undefined;
       case 'username':
-        if (!value.trim()) return 'Username is required';
-        if (value.length < 3) return 'Username must be at least 3 characters long';
-        if (!/^[a-zA-Z0-9_]+$/.test(value)) return 'Username can only contain letters, numbers, and underscores';
+        if (!value.trim()) return t('eventOrganizers.errors.usernameRequired');
+        if (value.length < 3) return t('eventOrganizers.errors.usernameMinLength');
+        if (!/^[a-zA-Z0-9_]+$/.test(value)) return t('eventOrganizers.errors.usernameInvalid');
         return undefined;
       case 'password':
-        if (!value.trim()) return 'Password is required';
-        if (value.length < 8) return 'Password must be at least 8 characters long';
-        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) return 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
+        if (!value.trim()) return t('eventOrganizers.errors.passwordRequired');
+        if (value.length < 8) return t('eventOrganizers.errors.passwordMinLength');
+        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) return t('eventOrganizers.errors.passwordComplexity');
         return undefined;
       default:
         return undefined;
@@ -222,7 +222,7 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {t('eventOrganizers.email')}
-              <span className="text-red-500">*</span>
+              <span className="text-red-500">{t('common.required')}</span>
             </label>
             <input
               type="email"
@@ -245,7 +245,7 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Username
+              {t('eventOrganizers.username')}
               <span className="text-red-500">*</span>
             </label>
             <input
@@ -256,7 +256,7 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
               className={`w-full px-3 py-2 border rounded-md transition-colors ${
                 errors.username ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-brand-primary'
               }`}
-              placeholder="Enter username"
+              placeholder={t('eventOrganizers.placeholders.username')}
               disabled={isSubmitting}
             />
             {errors.username && touched.username && (
@@ -269,7 +269,7 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
+              {t('eventOrganizers.password')}
               <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -281,7 +281,7 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
                 className={`w-full px-3 py-2 border rounded-md transition-colors ${
                   errors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-brand-primary'
                 }`}
-                placeholder="Enter password"
+                placeholder={t('eventOrganizers.placeholders.password')}
                 disabled={isSubmitting}
               />
               <button
@@ -319,11 +319,11 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
               className="px-4 py-2 bg-brand-primary text-black rounded-md hover:bg-brand-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isSubmitting || !isFormValid()}
             >
-              {isSubmitting ? 'Creating...' : t('eventOrganizers.createOrganizer')}
+              {isSubmitting ? t('eventOrganizers.creating') : t('eventOrganizers.createOrganizer')}
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-} 
+}

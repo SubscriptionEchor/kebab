@@ -725,7 +725,9 @@
     "activedelivery": "Location is in an active delivery zone",
     "failedtovalidatelocation": "Failed to validate location",
     "locationupdated": "Location updated successfully",
-    "failedtoupdatelocation": "Failed to update location"
+    "failedtoupdatelocation": "Failed to update location",
+    "outsideServiceFallback": "You are outside our service area. Redirecting to the default Berlin location.",
+    "mapAttribution": "Kebab Maps"
   },
   "language": {
     "english": "English",

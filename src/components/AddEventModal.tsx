@@ -141,6 +141,7 @@ function MapClickHandler({ onMapClick }: { onMapClick: (e: LeafletMouseEvent) =>
 const defaultPosition: [number, number] = [25.2048, 55.2708]; // Dubai coordinates as default
 
 function DateRangeCalendar({ startDate, endDate }: { startDate: string; endDate: string }) {
+  const { t } = useTranslation();
   const startDateTime = new Date(startDate);
   const endDateTime = new Date(endDate);
   const today = new Date();
@@ -207,11 +208,12 @@ function formatTo24Hour(timeString: string): string {
 }
 
 function TimeDisplay({ startTime, endTime }: { startTime: string; endTime: string }) {
+   const { t } = useTranslation();
   return (
     <div className="mt-6 bg-gray-50 rounded-lg p-6 border border-gray-100">
       <div className="flex items-center justify-center gap-12">
         <div className="text-center">
-          <div className="text-sm font-medium text-gray-500 mb-3">Start Time</div>
+          <div className="text-sm font-medium text-gray-500 mb-3">{t('addEvent.timeDisplay.startTime')}</div>
           <div className="text-3xl font-semibold text-brand-primary flex items-center gap-3">
             <Clock className="h-6 w-6" />
             {startTime}
@@ -219,7 +221,7 @@ function TimeDisplay({ startTime, endTime }: { startTime: string; endTime: strin
         </div>
         <div className="h-12 w-px bg-gray-200"></div>
         <div className="text-center">
-          <div className="text-sm font-medium text-gray-500 mb-3">End Time</div>
+          <div className="text-sm font-medium text-gray-500 mb-3">{t('addEvent.timeDisplay.endTime')}</div>
           <div className="text-3xl font-semibold text-brand-primary flex items-center gap-3">
             <Clock className="h-6 w-6" />
             {endTime}
@@ -393,12 +395,12 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                 <div className="flex justify-between items-center">
                   <div>
                     <h2 className="text-2xl font-semibold">
-                      {isEditing ? 'Edit Event' : 'Add New Event'}
+                      {isEditing ? t('addEvent.title.edit') : t('addEvent.title.add')}
                     </h2>
                     <p className="text-sm text-gray-500 mt-1">
                       {isEditing 
-                        ? 'Update the event information below'
-                        : 'Fill in the details to create a new event'}
+                        ? t('addEvent.subtitle.edit')
+                        : t('addEvent.subtitle.add')}
                     </p>
                   </div>
                   <button
@@ -414,16 +416,20 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                 {/* Event Name */}
                 <div>
                   <TextField
-                    label="Event Name"
+                    label={t('addEvent.fields.eventName.label')}
                     value={formData.name}
                     onChange={handleEventNameChange}
                     fullWidth
                     required
                     variant="outlined"
+                    placeholder={t('addEvent.fields.eventName.placeholder')}
                     inputProps={{
                       maxLength: EVENT_NAME_LIMIT
                     }}
-                    helperText={`${formData.name.length}/${EVENT_NAME_LIMIT} characters`}
+                    helperText={t('addEvent.limits.eventName', { 
+                      current: formData.name.length, 
+                      limit: EVENT_NAME_LIMIT 
+                    })}
                     FormHelperTextProps={{
                       sx: {
                         marginLeft: 'auto',
@@ -441,7 +447,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                     {/* Start Date */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Start Date
+                        {t('addEvent.fields.startDate.label')}
                       </label>
                       <div className="relative">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -458,7 +464,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                     {/* End Date */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        End Date
+                        {t('addEvent.fields.endDate.label')}
                       </label>
                       <div className="relative">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -488,7 +494,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                     {/* Start Time */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Start Time
+                       {t('addEvent.fields.startTime.label')}
                       </label>
                       <TimePicker
                         value={formData.startTime ? dayjs(formData.startTime, 'HH:mm') : null}
@@ -522,7 +528,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                     {/* End Time */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        End Time
+                        {t('addEvent.fields.endTime.label')}
                       </label>
                       <TimePicker
                         value={formData.endTime ? dayjs(formData.endTime, 'HH:mm') : null}
@@ -566,7 +572,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                 {/* Location Search */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">
-                    Search Location
+                    {t('addEvent.fields.searchLocation.label')}
                   </label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -618,7 +624,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                 {/* Address */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Address
+                    {t('addEvent.fields.address.label')}
                   </label>
                   <div className="relative">
                     <textarea
@@ -632,7 +638,10 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                     <div className={`text-xs mt-1 text-right ${
                       formData.address.length === ADDRESS_LIMIT ? 'text-red-500' : 'text-gray-500'
                     }`}>
-                      {formData.address.length}/{ADDRESS_LIMIT} characters
+                       {t('addEvent.limits.address', { 
+                        current: formData.address.length, 
+                        limit: ADDRESS_LIMIT 
+                      })}
                     </div>
                   </div>
                 </div>
@@ -644,13 +653,13 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                     onClick={onClose}
                     className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                   >
-                    Cancel
+                    {t('addEvent.buttons.cancel')}
                   </button>
                   <button
                     type="submit"
                     className="px-6 py-3 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 transition-colors"
                   >
-                    {isEditing ? 'Update Event' : 'Add Event'}
+                    {isEditing ? t('addEvent.buttons.update') : t('addEvent.buttons.add')}
                   </button>
                 </div>
               </form>
@@ -660,4 +669,4 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
       </LocalizationProvider>
     </ThemeProvider>
   );
-} 
+}

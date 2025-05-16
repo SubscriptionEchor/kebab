@@ -1,5 +1,7 @@
+// src/components/KebabMenu.tsx
 import { useState, useRef, useEffect } from 'react';
 import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface KebabMenuProps {
   onEdit: () => void;
@@ -7,6 +9,7 @@ interface KebabMenuProps {
 }
 
 const KebabMenu: React.FC<KebabMenuProps> = ({ onEdit, onDelete }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -45,7 +48,7 @@ const KebabMenu: React.FC<KebabMenuProps> = ({ onEdit, onDelete }) => {
             className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
           >
             <Pencil className="h-4 w-4" />
-            Edit
+            {t('common.edit')}
           </button>
           <button
             onClick={(e) => {
@@ -56,7 +59,7 @@ const KebabMenu: React.FC<KebabMenuProps> = ({ onEdit, onDelete }) => {
             className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
           >
             <Trash2 className="h-4 w-4" />
-            Delete
+            {t('common.delete')}
           </button>
         </div>
       )}
@@ -64,4 +67,4 @@ const KebabMenu: React.FC<KebabMenuProps> = ({ onEdit, onDelete }) => {
   );
 };
 
-export default KebabMenu; 
+export default KebabMenu;

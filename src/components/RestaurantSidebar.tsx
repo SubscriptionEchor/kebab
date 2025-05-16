@@ -1,18 +1,29 @@
-import { ArrowLeft, User, Tag, Clock, MapPin, UtensilsCrossed, Store, Star } from 'lucide-react';
+import {
+  ArrowLeft,
+  User,
+  Tag,
+  Clock,
+  MapPin,
+  UtensilsCrossed,
+  Store,
+  Star
+} from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const menuItems = ([
-  { icon: User, label: 'Restaurant Profile', path: 'profile' },
-  { icon: Store, label: 'Vendor Profile', path: 'vendor-profile' },
-  { icon: Star, label: 'Ratings', path: 'ratings' },
-  { icon: Clock, label: 'Timings', path: 'timings' },
-  { icon: MapPin, label: 'Locations', path: 'locations' },
+  { icon: User,   label: 'restaurantSidebar.menu.restaurantProfile', path: 'profile' },
+  { icon: Store,  label: 'restaurantSidebar.menu.vendorProfile',     path: 'vendor-profile' },
+  { icon: Star,   label: 'restaurantSidebar.menu.ratings',           path: 'ratings' },
+  { icon: Clock,  label: 'restaurantSidebar.menu.timings',           path: 'timings' },
+  { icon: MapPin, label: 'restaurantSidebar.menu.locations',         path: 'locations' },
 ] as const).map((item, i) => ({
   ...item,
   delay: i * 100,
 }));
 
 export default function RestaurantSidebar() {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -27,7 +38,9 @@ export default function RestaurantSidebar() {
           className="flex items-center text-gray-700 hover:text-gray-900 transition-colors"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
-          <span className="font-medium">Back to Dashboard</span>
+          <span className="font-medium">
+            {t('restaurantSidebar.backToDashboard')}
+          </span>
         </button>
       </div>
 
@@ -40,16 +53,15 @@ export default function RestaurantSidebar() {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all hover-lift ${isActive
-                ? 'bg-brand-accent text-black'
-                : 'text-gray-700 hover:bg-gray-100'
-                } fade-enter fade-enter-active`}
-              style={{
-                transitionDelay: `${item.delay}ms`,
-              }}
+              className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all hover-lift ${
+                isActive
+                  ? 'bg-brand-accent text-black'
+                  : 'text-gray-700 hover:bg-gray-100'
+              } fade-enter fade-enter-active`}
+              style={{ transitionDelay: `${item.delay}ms` }}
             >
               <Icon className="mr-3 h-5 w-5" />
-              {item.label}
+              {t(item.label)}
             </Link>
           );
         })}
@@ -62,7 +74,7 @@ export default function RestaurantSidebar() {
           className="flex w-full items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100"
         >
           <ArrowLeft className="mr-3 h-5 w-5" />
-          Back to Admin
+          {t('restaurantSidebar.backToAdmin')}
         </button>
       </div>
     </div>
