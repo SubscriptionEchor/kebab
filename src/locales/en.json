@@ -513,12 +513,18 @@
     "cancel": "Cancel"
   },
   "feeupdatemodel": {
-    "servicefee": "Service Fee",
+   "servicefee": "Service Fee",
     "servicefeepercentage": "Service Fee Percentage",
-    "serviceinfo": "Enter the service fee percentage for this restaurant",
+    "serviceinfo": "Enter the percentage fee applied to each transaction.",
     "cancel": "Cancel",
-    "update": "Update Fee"
-  },
+    "update": "Update Fee",
+    "updating": "Updating...",
+    "validation": {
+      "feeRequired": "Fee percentage is required",
+      "invalidFee": "Invalid fee percentage",
+      "feeRange": "Fee percentage must be between 0 and 100"
+    
+  }},
   "statusupdatemodal": {
     "resubmissionreason": "Resubmission Reason",
     "requestedresubmission": "Requested Resubmission",
@@ -823,16 +829,7 @@
     "failedtoloadrestaurantdetails": "Failed to load restaurant details. Please try again.",
     "failedtofetchrestaurants": "Failed to fetch restaurants. Please try again."
   },
-  "common": {
-    "showingpage": "Showing page",
-    "of": "of",
-    "confirmsignout": "Confirm Sign Out",
-    "signoutmessage": "Are you sure you want to Sign out? You'll need to sign in again to access your account",
-    "cancel": "Cancel",
-    "signout": "Sign out",
-    "delete": "Delete",
-    "signedoutsuccessfully": "Signed out successfully"
-  },
+  
   "applicationdetails": {
     "title": "Application Details",
     "viewmsg": "View complete restaurant onboarding application information",
@@ -918,25 +915,48 @@
     "ratings": "Ratings",
     "timings": "Timings",
     "clear": "Clear"
+
   },
   "eventOrganizers": {
-    "title": "Event Organizers",
-    "searchPlaceholder": "Search organizers...",
-    "id": "ID",
+
+    "addOrganizer": "Add Event Organizer",
+    "editOrganizer": "Edit Event Organizer",
     "name": "Name",
     "contactNumber": "Contact Number",
     "email": "Email",
+    "username": "Username",
+    "password": "Password",
+    "createOrganizer": "Create Organizer",
+    "creating": "Creating...",
+    "viewDetailsTitle": "Organizer Details",
+    "title": "Event Organizers",
+    "searchPlaceholder": "Search organizers...",
+    "id": "ID",
     "actions": "Actions",
     "viewEvents": "View Events",
     "viewDetails": "View Details",
-    "editOrganizer": "Edit Organizer",
-    "addOrganizer": "Add Event Organizer",
-    "createOrganizer": "Create Organizer",
     "editTitle": "Edit Event Organizer",
     "save": "Save",
     "cancel": "Cancel",
     "saving": "Saving...",
-    "validation": {
+"fields": {
+      "id": "ID",
+      "name": "Name",
+      "contactNumber": "Contact Number",
+      "email": "Email",
+      "username": "Username",
+      "eventPortfolio": "Event Portfolio",
+      "events": "Events",
+      "password": "Password"
+    },
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "copyPassword": "Copy password",
+  "placeholders": {
+    "username": "Enter username",
+    "password": "Enter password"
+  },
+    "validation1": {
       "nameRequired": "Name is required",
       "contactRequired": "Contact number is required",
       "emailRequired": "Email is required",
@@ -948,9 +968,9 @@
     "pagination": {
       "showing": "Showing {{start}} to {{end}} of {{total}} organizers",
       "page": "Page {{current}} of {{total}}"
-    }
-  },
-  "orders": {
+    }},
+  
+ "orders": {
     "noorders": "No orders found",
     "items": "Order Items",
     "minutes": "minutes",
@@ -994,12 +1014,12 @@
     "save": "Save Changes",
     "cancel": "Cancel",
     "itemsaved": "Menu item saved successfully",
-    "variations": {
+    "variation": {
       "name": "Variation Name",
       "price": "Price",
       "isdefault": "Default Variation"
     },
-    "addons": {
+    "addon": {
       "name": "Add-on Name",
       "price": "Price",
       "maxquantity": "Maximum Quantity"
@@ -1174,7 +1194,34 @@
     "noOffers": "No offers found",
     "confirmDelete": "Are you sure you want to delete this offer?",
     "percentage": "Percentage",
-    "fixed": "Fixed Amount"
+    "fixed": "Fixed Amount",
+   
+    "add": "Add Offer",
+    "edit": "Edit Offer",
+    "discount": "Discount",
+    "validity": "Validity",
+  
+    "discounttype": "Discount Type",
+    "discountvalue": "Discount Value",
+    "minordervalue": "Minimum Order Value",
+    "minorder": "Min. Order",
+    "startdate": "Start Date",
+    "enddate": "End Date",
+   
+    "deleteconfirm": "Are you sure you want to delete this offer?",
+    "added": "Offer added successfully",
+    "updated": "Offer updated successfully",
+    "deleted": "Offer deleted successfully",
+    "addfailed": "Failed to add offer",
+    "updatefailed": "Failed to update offer",
+    "deletefailed": "Failed to delete offer",
+    "statusupdated": "Offer status updated",
+    "statusupdatefailed": "Failed to update offer status"
+
+
+
+
+    
   },
   "stallprofile": {
     "title": "Stall Profile",
@@ -1192,9 +1239,554 @@
     "stallimage": "Stall Image",
     "stalllogo": "Stall Logo",
     "uploadfile": "Choose file or drag and drop",
+    "personalinfo": "Personal Information",
+    "businessinfo": "Business Information",
+    "bankinfo": "Bank Account Information",
+    "name": "Full Name",
+ 
+    "address": "Address",
+    "businessname": "Business Name",
+    "taxid": "Tax ID",
+    "accountname": "Account Holder Name",
+    "accountnumber": "Account Number",
+    "bankname": "Bank Name",
+    "swiftcode": "SWIFT Code",
+    "saved": "Vendor profile updated successfully",
+    "savefailed": "Failed to update vendor profile",
+    "saving": "Saving...",
+   
     "uploadfilesize": {
       "image": "PNG, JPG up to 10MB",
       "logo": "PNG, JPG up to 5MB"
     }
+
+  },
+
+  "stall": {
+    "dashboard": {
+      "title": "Stall Dashboard",
+      "overview": "Overview",
+      "totalOrders": "Total Orders",
+      "totalRevenue": "Total Revenue",
+      "averageOrderValue": "Average Order Value",
+      "sidebar": {
+        "backToDashboard": "Back to Dashboard",
+        "backToAdmin": "Back to Admin"
+      }
+    }
+  },
+
+  
+  "category": {
+    "title": "Categories",
+    "add": "Add Category",
+    "edit": "Edit Category",
+    "name": "Category Name",
+    "description": "Description",
+    "order": "Order",
+    "actions": "Actions",
+    "deleteconfirm": "Are you sure you want to delete this category?",
+    "added": "Category added successfully",
+    "updated": "Category updated successfully",
+    "deleted": "Category deleted successfully",
+    "addfailed": "Failed to add category",
+    "updatefailed": "Failed to update category",
+    "deletefailed": "Failed to delete category"
+  },
+  "addons": {
+    "title": "Add-ons",
+    "add": "Add Add-on",
+    "edit": "Edit Add-on",
+    "name": "Add-on Name",
+    "price": "Price",
+    "maxquantity": "Max Quantity",
+    "status": "Status",
+    "actions": "Actions",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "deleteconfirm": "Are you sure you want to delete this add-on?",
+    "added": "Add-on added successfully",
+    "updated": "Add-on updated successfully",
+    "deleted": "Add-on deleted successfully",
+    "addfailed": "Failed to add add-on",
+    "updatefailed": "Failed to update add-on",
+    "deletefailed": "Failed to delete add-on",
+    "availabilityupdated": "Add-on availability updated",
+    "availabilityupdatefailed": "Failed to update add-on availability"
+  },
+  
+  "addStall": {
+    "title": "Add New Stall",
+    "stallName": "Stall Name",
+    "stallNamePlaceholder": "Enter your stall name",
+    "cuisineType": "Cuisine Type",
+    "cuisine": "Select Cuisine",
+    "profilePhoto": "Profile Photo",
+    "changePhoto": "Change Photo",
+    "uploadPhoto": "Click to upload or drag and drop",
+    "uploadPhotoSubtext": "PNG, JPG up to 5MB",
+    "operatingHours": "Operating Hours",
+    "setCommonHours": "Set Common Hours",
+    "enable": "Enable",
+    "disable": "Disable",
+    "commonStartTime": "Common Start Time",
+    "commonEndTime": "Common End Time",
+    "applyToAllDays": "Apply to All Days",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "addStall": "Add Stall",
+    "days": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    }
+  },
+  "addEvent": {
+    "title": {
+      "add": "Add New Event",
+      "edit": "Edit Event"
+    },
+    "subtitle": {
+      "add": "Fill in the details to create a new event",
+      "edit": "Update the event information below"
+    },
+    "fields": {
+      "eventName": {
+        "label": "Event Name",
+        "placeholder": "Enter event name"
+      },
+      "startDate": {
+        "label": "Start Date"
+      },
+      "endDate": {
+        "label": "End Date"
+      },
+      "startTime": {
+        "label": "Start Time"
+      },
+      "endTime": {
+        "label": "End Time"
+      },
+      "searchLocation": {
+        "label": "Search Location",
+        "placeholder": "Search for a location"
+      },
+      "address": {
+        "label": "Address"
+      }
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "add": "Add Event",
+      "update": "Update Event"
+    },
+    "calendar": {
+      "days": {
+        "sun": "Sun",
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat"
+      }
+    },
+    "timeDisplay": {
+      "startTime": "Start Time",
+      "endTime": "End Time"
+    },
+    "limits": {
+      "eventName": "{{current}}/{{limit}} characters",
+      "address": "{{current}}/{{limit}} characters"
+    },
+    "validation": {
+      "required": "This field is required",
+      "invalidTime": "Please select a valid time"
+    }
+  },
+ 
+  "errors": {
+    "nameRequired": "Name is required",
+    "nameMinLength": "Name must be at least 2 characters long",
+    "contactRequired": "Contact number is required",
+    "invalidContact": "Please enter a valid contact number",
+    "emailRequired": "Email is required",
+    "invalidEmail": "Please enter a valid email address",
+    "usernameRequired": "Username is required",
+    "usernameMinLength": "Username must be at least 3 characters long",
+    "usernameInvalid": "Username can only contain letters, numbers, and underscores",
+    "passwordRequired": "Password is required",
+    "passwordMinLength": "Password must be at least 8 characters long",
+    "passwordComplexity": "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+  },
+  "existingStallModal": {
+    "title": "Select Existing Stall",
+    "searchPlaceholder": "Search stalls by name or cuisine",
+    "selected": "Selected",
+    "noResults": "No stalls found matching your search.",
+    "detailsTitle": "Stall Information",
+    "profilePhoto": "Profile Photo",
+    "basicDetails": "Basic Details",
+    "stallName": "Stall Name",
+    "cuisine": "Cuisine Type",
+    "stallId": "Stall ID",
+    "operatingHours": "Operating Hours",
+    "editAdd": "Edit & Add",
+    "addEvent": "Add to Event"
+  },
+  "days": {
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat",
+    "sun": "Sun"
+  },
+  
+  "breadcrumbs": {
+    "dashboard": "Dashboard",
+    "vendors": "Vendors",
+    "stalls": "Stalls",
+    "stallDetails": "Stall Details"
+  },
+  "restaurantSidebar": {
+    "backToDashboard": "Back to Dashboard",
+    "backToAdmin": "Back to Admin",
+    "menu": {
+      "restaurantProfile": "Restaurant Profile",
+      "vendorProfile": "Vendor Profile",
+      "ratings": "Ratings",
+      "timings": "Timings",
+      "locations": "Locations"
+    }
+  },
+  "orderDetails": {
+    "order": "Order",
+    "itemsTitle": "Order Items",
+    "column": {
+      "item": "Item",
+      "quantity": "Quantity",
+      "price": "Price",
+      "total": "Total"
+    },
+    "customerInfoTitle": "Customer Information",
+    "customerNameLabel": "Name",
+    "customerAddressLabel": "Address",
+    "customerPhoneLabel": "Phone",
+    "summaryTitle": "Order Summary",
+    "subtotal": "Subtotal",
+    "tax": "Tax",
+    "total": "Total",
+    "paymentTitle": "Payment Method",      
+    "status": {
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "inprogress": "In Progress",
+      "accepted": "Accepted",
+      "other": "Pending"
+    }
+  },
+"eventDetails": {
+    "pageTitle": "Event Details",
+    "breadcrumbs": {
+      "dashboard": "Dashboard",
+      "eventOrganizers": "Event Organizers",
+      "organizerDetails": "Event Organizer Details",
+      "eventDetails": "Event Details"
+    },
+    "overview": "Overview",
+    "dateFilter": {
+      "from": "From",
+      "to": "to",
+      "allStalls": "All Stalls"
+    },
+    "cards": {
+      "totalSales": "Total Sales",
+      "totalOrders": "Total Orders"
+    },
+    "stallsTable": {
+      "title": "Stalls",
+      "searchPlaceholder": "Search stalls by name or cuisine",
+      "addNew": "Add New Stall",
+      "newStall": "New Stall",
+      "existingStall": "Existing Stall",
+      "columns": {
+        "stallId": "Stall ID",
+        "stallName": "Stall Name",
+        "cuisine": "Cuisine",
+        "profilePhoto": "Profile Photo",
+        "operatingHours": "Operating Hours",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "empty": {
+        "noStalls": "No stalls found",
+        "tryAdjust": "Try adjusting your search or filters",
+        "searchEmpty": "No stalls found matching your search"
+      },
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete Stall",
+      "copyId": "Copy Stall ID",
+      "activate": "Activate Stall",
+      "deactivate": "Deactivate Stall"
+    }
+  },
+  "eventOrganizerDetails": {
+    "pageTitle": "Event Organizer Details",
+    "breadcrumbs": {
+      "back": "Event Organizers",
+      "currentOrganizer": "{{name}}"
+    },
+    "addButton": "Add New Event",
+    "table": {
+      "headers": {
+        "name": "Event Name",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "timings": "Event Timings",
+        "location": "Location",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "viewEvent": "View Event",
+      "editEvent": "Edit Event",
+      "viewDetails": "View Details",
+      "empty": {
+        "noEvents": "No events yet",
+        "addYourFirst": "Add Your First Event"
+      }
+    },
+    "modal": {
+      "title": "Event Details",
+      "subtitle": "View complete information about this event",
+      "sections": {
+        "name": "Event Name",
+        "schedule": "Event Schedule",
+        "location": "Location",
+        "status": "Status"
+      },
+      "close": "Close"
+    }
+  },
+  "addon": {
+    "pageTitle": "Menu Option Set",
+    "searchPlaceholder": "Search option set...",
+    "addButton": "Add New Option Set",
+    "table": {
+      "headers": {
+        "name": "Option Set Name",
+        "internal": "Internal Name",
+        "quantity": "Quantity",
+        "dishes": "Dishes",
+        "actions": "Actions"
+      },
+      "empty": {
+        "noOption": "No Option Set yet",
+        "createFirst": "Create Your First Option Set"
+      }
+    },
+    "form": {
+      "title": "Title",
+      "internalName": "Internal Name",
+      "minQty": "Min Quantity",
+      "maxQty": "Max Quantity",
+      "chooseDish": "Choose Dish",
+      "dishesWithPrice": "Dishes with Price",
+      "cancel": "Cancel",
+      "create": "Create Option Set",
+      "update": "Update Option Set",
+      "creating": "Creating...",
+      "updating": "Updating..."
+    },
+    "delete": {
+      "title": "Delete Option Set",
+      "message": "Are you sure you want to delete this option set? This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Deleting..."
+    },
+    "priceModal": {
+      "title": "Set Price for {{dish}}",
+      "currentPrice": "Current Price",
+      "newPrice": "New Price",
+      "save": "Save",
+      "cancel": "Cancel"
+    }
+  },
+  "categorys": {
+    "pageTitle": "Menu Categories",
+    "searchPlaceholder": "Search categories...",
+    "addButton": "Add Category",
+    "table": {
+      "headers": {
+        "name": "Category Name",
+        "dishes": "Dishes",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "empty": {
+        "noCategories": "No categories yet",
+        "createFirst": "Add Your First Category"
+      }
+    },
+    "form": {
+      "addTitle": "Add New Category",
+      "editTitle": "Edit Category",
+      "title": "Category Title",
+      "foodList": "Food List",
+      "cancel": "Cancel",
+      "create": "Create Category",
+      "update": "Update Category",
+      "creating": "Creating...",
+      "updating": "Updating..."
+    },
+    "delete": {
+      "title": "Delete Category",
+      "message": "Are you sure you want to delete this category?",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Deleting..."
+    }
+  },
+  "menus": {
+    "pageTitle": "Restaurant Menu",
+    "addButton": "Add Menu Item",
+    "form": {
+      "addTitle": "Add Menu Item",
+      "editTitle": "Edit Menu Item",
+      "title": "Title",
+      "internalName": "Internal Name",
+      "description": "Description",
+      "category": "Category",
+      "dietary": "Dietary",
+      "allergens": "Allergens",
+      "tags": "Tags",
+      "showInMenu": "Show this dish in menu",
+      "image": "Food Image (4:3 ratio)",
+      "upload": "Upload a file",
+      "orDrag": "or drag and drop",
+      "variations": "Variations",
+      "addVariation": "+ Add Another Variation",
+      "save": "Save Menu Item",
+      "update": "Update Menu Item",
+      "saving": "Saving..."
+    },
+    "table": {
+      "headers": {
+        "image": "Image",
+        "title": "Title",
+        "category": "Category",
+        "description": "Description",
+        "price": "Price",
+        "outOfStock": "Out of Stock",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "empty": {
+        "noItems": "No menu items yet",
+        "createFirst": "Add Your First Menu Item"
+      },
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting...",
+      "cancel": "Cancel"
+    },
+    "optionsPanel": {
+      "availableOptions": "Available options",
+      "chooseOptions": "Choose Options",
+      "editOptions": "Edit Options",
+      "saveChanges": "Save Changes",
+      "cancel": "Cancel"
+    },
+    "priceModal": {
+      "title": "Set Price for {{dish}}",
+      "currentPrice": "Current Price",
+      "newPrice": "New Price",
+      "cancel": "Cancel",
+      "save": "Save"
+    }
+  },
+  "order": {
+    "pageTitle": "Orders",
+    "filters": {
+      "filterButton": "Filter",
+      "allStatus": "All Status",
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "inProgress": "In Progress",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "searchPlaceholder": "Search orders...",
+    "table": {
+      "headers": {
+        "orderId": "Order ID",
+        "items": "Items",
+        "payment": "Payment",
+        "status": "Status",
+        "updatedAt": "Updated At",
+        "actions": "Actions"
+      },
+      "empty": {
+        "noResults": "No orders found",
+        "withCriteria": "Try adjusting your search or filter criteria",
+        "withoutCriteria": "When customers place orders, they will appear here"
+      },
+      "view": "View"
+    },
+    "modal": {
+      "title": "Order Details",
+      "close": "Close"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
+    }
+  },
+  "dashboards": {
+    "pageTitle": "Dashboard",
+    "dateButtons": {
+      "custom": "Custom"
+    },
+    "dateRange": {
+      "label": "Date Range"
+    },
+    "cards": {
+      "totalOrders": "Total Orders",
+      "totalSales": "Total Sales"
+    },
+    "customModal": {
+      "title": "Custom Date Range",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "cancel": "Cancel",
+      "apply": "Apply"
+    },
+    "loading": "Loading…"
+  },
+  "common": {
+    "showingpage": "Showing page",
+    "of": "of",
+    "confirmsignout": "Confirm Sign Out",
+    "signoutmessage": "Are you sure you want to Sign out? You'll need to sign in again to access your account",
+    "cancel": "Cancel",
+    "signout": "Sign out",
+    "delete": "Delete",
+    "signedoutsuccessfully": "Signed out successfully",
+    "save": "Save",
+    "add": "Add",
+    "close": "Close",
+    "edit": "Edit",
+    "deleting": "Deleting...",
+    "signedOutSuccessfully": "Signed out successfully",
+    "confirmSignOut": "Are you sure you want to sign out?",
+    "signOutMessage": "You will need to log in again to continue.",
+    "signOut": "Sign Out"
   }
 }
