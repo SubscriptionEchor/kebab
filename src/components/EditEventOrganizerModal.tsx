@@ -7,20 +7,19 @@ interface EditEventOrganizerModalProps {
   onClose: () => void;
   organizer: {
     id: string;
+    displayId?: string;
     name: string;
     contactNumber: string;
     email: string;
-    username: string;
     password: string;
   } | null;
-  onSubmit: (data: { name: string; contactNumber: string; email: string; username: string; password: string }) => void;
+  onSubmit: (data: { name: string; contactNumber: string; email: string; password: string }) => void;
 }
 
 interface FormErrors {
   name?: string;
   contactNumber?: string;
   email?: string;
-  username?: string;
   password?: string;
 }
 
@@ -30,7 +29,6 @@ export default function EditEventOrganizerModal({ isOpen, onClose, organizer, on
     name: '',
     contactNumber: '',
     email: '',
-    username: '',
     password: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -38,7 +36,6 @@ export default function EditEventOrganizerModal({ isOpen, onClose, organizer, on
     name: false,
     contactNumber: false,
     email: false,
-    username: false,
     password: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,7 +48,6 @@ export default function EditEventOrganizerModal({ isOpen, onClose, organizer, on
         name: organizer.name,
         contactNumber: organizer.contactNumber,
         email: organizer.email,
-        username: organizer.username,
         password: organizer.password,
       });
     }
@@ -72,15 +68,19 @@ export default function EditEventOrganizerModal({ isOpen, onClose, organizer, on
   const validateField = (field: keyof typeof formData, value: string): string | undefined => {
     switch (field) {
       case 'name':
-        return value.trim() ? undefined : 'Name is required';
+        if (!value.trim()) return t('eventOrganizers.validation.nameRequired');
+        return undefined;
       case 'contactNumber':
-        return value.trim() ? undefined : 'Contact number is required';
+        if (!value.trim()) return t('eventOrganizers.validation.contactRequired');
+        return undefined;
       case 'email':
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? undefined : 'Invalid email format';
-      case 'username':
-        return value.trim() ? undefined : 'Username is required';
+        if (!value.trim()) return t('eventOrganizers.validation.emailRequired');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('eventOrganizers.validation.emailInvalid');
+        return undefined;
       case 'password':
-        return value.length >= 6 ? undefined : 'Password must be at least 6 characters';
+        if (!value.trim()) return t('eventOrganizers.validation.passwordRequired');
+        if (value.length < 6) return t('eventOrganizers.validation.passwordMinLength');
+        return undefined;
       default:
         return undefined;
     }
@@ -88,7 +88,7 @@ export default function EditEventOrganizerModal({ isOpen, onClose, organizer, on
 
   const isFormValid = (): boolean => {
     return Object.values(formData).every(value => value.trim() !== '') &&
-           Object.values(errors).every(error => !error);
+          Object.values(errors).every(error => !error);
   };
 
   const validateForm = (): boolean => {
@@ -213,30 +213,6 @@ export default function EditEventOrganizerModal({ isOpen, onClose, organizer, on
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Username
-              <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.username}
-              onChange={(e) => handleChange('username', e.target.value)}
-              onBlur={() => handleBlur('username')}
-              className={`w-full px-3 py-2 border rounded-md transition-colors ${
-                errors.username ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-brand-primary'
-              }`}
-              placeholder="Enter username"
-              disabled={isSubmitting}
-            />
-            {errors.username && touched.username && (
-              <div className="flex items-center mt-1 text-red-500 text-sm">
-                <AlertCircle className="h-4 w-4 mr-1" />
-                {t('eventOrganizers.validation.usernameRequired')}
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
               Password
               <span className="text-red-500">*</span>
             </label>
@@ -264,6 +240,10 @@ export default function EditEventOrganizerModal({ isOpen, onClose, organizer, on
                   <Eye className="h-4 w-4" />
                 )}
               </button>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-1">ID</label>
+              <div className="text-sm text-gray-900">{organizer.displayId || organizer.id}</div>
             </div>
             {errors.password && touched.password && (
               <div className="flex items-center mt-1 text-red-500 text-sm">

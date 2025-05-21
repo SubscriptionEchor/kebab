@@ -47,4 +47,18 @@ export const GET_STALLS = gql`
       slug
     }
   }
+`;
+
+export const GET_STALLS_BY_OWNER = gql`
+  query GetStallsByOwner($ownerId: String) {
+    getStallsByOwner(ownerId: $ownerId) {
+      _id
+      name
+      image
+      logo
+      address
+      isActive
+      isAvailable
+    }
+  }
 `; 

@@ -1,5 +1,54 @@
 import { gql } from '@apollo/client';
 
+export const CREATE_STALL = gql`
+  mutation CreateStall($restaurant: RestaurantInput!, $eventId: String!) {
+    createStall(restaurant: $restaurant, eventId: $eventId) {
+      _id
+      orderId
+      orderPrefix
+      name
+      image
+      logo
+      address
+      username
+      password
+      deliveryTime
+      minimumOrder
+      sections
+      rating
+      isActive
+      isAvailable
+      slug
+      stripeDetailsSubmitted
+      commissionRate
+      tax
+      notificationToken
+      enableNotification
+      shopType
+      cuisines
+      keywords
+      tags
+      reviewCount
+      reviewAverage
+      restaurantUrl
+      phone
+      quickSearchKeywords
+      favoriteCount
+      distanceInMeters
+      onboardingApplicationId
+      restaurantDisplayNumber
+      openingTimes {
+        day
+        times {
+          startTime
+          endTime
+        }
+        isOpen
+      }
+    }
+  }
+`;
+
 export const EDIT_STALL = gql`
   mutation EditStall($stallInput: StallInput!) {
     editStall(stallInput: $stallInput) {
@@ -68,4 +117,35 @@ export const UPDATE_STALL_TIMINGS = gql`
       }
     }
   }
-`; 
+`;
+
+export const LINK_STALL_TO_EVENT = gql`
+  mutation LinkStallToEvent($eventId: String!, $restaurantId: String!) {
+    linkStallToEvent(eventId: $eventId, restaurantId: $restaurantId) {
+      _id
+      name
+      image
+      logo
+      address
+      rating
+      isActive
+      isAvailable
+      slug
+      shopType
+      cuisines
+      restaurantUrl
+      phone
+      quickSearchKeywords
+      favoriteCount
+      restaurantDisplayNumber
+      openingTimes {
+        day
+        times {
+          startTime
+          endTime
+        }
+        isOpen
+      }
+    }
+  }
+`;

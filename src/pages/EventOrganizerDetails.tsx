@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Plus, Eye, Pencil, ChevronRight, Power, MoreVertical } from 'lucide-react';
+import { Plus, Eye, Pencil, ChevronRight, Power, Calendar, Edit, Trash2 } from 'lucide-react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import AddEventModal from '../components/AddEventModal';
+import { useQuery, useMutation } from '@apollo/client';
+import { GET_EVENTS_BY_MANAGER, CREATE_EVENT, UPDATE_EVENT } from '../lib/graphql/queries/eventOrganizers';
+import LoadingState from '../components/LoadingState';
+import { toast } from 'sonner';
+import KebabMenu from '../components/KebabMenu';
 
 interface Event {
   id: string;
@@ -16,6 +22,7 @@ interface Event {
     lng: number;
   };
   address: string;
+  country?: string;
   isActive: boolean;
 }
 
@@ -27,50 +34,37 @@ export default function EventOrganizerDetails() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [events, setEvents] = useState<Event[]>([
-    {
-      id: '1',
-      name: 'Summer Music Festival',
-      startDate: '2024-07-15',
-      startTime: '14:00',
-      endDate: '2024-07-17',
-      endTime: '23:00',
-      location: {
-        lat: 40.7128,
-        lng: -74.0060
-      },
-      address: 'Central Park, New York, NY 10024',
-      isActive: true
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTogglingStatus, setIsTogglingStatus] = useState<string | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
+  
+  // Create event mutation
+  const [createEvent] = useMutation(CREATE_EVENT, {
+    refetchQueries: [{ query: GET_EVENTS_BY_MANAGER, variables: { managerId: organizerId } }],
+    onCompleted: (data) => {
+      if (data?.createEvent) {
+        toast.success("Event created successfully");
+      }
     },
-    {
-      id: '2',
-      name: 'Tech Conference 2024',
-      startDate: '2024-08-20',
-      startTime: '09:00',
-      endDate: '2024-08-22',
-      endTime: '18:00',
-      location: {
-        lat: 37.7749,
-        lng: -122.4194
-      },
-      address: 'Moscone Center, 747 Howard St, San Francisco, CA 94103',
-      isActive: true
-    },
-    {
-      id: '3',
-      name: 'Food & Wine Expo',
-      startDate: '2024-09-10',
-      startTime: '11:00',
-      endDate: '2024-09-12',
-      endTime: '20:00',
-      location: {
-        lat: 41.8781,
-        lng: -87.6298
-      },
-      address: 'McCormick Place, 2301 S King Dr, Chicago, IL 60616',
-      isActive: false
+    onError: (error) => {
+      console.error("Error creating event:", error);
+      toast.error("Failed to create event");
     }
-  ]);
+  });
+  
+  // Update event mutation
+  const [updateEvent] = useMutation(UPDATE_EVENT, {
+    refetchQueries: [{ query: GET_EVENTS_BY_MANAGER, variables: { managerId: organizerId } }],
+    onCompleted: (data) => {
+      if (data?.updateEvent) {
+        toast.success("Event updated successfully");
+      }
+    },
+    onError: (error) => {
+      console.error("Error updating event:", error);
+      toast.error(`Failed to update event: ${error.message}`);
+    }
+  });
 
   // Mock organizer data - replace with actual API call
   const [organizer] = useState({
@@ -80,7 +74,34 @@ export default function EventOrganizerDetails() {
           organizerId === 'ORG-003' ? 'Prime Events' : ''
   });
 
-  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+  // Fetch events data from API
+  const { data: eventsData, loading: eventsLoading, error: eventsError } = useQuery(GET_EVENTS_BY_MANAGER, {
+    variables: { managerId: organizerId },
+    skip: !organizerId,
+    fetchPolicy: 'network-only',
+    onCompleted: (data) => {
+      if (data?.getEventsByManager) {
+        const formattedEvents = data.getEventsByManager.map((event: any) => ({
+          id: event._id,
+          name: event.name,
+          startDate: new Date(parseInt(event.startDate)).toISOString().split('T')[0],
+          startTime: event.startTime,
+          endDate: new Date(parseInt(event.endDate)).toISOString().split('T')[0],
+          endTime: event.endTime,
+          location: {
+            lat: event.location?.coordinates?.[1] || 0,
+            lng: event.location?.coordinates?.[0] || 0
+          },
+          address: event.address || 'No address provided',
+          isActive: event.isActive
+        }));
+        setEvents(formattedEvents);
+      }
+    },
+    onError: (error) => {
+      console.error('Failed to fetch events:', error);
+    }
+  });
 
   const handleAddEvent = (data: {
     name: string;
@@ -90,25 +111,39 @@ export default function EventOrganizerDetails() {
     endTime: string;
     location: {
       lat: number;
-      lng: number;
+      lng: number; 
     };
     address: string;
+    country: string;
   }) => {
-    const newEvent: Event = {
-      id: String(events.length + 1),
-      ...data,
-      isActive: true
-    };
-    setEvents([...events, newEvent]);
-    setIsModalOpen(false);
+    try {
+      setIsSubmitting(true);
+      
+      // The actual API call is handled in the AddEventModal component
+      // Here we just update the local state with the new event
+      const newEvent: Event = {
+        id: String(events.length + 1), // This will be replaced by the actual ID from the API
+        ...data,
+        isActive: true
+      };
+      
+      // Update local state
+      setEvents(prevEvents => [...prevEvents, newEvent]);
+      
+    } catch (error) {
+      console.error("Error in handleAddEvent:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleEditEvent = (event: Event) => {
+    console.log("Edit event called for:", event.name);
     setSelectedEvent(event);
     setIsEditModalOpen(true);
   };
 
-  const handleUpdateEvent = (data: {
+  const handleUpdateEvent = async (data: {
     name: string;
     startDate: string;
     startTime: string;
@@ -119,20 +154,61 @@ export default function EventOrganizerDetails() {
       lng: number;
     };
     address: string;
+    country: string;
   }) => {
     if (selectedEvent) {
-      const updatedEvents = events.map(event => 
-        event.id === selectedEvent.id 
-          ? { ...event, ...data }
-          : event
-      );
-      setEvents(updatedEvents);
-      setIsEditModalOpen(false);
-      setSelectedEvent(null);
+      setIsSubmitting(true);
+      try {
+        await updateEvent({
+          variables: {
+            eventId: selectedEvent.id,
+            eventUpdateInput: {
+              name: data.name,
+              startDate: data.startDate,
+              endDate: data.endDate,
+              startTime: data.startTime,
+              endTime: data.endTime,
+              address: data.address,
+              location: {
+                type: "Point",
+                coordinates: [data.location.lng, data.location.lat]
+              }
+            }
+          }
+        });
+        
+        // Update local state
+        setEvents(prevEvents =>
+          prevEvents.map(event =>
+            event.id === selectedEvent.id
+              ? {
+                  ...event,
+                  name: data.name,
+                  startDate: data.startDate,
+                  endDate: data.endDate,
+                  startTime: data.startTime,
+                  endTime: data.endTime,
+                  address: data.address,
+                  location: {
+                    lat: data.location.lat,
+                    lng: data.location.lng
+                  }
+                }
+              : event
+          )
+        );
+        setIsEditModalOpen(false);
+        setSelectedEvent(null);
+      } catch (error) {
+        console.error("Error updating event:", error);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
   const handleViewDetails = (event: Event) => {
+    console.log("View details called for:", event.name);
     setSelectedEvent(event);
     setIsViewModalOpen(true);
   };
@@ -141,33 +217,46 @@ export default function EventOrganizerDetails() {
     navigate(`/dashboard/event-organizers/${organizerId}/events/${event.id}`);
   };
 
-  const handleToggleEvent = (eventId: string) => {
-    setEvents(prevEvents =>
-      prevEvents.map(event =>
-        event.id === eventId
-          ? { ...event, isActive: !event.isActive }
-          : event
-      )
-    );
-  };
-
-  const handleDropdownToggle = (eventId: string) => {
-    setDropdownOpen(dropdownOpen === eventId ? null : eventId);
-  };
-
-  // Close dropdown when clicking outside
-  const handleClickOutside = (event: MouseEvent) => {
-    if (!(event.target as HTMLElement).closest('.dropdown-container')) {
-      setDropdownOpen(null);
+  const handleToggleEvent = async (eventId: string, currentStatus: boolean) => {
+    try {
+      setIsTogglingStatus(eventId);
+      
+      // Call the update mutation to toggle status
+      await updateEvent({
+        variables: {
+          eventId: eventId,
+          eventUpdateInput: {
+            isActive: !currentStatus
+          }
+        }
+      });
+      
+      // Update local state
+      setEvents(prevEvents =>
+        prevEvents.map(event =>
+          event.id === eventId
+            ? { ...event, isActive: !event.isActive }
+            : event
+        )
+      );
+      
+      toast.success(`Event ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
+    } catch (error) {
+      console.error("Error toggling event status:", error);
+      toast.error("Failed to update event status");
+    } finally {
+      setIsTogglingStatus(null);
     }
   };
 
-  // Add event listener for clicking outside
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+  // Format date for display
+  const formatDate = useCallback((dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   }, []);
 
   return (
@@ -196,127 +285,143 @@ export default function EventOrganizerDetails() {
       </div>
 
       {/* Events Table */}
-      <div className="bg-white rounded-lg shadow overflow-x-auto">
-        <table className="w-full table-fixed divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[22%]">
-                Event Name
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[11%]">
-                Start Date
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[11%]">
-                End Date
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[13%]">
-                Event Timings
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
-                Location
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[8%]">
-                Status
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {events.map((event) => (
-              <tr key={event.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3">
-                  <div className="text-sm font-medium text-gray-900 truncate">
-                    {event.name}
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="text-sm text-gray-500">
-                    {event.startDate}
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="text-sm text-gray-500">
-                    {event.endDate}
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="text-sm text-gray-500">
-                    {event.startTime} - {event.endTime}
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="text-sm text-gray-500 truncate">
-                    {event.address}
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <button
-                    onClick={() => handleToggleEvent(event.id)}
-                    className={`p-2 rounded-full transition-colors ${
-                      event.isActive 
-                        ? 'bg-green-100 text-green-600 hover:bg-green-200' 
-                        : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-                    }`}
-                    title={event.isActive ? 'Deactivate Event' : 'Activate Event'}
-                  >
-                    <Power className="h-4 w-4" />
-                  </button>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex justify-end items-center gap-2">
-                    <button
-                      onClick={() => handleViewEvent(event)}
-                      className="inline-flex items-center px-3 py-1.5 bg-brand-primary text-white text-xs font-medium hover:bg-brand-primary/90 rounded transition-colors"
-                    >
-                      View Event
-                    </button>
-                    <div className="relative dropdown-container">
-                      <button
-                        onClick={() => handleDropdownToggle(event.id)}
-                        className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
-                        title="More options"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </button>
-                      {dropdownOpen === event.id && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-                          <button
-                            onClick={() => {
-                              handleEditEvent(event);
-                              setDropdownOpen(null);
-                            }}
-                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                          >
-                            <Pencil className="h-4 w-4" />
-                            Edit Event
-                          </button>
-                          <button
-                            onClick={() => {
-                              handleViewDetails(event);
-                              setDropdownOpen(null);
-                            }}
-                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                          >
-                            <Eye className="h-4 w-4" />
-                            View Details
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </td>
+      {eventsLoading ? (
+        <LoadingState rows={3} />
+      ) : eventsError ? (
+        <div className="bg-white rounded-lg shadow p-6 text-center">
+          <p className="text-red-500 font-medium">Failed to load events</p>
+          <p className="text-gray-600 mt-2">There was an error loading the events. Please try again.</p>
+        </div>
+      ) : events.length === 0 ? (
+        <div className="bg-white rounded-lg shadow p-6 text-center">
+          <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No events found</h3>
+          <p className="text-gray-500 mb-4">This organizer doesn't have any events yet.</p>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="px-4 py-2 bg-brand-primary text-black rounded-md hover:bg-brand-primary/90 transition-colors inline-flex items-center"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Add New Event
+          </button>
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow overflow-x-auto">
+          <table className="w-full table-fixed divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[22%]">
+                  Event Name
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[11%]">
+                  Start Date
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[11%]">
+                  End Date
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[13%]">
+                  Event Timings
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
+                  Location
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[8%]">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
+                  Actions
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {events.map((event) => (
+                <tr key={event.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <div className="text-sm font-medium text-gray-900 truncate">
+                      {event.name}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="text-sm text-gray-500">
+                      {formatDate(event.startDate)}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="text-sm text-gray-500">
+                      {formatDate(event.endDate)}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="text-sm text-gray-500">
+                      {event.startTime} - {event.endTime}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="text-sm text-gray-500 truncate">
+                      {event.address}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => handleToggleEvent(event.id, event.isActive)}
+                      className={`p-2 rounded-full transition-colors ${
+                        event.isActive 
+                          ? 'bg-green-100 text-green-600 hover:bg-green-200' 
+                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                      }`}
+                      title={event.isActive ? 'Deactivate Event' : 'Activate Event'}
+                      disabled={isTogglingStatus === event.id}
+                    >
+                      {isTogglingStatus === event.id ? (
+                        <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Power className="h-4 w-4" />
+                      )}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex justify-end items-center gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewEvent(event);
+                        }}
+                        className="inline-flex items-center px-3 py-1.5 bg-brand-primary text-white text-xs font-medium hover:bg-brand-primary/90 rounded transition-colors"
+                      >
+                        View Event
+                      </button>
+                      <div className="relative z-30">
+                        <KebabMenu
+                          menuItems={[
+                            {
+                              label: "Edit Event",
+                              icon: Edit,
+                              onClick: () => handleEditEvent(event)
+                            },
+                            {
+                              label: "View Details",
+                              icon: Eye,
+                              onClick: () => handleViewDetails(event)
+                            }
+                          ]}
+                          onEdit={() => {}}
+                          onDelete={() => {}}
+                        />
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Add Event Modal */}
       <AddEventModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        organizerId={organizerId || ''}
         onSubmit={handleAddEvent}
       />
 
@@ -329,14 +434,27 @@ export default function EventOrganizerDetails() {
             setSelectedEvent(null);
           }}
           onSubmit={handleUpdateEvent}
-          initialData={selectedEvent}
+          initialData={{
+            name: selectedEvent.name,
+            startDate: selectedEvent.startDate,
+            startTime: selectedEvent.startTime,
+            endDate: selectedEvent.endDate,
+            endTime: selectedEvent.endTime,
+            location: {
+              lat: typeof selectedEvent.location.lat === 'string' ? parseFloat(selectedEvent.location.lat) : selectedEvent.location.lat,
+              lng: typeof selectedEvent.location.lng === 'string' ? parseFloat(selectedEvent.location.lng) : selectedEvent.location.lng
+            },
+            address: selectedEvent.address,
+            country: selectedEvent.country || 'GERMANY'
+          }}
           isEditing={true}
+          organizerId={organizerId || ''}
         />
       )}
 
       {/* View Event Details Modal */}
-      {selectedEvent && (
-        <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 ${isViewModalOpen ? '' : 'hidden'}`}>
+      {selectedEvent && isViewModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
             <div className="flex justify-between items-center mb-6 border-b pb-4">
               <div>
@@ -398,4 +516,4 @@ export default function EventOrganizerDetails() {
       )}
     </div>
   );
-} 
+}
