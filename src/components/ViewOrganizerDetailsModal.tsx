@@ -7,10 +7,10 @@ interface ViewOrganizerDetailsModalProps {
   onClose: () => void;
   organizer: {
     id: string;
+    displayId?: string;
     name: string;
     contactNumber: string;
     email: string;
-    username: string;
     password: string;
     eventPortfolio: number;
   } | null;
@@ -50,7 +50,7 @@ export default function ViewOrganizerDetailsModal({ isOpen, onClose, organizer }
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">ID</label>
-              <div className="text-sm text-gray-900">{organizer.id}</div>
+              <div className="text-sm text-gray-900">{organizer.displayId || organizer.id}</div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Name</label>
@@ -68,12 +68,7 @@ export default function ViewOrganizerDetailsModal({ isOpen, onClose, organizer }
               <div className="text-sm text-gray-900">{organizer.email}</div>
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Username</label>
-              <div className="text-sm text-gray-900">{organizer.username}</div>
-            </div>
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Event Portfolio</label>
               <div className="text-sm text-gray-900">{organizer.eventPortfolio} Events</div>

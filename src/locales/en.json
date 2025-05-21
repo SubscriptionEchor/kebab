@@ -765,7 +765,7 @@
     "restauranturl": "Restaurant URL",
     "username": "User Name",
     "password": "Password",
-    "orderprefix": "Oder Prefix",
+    "orderprefix": "Order Prefix",
     "appcredentials": "App Credentials",
     "ordersettings": "Order Setting",
     "minimumorder": "Minimum Order",
