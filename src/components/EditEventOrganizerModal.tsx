@@ -82,19 +82,25 @@ export default function EditEventOrganizerModal({
   const validateField = (field: keyof typeof formData, value: string): string | undefined => {
     switch (field) {
       case 'name':
-        return value.trim() ? undefined : t('eventOrganizers.errors.nameRequired');
+        return value.trim()
+          ? undefined
+          : t('eventOrganizers.validation1.nameRequired');
       case 'contactNumber':
-        return value.trim() ? undefined : t('eventOrganizers.errors.contactRequired');
+        return value.trim()
+          ? undefined
+          : t('eventOrganizers.validation1.contactRequired');
       case 'email':
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
           ? undefined
-          : t('eventOrganizers.errors.emailInvalid');
+          : t('eventOrganizers.validation1.emailInvalid');
       case 'username':
-        return value.trim() ? undefined : t('eventOrganizers.errors.usernameRequired');
+        return value.trim()
+          ? undefined
+          : t('eventOrganizers.validation1.usernameRequired');
       case 'password':
         return value.length >= 6
           ? undefined
-          : t('eventOrganizers.errors.passwordMinLength');
+          : t('eventOrganizers.validation1.passwordMinLength');
       default:
         return undefined;
     }
@@ -116,7 +122,6 @@ export default function EditEventOrganizerModal({
         isValid = false;
       }
     });
-
     setErrors(newErrors);
     return isValid;
   };
@@ -157,7 +162,7 @@ export default function EditEventOrganizerModal({
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('eventOrganizers.name')} <span className="text-red-500">*</span>
+              {t('eventOrganizers.fields.name')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -166,9 +171,7 @@ export default function EditEventOrganizerModal({
               onBlur={() => handleBlur('name')}
               disabled={isSubmitting}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
-                errors.name
-                  ? 'border-red-500 focus:border-red-500'
-                  : 'border-gray-300 focus:border-brand-primary'
+                errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-brand-primary'
               }`}
             />
             {errors.name && touched.name && (
@@ -182,8 +185,7 @@ export default function EditEventOrganizerModal({
           {/* Contact Number */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('eventOrganizers.contactNumber')}{' '}
-              <span className="text-red-500">*</span>
+              {t('eventOrganizers.fields.contactNumber')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -209,7 +211,7 @@ export default function EditEventOrganizerModal({
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('eventOrganizers.email')} <span className="text-red-500">*</span>
+              {t('eventOrganizers.fields.email')} <span className="text-red-500">*</span>
             </label>
             <input
               type="email"
@@ -219,9 +221,7 @@ export default function EditEventOrganizerModal({
               placeholder="example@domain.com"
               disabled={isSubmitting}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
-                errors.email
-                  ? 'border-red-500 focus:border-red-500'
-                  : 'border-gray-300 focus:border-brand-primary'
+                errors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-brand-primary'
               }`}
             />
             {errors.email && touched.email && (
@@ -235,8 +235,7 @@ export default function EditEventOrganizerModal({
           {/* Username */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('eventOrganizers.username')}{' '}
-              <span className="text-red-500">*</span>
+              {t('eventOrganizers.fields.username')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -262,8 +261,7 @@ export default function EditEventOrganizerModal({
           {/* Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('eventOrganizers.password')}{' '}
-              <span className="text-red-500">*</span>
+              {t('eventOrganizers.fields.password')} <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <input
@@ -285,11 +283,7 @@ export default function EditEventOrganizerModal({
                 disabled={isSubmitting}
                 className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
               >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
             {errors.password && touched.password && (

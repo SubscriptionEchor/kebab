@@ -46,33 +46,33 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
 
   // Validate individual field
   const validateField = (name: keyof typeof formData, value: string): string | undefined => {
-    switch (name) {
-      case 'name':
-        if (!value.trim()) return t('eventOrganizers.errors.nameRequired');
-        if (value.length < 2) return t('eventOrganizers.errors.nameMinLength');
-        return undefined;
-      case 'contactNumber':
-        if (!value.trim()) return t('eventOrganizers.errors.contactRequired');
-        if (!/^\+?[\d\s-]{10,}$/.test(value)) return t('eventOrganizers.errors.invalidContact');
-        return undefined;
-      case 'email':
-        if (!value.trim()) return t('eventOrganizers.errors.emailRequired');
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('eventOrganizers.errors.invalidEmail');
-        return undefined;
-      case 'username':
-        if (!value.trim()) return t('eventOrganizers.errors.usernameRequired');
-        if (value.length < 3) return t('eventOrganizers.errors.usernameMinLength');
-        if (!/^[a-zA-Z0-9_]+$/.test(value)) return t('eventOrganizers.errors.usernameInvalid');
-        return undefined;
-      case 'password':
-        if (!value.trim()) return t('eventOrganizers.errors.passwordRequired');
-        if (value.length < 8) return t('eventOrganizers.errors.passwordMinLength');
-        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) return t('eventOrganizers.errors.passwordComplexity');
-        return undefined;
-      default:
-        return undefined;
-    }
-  };
+  switch (name) {
+    case 'name':
+      if (!value.trim()) return t('errors.nameRequired');
+      if (value.length < 2) return t('errors.nameMinLength');
+      return undefined;
+    case 'contactNumber':
+      if (!value.trim()) return t('errors.contactRequired');
+      if (!/^\+?[\d\s-]{10,}$/.test(value)) return t('errors.invalidContact');
+      return undefined;
+    case 'email':
+      if (!value.trim()) return t('errors.emailRequired');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('errors.invalidEmail');
+      return undefined;
+    case 'username':
+      if (!value.trim()) return t('errors.usernameRequired');
+      if (value.length < 3) return t('errors.usernameMinLength');
+      if (!/^[a-zA-Z0-9_]+$/.test(value)) return t('errors.usernameInvalid');
+      return undefined;
+    case 'password':
+      if (!value.trim()) return t('errors.passwordRequired');
+      if (value.length < 8) return t('errors.passwordMinLength');
+      if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) return t('errors.passwordComplexity');
+      return undefined;
+    default:
+      return undefined;
+  }
+};
 
   // Handle field blur
   const handleBlur = (field: keyof typeof formData) => {
@@ -222,7 +222,7 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {t('eventOrganizers.email')}
-              <span className="text-red-500">{t('common.required')}</span>
+              <span className="text-red-500">*</span>
             </label>
             <input
               type="email"
@@ -289,6 +289,7 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                 disabled={isSubmitting}
+                aria-label={showPassword ? t('eventOrganizers.hidePassword') : t('eventOrganizers.showPassword')}
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />

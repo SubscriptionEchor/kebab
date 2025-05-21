@@ -1,3 +1,4 @@
+// src/components/StallAddons.tsx
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +15,7 @@ interface Addon {
 
 export default function StallAddons() {
   const { t } = useTranslation();
-  const { stallId } = useParams();
+  const { stallId } = useParams<{ stallId: string }>();
   const [addons, setAddons] = useState<Addon[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -26,30 +27,11 @@ export default function StallAddons() {
   });
 
   useEffect(() => {
-    // In a real app, fetch addons from API
-    // For now, using mock data
+    // Mock fetch
     const mockAddons: Addon[] = [
-      {
-        id: '1',
-        name: 'Extra Cheese',
-        price: 1.50,
-        maxQuantity: 1,
-        isAvailable: true
-      },
-      {
-        id: '2',
-        name: 'Extra Sauce',
-        price: 0.75,
-        maxQuantity: 2,
-        isAvailable: true
-      },
-      {
-        id: '3',
-        name: 'Add Bacon',
-        price: 2.00,
-        maxQuantity: 1,
-        isAvailable: true
-      }
+      { id: '1', name: 'Extra Cheese', price: 1.5, maxQuantity: 1, isAvailable: true },
+      { id: '2', name: 'Extra Sauce', price: 0.75, maxQuantity: 2, isAvailable: true },
+      { id: '3', name: 'Add Bacon', price: 2.0, maxQuantity: 1, isAvailable: true }
     ];
     setAddons(mockAddons);
     setIsLoading(false);
@@ -57,15 +39,11 @@ export default function StallAddons() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleAddAddon = async () => {
     try {
-      // In a real app, make API call to add addon
       const newAddon: Addon = {
         id: Math.random().toString(),
         name: formData.name,
@@ -76,60 +54,55 @@ export default function StallAddons() {
       setAddons(prev => [...prev, newAddon]);
       setShowAddModal(false);
       setFormData({ name: '', price: '', maxQuantity: '1' });
-      toast.success(t('addons.added'));
-    } catch (error) {
-      toast.error(t('addons.addfailed'));
+      toast.success(t('stalladdons.added'));
+    } catch {
+      toast.error(t('stalladdons.addfailed'));
     }
   };
 
   const handleEditAddon = async () => {
     if (!editingAddon) return;
     try {
-      // In a real app, make API call to update addon
       setAddons(prev =>
-        prev.map(addon =>
-          addon.id === editingAddon.id
+        prev.map(a =>
+          a.id === editingAddon.id
             ? {
-                ...addon,
+                ...a,
                 name: formData.name,
                 price: parseFloat(formData.price),
                 maxQuantity: parseInt(formData.maxQuantity)
               }
-            : addon
+            : a
         )
       );
       setEditingAddon(null);
       setFormData({ name: '', price: '', maxQuantity: '1' });
-      toast.success(t('addons.updated'));
-    } catch (error) {
-      toast.error(t('addons.updatefailed'));
+      toast.success(t('stalladdons.updated'));
+    } catch {
+      toast.error(t('stalladdons.updatefailed'));
     }
   };
 
   const handleDeleteAddon = async (addonId: string) => {
-    if (!confirm(t('addons.deleteconfirm'))) return;
+    if (!confirm(t('stalladdons.confirmDelete'))) return;
     try {
-      // In a real app, make API call to delete addon
-      setAddons(prev => prev.filter(addon => addon.id !== addonId));
-      toast.success(t('addons.deleted'));
-    } catch (error) {
-      toast.error(t('addons.deletefailed'));
+      setAddons(prev => prev.filter(a => a.id !== addonId));
+      toast.success(t('stalladdons.deleted'));
+    } catch {
+      toast.error(t('stalladdons.deletefailed'));
     }
   };
 
   const handleToggleAvailability = async (addonId: string) => {
     try {
-      // In a real app, make API call to toggle availability
       setAddons(prev =>
-        prev.map(addon =>
-          addon.id === addonId
-            ? { ...addon, isAvailable: !addon.isAvailable }
-            : addon
+        prev.map(a =>
+          a.id === addonId ? { ...a, isAvailable: !a.isAvailable } : a
         )
       );
-      toast.success(t('addons.availabilityupdated'));
-    } catch (error) {
-      toast.error(t('addons.availabilityupdatefailed'));
+      toast.success(t('stalladdons.availabilityupdated'));
+    } catch {
+      toast.error(t('stalladdons.availabilityupdatefailed'));
     }
   };
 
@@ -143,8 +116,11 @@ export default function StallAddons() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-900">{t('addons.title')}</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">
+          {t('stalladdons.title')}
+        </h1>
         <button
           onClick={() => {
             setShowAddModal(true);
@@ -154,29 +130,30 @@ export default function StallAddons() {
           className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors flex items-center"
         >
           <Plus className="h-4 w-4 mr-2" />
-          {t('addons.add')}
+          {t('stalladdons.addNew')}
         </button>
       </div>
 
+      {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {t('addons.name')}
+                  {t('stalladdons.name')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {t('addons.price')}
+                  {t('stalladdons.price')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {t('addons.maxquantity')}
+                  {t('stalladdons.maxQuantity')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {t('addons.status')}
+                  {t('stalladdons.availability')}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {t('addons.actions')}
+                  {t('stalladdons.actions')}
                 </th>
               </tr>
             </thead>
@@ -201,7 +178,9 @@ export default function StallAddons() {
                           : 'bg-red-100 text-red-800'
                       }`}
                     >
-                      {addon.isAvailable ? t('addons.available') : t('addons.unavailable')}
+                      {addon.isAvailable
+                        ? t('stalladdons.available')
+                        : t('stalladdons.unavailable')}
                     </button>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -241,7 +220,9 @@ export default function StallAddons() {
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-medium text-gray-900">
-                {editingAddon ? t('addons.edit') : t('addons.add')}
+                {editingAddon
+                  ? t('stalladdons.editAddon')
+                  : t('stalladdons.addNew')}
               </h2>
               <button
                 onClick={() => {
@@ -255,7 +236,7 @@ export default function StallAddons() {
               </button>
             </div>
             <form
-              onSubmit={(e) => {
+              onSubmit={e => {
                 e.preventDefault();
                 editingAddon ? handleEditAddon() : handleAddAddon();
               }}
@@ -263,7 +244,7 @@ export default function StallAddons() {
             >
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  {t('addons.name')}
+                  {t('stalladdons.name')}
                 </label>
                 <input
                   type="text"
@@ -276,7 +257,7 @@ export default function StallAddons() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  {t('addons.price')}
+                  {t('stalladdons.price')}
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -296,7 +277,7 @@ export default function StallAddons() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  {t('addons.maxquantity')}
+                  {t('stalladdons.maxQuantity')}
                 </label>
                 <input
                   type="number"
@@ -325,7 +306,9 @@ export default function StallAddons() {
                   className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors flex items-center"
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {editingAddon ? t('common.save') : t('common.add')}
+                  {editingAddon
+                    ? t('stalladdons.editAddon')
+                    : t('stalladdons.addNew')}
                 </button>
               </div>
             </form>
@@ -334,4 +317,4 @@ export default function StallAddons() {
       )}
     </div>
   );
-} 
+}

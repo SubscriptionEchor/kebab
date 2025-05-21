@@ -10,6 +10,7 @@ import { useLazyQuery, useQuery } from '@apollo/client';
 import { REST_ORDERS } from '../../lib/graphql/queries/orders';
 import moment from 'moment';
 import { debounce } from 'lodash';
+import { useTranslation } from 'react-i18next';
 
 // Mock data for orders
 const generateMockOrders = (count = 50) => {
@@ -72,6 +73,7 @@ const generateMockOrders = (count = 50) => {
 };
 
 export default function VendorOrders() {
+  const { t } = useTranslation();
   const { restaurantId } = useParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -100,18 +102,6 @@ export default function VendorOrders() {
     return debounce(func, 500);
   });
 
-  // // Initial fetch
-  // useEffect(() => {
-  //   getOrders({
-  //     variables: {
-  //       restaurant: restaurantId,
-  //       page: currentPage,
-  //       rows: rowsPerPage,
-  //       search: searchQuery || null
-  //     }
-  //   });
-  // }, [getOrders, restaurantId, currentPage, rowsPerPage]);
-
   // Effect to handle debounced search
   useEffect(() => {
     debouncedSearch(searchQuery);
@@ -128,11 +118,6 @@ export default function VendorOrders() {
       return matchesStatus;
     }) || []
   }, [data?.ordersByRestId, statusFilter]);
-  // Paginate orders
-  // const paginatedOrders = useMemo(() => {
-  //   const startIndex = (currentPage - 1) * rowsPerPage;
-  //   return filteredOrders.slice(startIndex, startIndex + rowsPerPage);
-  // }, [filteredOrders, currentPage]);
 
   const totalPages = Math.ceil(filteredOrders?.length / rowsPerPage);
 
@@ -159,7 +144,7 @@ export default function VendorOrders() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-900">Orders</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">{t('orders.title')}</h1>
         <div className="flex items-center space-x-4">
           {/* Status Filter Dropdown */}
           <div className="relative">
@@ -169,7 +154,7 @@ export default function VendorOrders() {
             >
               <Filter className="h-4 w-4 mr-2" />
               <span>
-                {statusFilter === 'all' ? 'All Status' : statusFilter}
+                {statusFilter === 'all' ? t('orders.allstatus') : statusFilter}
               </span>
               <ChevronDown className="h-4 w-4 ml-2" />
             </button>
@@ -183,7 +168,7 @@ export default function VendorOrders() {
                   }}
                   className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50"
                 >
-                  All Status
+                  {t('orders.allstatus')}
                 </button>
                 <button
                   onClick={() => {
@@ -192,7 +177,7 @@ export default function VendorOrders() {
                   }}
                   className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50"
                 >
-                  Pending
+                  {t('orders.pending')}
                 </button>
                 <button
                   onClick={() => {
@@ -201,7 +186,7 @@ export default function VendorOrders() {
                   }}
                   className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50"
                 >
-                  Accepted
+                  {t('orders.accepted')}
                 </button>
                 <button
                   onClick={() => {
@@ -210,7 +195,7 @@ export default function VendorOrders() {
                   }}
                   className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50"
                 >
-                  In Progress
+                  {t('orders.preparing')}
                 </button>
                 <button
                   onClick={() => {
@@ -219,7 +204,7 @@ export default function VendorOrders() {
                   }}
                   className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50"
                 >
-                  Delivered
+                  {t('orders.completed')}
                 </button>
                 <button
                   onClick={() => {
@@ -228,7 +213,7 @@ export default function VendorOrders() {
                   }}
                   className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50"
                 >
-                  Cancelled
+                  {t('orders.cancelled')}
                 </button>
               </div>
             )}
@@ -239,7 +224,7 @@ export default function VendorOrders() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search orders..."
+              placeholder={t('orders.searchorders')}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -258,22 +243,22 @@ export default function VendorOrders() {
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Order ID
+                  {t('orders.orderHeader')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Items
+                  {t('orders.itemsHeader')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Payment
+                  {t('orders.paymentHeader')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  {t('orders.statusHeader')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Updated At
+                  {t('orders.dateHeader')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {t('orders.actionsHeader')}
                 </th>
               </tr>
             </thead>
@@ -321,7 +306,7 @@ export default function VendorOrders() {
                       className="text-brand-primary hover:text-brand-primary/80 flex items-center justify-end"
                     >
                       <Eye className="h-4 w-4 mr-1" />
-                      View
+                      {t('orders.view')}
                     </button>
                   </td>
                 </tr>
@@ -333,12 +318,12 @@ export default function VendorOrders() {
         {/* Empty State */}
         {filteredOrders.length === 0 && (
           <div className="text-center py-12">
-            <ShoppingBag className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
+            <ShoppingBag className  ="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t('orders.noorders')}</h3>
             <p className="text-gray-500 max-w-md mx-auto">
               {searchQuery || statusFilter !== 'all'
-                ? "Try adjusting your search or filter criteria"
-                : "When customers place orders, they will appear here"}
+                ? t('orders.tryadjustingsearch')
+                : t('orders.orderswillappear')}
             </p>
           </div>
         )}

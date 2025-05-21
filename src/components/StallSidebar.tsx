@@ -17,17 +17,17 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 const menuItems = ([
-  { icon: BarChart2, labelKey: 'stall.menu.dashboard',      path: 'dashboard'      },
-  { icon: User,       labelKey: 'stall.menu.stallProfile',   path: 'profile'        },
-  { icon: Store,      labelKey: 'stall.menu.vendorProfile',  path: 'vendor-profile' },
-  { icon: ShoppingBag,labelKey: 'stall.menu.orders',         path: 'orders'         },
-  { icon: Menu,       labelKey: 'stall.menu.menu',           path: 'menu'           },
-  { icon: LayoutGrid, labelKey: 'stall.menu.category',       path: 'category'       },
-  { icon: PlusSquare, labelKey: 'stall.menu.addOns',         path: 'addons'         },
-  { icon: Tag,        labelKey: 'stall.menu.offers',         path: 'offers'         },
-  { icon: Star,       labelKey: 'stall.menu.ratings',        path: 'ratings'        },
-  { icon: Clock,      labelKey: 'stall.menu.timings',        path: 'timings'        },
-  { icon: MapPin,     labelKey: 'stall.menu.location',       path: 'location'       }
+  { icon: BarChart2, labelKey: 'stall.menu.dashboard',    path: 'dashboard'      },
+  { icon: User,       labelKey: 'stall.menu.stallProfile', path: 'profile'        },
+  { icon: Store,      labelKey: 'stall.menu.vendorProfile',path: 'vendor-profile' },
+  { icon: ShoppingBag,labelKey: 'stall.menu.orders',        path: 'orders'         },
+  { icon: Menu,       labelKey: 'stall.menu.menu',          path: 'menu'           },
+  { icon: LayoutGrid, labelKey: 'stall.menu.category',      path: 'category'       },
+  { icon: PlusSquare, labelKey: 'stall.menu.addOns',        path: 'addons'         },
+  { icon: Tag,        labelKey: 'stall.menu.offers',        path: 'offers'         },
+  { icon: Star,       labelKey: 'stall.menu.ratings',       path: 'ratings'        },
+  { icon: Clock,      labelKey: 'stall.menu.timings',       path: 'timings'        },
+  { icon: MapPin,     labelKey: 'stall.menu.location',      path: 'location'       }
 ] as const).map((item, i) => ({
   ...item,
   delay: i * 100
@@ -48,7 +48,9 @@ export default function StallSidebar() {
           className="flex items-center text-gray-700 hover:text-gray-900 transition-colors"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
-          <span className="font-medium">{t('stall.sidebar.backToDashboard')}</span>
+          <span className="font-medium">
+            {t('stall.sidebar.backToDashboard')}
+          </span>
         </button>
       </div>
 

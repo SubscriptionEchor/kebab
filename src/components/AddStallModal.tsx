@@ -37,28 +37,32 @@ interface AddStallModalProps {
   };
 }
 
+interface ErrorsMap {
+  [key: string]: string;
+}
+
 const DAYS = [
-  { id: 'monday', label: 'Monday' },
-  { id: 'tuesday', label: 'Tuesday' },
-  { id: 'wednesday', label: 'Wednesday' },
-  { id: 'thursday', label: 'Thursday' },
-  { id: 'friday', label: 'Friday' },
-  { id: 'saturday', label: 'Saturday' },
-  { id: 'sunday', label: 'Sunday' }
+  { id: 'monday', label: 'days.monday' },
+  { id: 'tuesday', label: 'days.tuesday' },
+  { id: 'wednesday', label: 'days.wednesday' },
+  { id: 'thursday', label: 'days.thursday' },
+  { id: 'friday', label: 'days.friday' },
+  { id: 'saturday', label: 'days.saturday' },
+  { id: 'sunday', label: 'days.sunday' }
 ];
 
 const CUISINES = [
-  'Arabian',
-  'Chinese',
-  'Indian',
-  'Italian',
-  'Japanese',
-  'Korean',
-  'Mexican',
-  'Thai',
-  'Turkish',
-  'Vietnamese',
-  'Other'
+  { id: 'Arabian', label: 'addStall.cuisines.arabian' },
+  { id: 'Chinese', label: 'addStall.cuisines.chinese' },
+  { id: 'Indian', label: 'addStall.cuisines.indian' },
+  { id: 'Italian', label: 'addStall.cuisines.italian' },
+  { id: 'Japanese', label: 'addStall.cuisines.japanese' },
+  { id: 'Korean', label: 'addStall.cuisines.korean' },
+  { id: 'Mexican', label: 'addStall.cuisines.mexican' },
+  { id: 'Thai', label: 'addStall.cuisines.thai' },
+  { id: 'Turkish', label: 'addStall.cuisines.turkish' },
+  { id: 'Vietnamese', label: 'addStall.cuisines.vietnamese' },
+  { id: 'Other', label: 'addStall.cuisines.other' }
 ];
 
 const STALL_NAME_LIMIT = 50;
@@ -169,7 +173,7 @@ const theme = createTheme({
 export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }: AddStallModalProps) {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     cuisine: initialData?.cuisine || '',
@@ -275,44 +279,45 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.profilePhoto) {
       return; // Handle error case
     }
 
     onSubmit({
-      name: formData.name,
-      cuisine: formData.cuisine,
-      profilePhoto: formData.profilePhoto,
-      timings: formData.timings
-    });
+        name: formData.name,
+        cuisine: formData.cuisine,
+        profilePhoto: formData.profilePhoto,
+        timings: formData.timings
+      });
 
     // Clear form data
-    setFormData({
-      name: '',
-      cuisine: '',
-      profilePhoto: null,
-      timings: DAYS.reduce((acc, day) => ({
-        ...acc,
-        [day.id]: { startTime: '09:00', endTime: '17:00', isOpen: false }
-      }), {} as { [key: string]: { startTime: string; endTime: string; isOpen: boolean } })
-    });
+      setFormData({
+        name: '',
+        cuisine: '',
+        profilePhoto: null,
+        timings: DAYS.reduce((acc, day) => ({
+          ...acc,
+          [day.id]: { startTime: '09:00', endTime: '17:00', isOpen: false }
+        }), {} as { [key: string]: { startTime: string; endTime: string; isOpen: boolean } })
+      });
 
-    // Clear preview URL and revoke object URL to prevent memory leaks
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-    setPreviewUrl(null);
+      // Clear preview URL and revoke object URL to prevent memory leaks
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      setPreviewUrl(null);
 
-    // Reset common hours
-    setCommonTiming({
-      startTime: '09:00',
-      endTime: '17:00'
-    });
-    setIsCommonHoursEnabled(false);
+      // Reset common hours
+      setCommonTiming({
+        startTime: '09:00',
+        endTime: '17:00'
+      });
+      setIsCommonHoursEnabled(false);
 
-    // Close modal
-    onClose();
+      // Close modal
+      console.log('Closing modal');
+      onClose();
   };
 
   if (!isOpen) return null;
@@ -382,8 +387,8 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                       }}
                     >
                       {CUISINES.map(cuisine => (
-                        <MenuItem key={cuisine} value={cuisine}>
-                          {cuisine}
+                        <MenuItem key={cuisine.id} value={cuisine.id}>
+                          {t(cuisine.label)}
                         </MenuItem>
                       ))}
                     </TextField>

@@ -189,9 +189,9 @@ function DateRangeCalendar({ startDate, endDate }: { startDate: string; endDate:
         </h3>
       </div>
       <div className="grid grid-cols-7 gap-1 mb-2">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+        {['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'].map(day => (
           <div key={day} className="text-center text-xs font-medium text-gray-500">
-            {day}
+            {t(`days.${day}`)}
           </div>
         ))}
       </div>
@@ -208,7 +208,7 @@ function formatTo24Hour(timeString: string): string {
 }
 
 function TimeDisplay({ startTime, endTime }: { startTime: string; endTime: string }) {
-   const { t } = useTranslation();
+  const { t } = useTranslation();
   return (
     <div className="mt-6 bg-gray-50 rounded-lg p-6 border border-gray-100">
       <div className="flex items-center justify-center gap-12">
@@ -580,7 +580,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                       type="text"
                       value={formData.searchLocation}
                       onChange={handleAddressChange}
-                      placeholder="Search for a location"
+                      placeholder={t('addEvent.fields.searchLocation.placeholder')}
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                     />
                     {/* Search Results Dropdown */}
@@ -613,7 +613,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                   >
                     <TileLayer
                       url={TILE_URL}
-                      attribution="Kebab Maps"
+                      attribution={t('addEvent.map.attribution')}
                     />
                     <Marker position={position} icon={icon} />
                     <SetViewOnClick coords={position} />
@@ -638,7 +638,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                     <div className={`text-xs mt-1 text-right ${
                       formData.address.length === ADDRESS_LIMIT ? 'text-red-500' : 'text-gray-500'
                     }`}>
-                       {t('addEvent.limits.address', { 
+                      {t('addEvent.limits.address', { 
                         current: formData.address.length, 
                         limit: ADDRESS_LIMIT 
                       })}

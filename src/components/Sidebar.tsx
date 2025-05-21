@@ -13,7 +13,7 @@ const menuItems = [
   { icon: LayoutGrid, label: 'Restaurant Section', path: '/dashboard/sections' },
   { icon: UtensilsCrossed, label: 'Cuisines', path: '/dashboard/cuisines' },
   { icon: ImagePlus, label: 'Banners', path: '/dashboard/banners' },
-  { icon: Calendar, label: 'Event Organizers', path: '/dashboard/event-organizers' }
+  { icon: Calendar, label: 'Event Organizers', path: '/dashboard/eventorganizers' }
 ];
 
 export default function Sidebar() {

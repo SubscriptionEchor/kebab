@@ -377,7 +377,7 @@ export default function EventDetails() {
               className="flex items-center text-sm text-gray-500 hover:text-gray-700"
             >
               <Home className="h-4 w-4 mr-1" />
-              Dashboard
+              {t('eventDetails.breadcrumbs.dashboard')}
             </Link>
           </li>
           <li className="flex items-center">
@@ -386,7 +386,7 @@ export default function EventDetails() {
               to="/dashboard/event-organizers"
               className="text-sm text-gray-500 hover:text-gray-700"
             >
-              Event Organizers
+              {t('eventDetails.breadcrumbs.eventOrganizers')}
             </Link>
           </li>
           <li className="flex items-center">
@@ -395,26 +395,26 @@ export default function EventDetails() {
               to={`/dashboard/event-organizers/${organizerId}`}
               className="text-sm text-gray-500 hover:text-gray-700"
             >
-              Event Organizer Details
+              {t('eventDetails.breadcrumbs.organizerDetails')}
             </Link>
           </li>
           <li className="flex items-center">
             <ChevronRight className="h-4 w-4 text-gray-400 mx-2 flex-shrink-0" />
             <span className="text-sm text-gray-700 font-medium">
-              Event Details
+              {t('eventDetails.pageTitle')}
             </span>
           </li>
         </ol>
       </nav>
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Event Details</h1>
+        <h1 className="text-2xl font-semibold">{t('eventDetails.pageTitle')}</h1>
       </div>
 
       {/* Overview Section */}
       <div className="mb-12">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Overview</h2>
+          <h2 className="text-xl font-semibold">{t('eventDetails.overview.title')}</h2>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200">
               <Calendar className="h-4 w-4 text-gray-500" />
@@ -425,7 +425,7 @@ export default function EventDetails() {
                 onChange={handleDateRangeChange}
                 className="text-sm border-none focus:outline-none"
               />
-              <span className="text-gray-400">to</span>
+              <span className="text-gray-400">{t('eventDetails.overview.dateRangeSeparator')}</span>
               <input
                 type="date"
                 name="end"
@@ -441,7 +441,7 @@ export default function EventDetails() {
                 onChange={handleStallFilterChange}
                 className="text-sm border-none focus:outline-none"
               >
-                <option value="all">All Stalls</option>
+                <option value="all">{t('eventDetails.overview.filter.allStalls')}</option>
                 {stalls.map(stall => (
                   <option key={stall.id} value={stall.id}>{stall.name}</option>
                 ))}
@@ -455,7 +455,7 @@ export default function EventDetails() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm text-gray-500">Total Sales</p>
+                <p className="text-sm text-gray-500">{t('eventDetails.overview.totalSales')}</p>
                 <h3 className="text-2xl font-semibold mt-1">${overviewData.totalSales.toLocaleString()}</h3>
               </div>
               <div className="bg-green-50 p-3 rounded-lg">
@@ -475,7 +475,7 @@ export default function EventDetails() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm text-gray-500">Total Orders</p>
+                <p className="text-sm text-gray-500">{t('eventDetails.overview.totalOrders')}</p>
                 <h3 className="text-2xl font-semibold mt-1">{overviewData.totalOrders.toLocaleString()}</h3>
               </div>
               <div className="bg-blue-50 p-3 rounded-lg">
@@ -496,13 +496,13 @@ export default function EventDetails() {
       {/* Stalls Table */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Stalls</h2>
+          <h2 className="text-xl font-semibold">{t('eventDetails.stalls.title')}</h2>
           <div className="flex items-center gap-4">
             <div className="relative w-[300px]">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Search stalls by name or cuisine"
+                placeholder={t('eventDetails.stalls.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary"
@@ -514,7 +514,7 @@ export default function EventDetails() {
                 className="flex items-center gap-2 px-4 py-2 bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors"
               >
                 <Plus className="h-5 w-5" />
-                Add New Stall
+                {t('eventDetails.stalls.addNew')}
                 <ChevronDown className={`h-4 w-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               
@@ -525,14 +525,14 @@ export default function EventDetails() {
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                   >
                     <Plus className="h-4 w-4" />
-                    New Stall
+                    {t('eventDetails.stalls.newStall')}
                   </button>
                   <button
                     onClick={handleAddExistingStall}
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                   >
                     <ChevronRight className="h-4 w-4" />
-                    Existing Stall
+                    {t('eventDetails.stalls.existingStall')}
                   </button>
                 </div>
               )}
@@ -544,7 +544,7 @@ export default function EventDetails() {
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Stall ID
+                  {t('eventDetails.stalls.table.headers.stallId')}
                 </th>
                 <th 
                   scope="col" 
@@ -552,7 +552,7 @@ export default function EventDetails() {
                   onClick={() => handleSort('name')}
                 >
                   <div className="flex items-center gap-2">
-                    Stall Name
+                    {t('eventDetails.stalls.table.headers.stallName')}
                     {sortConfig?.key === 'name' && (
                       <ChevronDown className={`h-4 w-4 transition-transform ${sortConfig.direction === 'descending' ? 'rotate-180' : ''}`} />
                     )}
@@ -564,34 +564,34 @@ export default function EventDetails() {
                   onClick={() => handleSort('cuisine')}
                 >
                   <div className="flex items-center gap-2">
-                    Cuisine
+                    {t('eventDetails.stalls.table.headers.cuisine')}
                     {sortConfig?.key === 'cuisine' && (
                       <ChevronDown className={`h-4 w-4 transition-transform ${sortConfig.direction === 'descending' ? 'rotate-180' : ''}`} />
                     )}
                   </div>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Profile Photo
+                  {t('eventDetails.stalls.table.headers.profilePhoto')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Operating Hours
+                  {t('eventDetails.stalls.table.headers.operatingHours')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  {t('eventDetails.stalls.table.headers.status')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {t('eventDetails.stalls.table.headers.actions')}
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {sortedStalls.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
+                  <td colSpan={7} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center justify-center text-gray-500">
                       <Search className="h-12 w-12 mb-4 text-gray-400" />
-                      <p className="text-lg font-medium">No stalls found</p>
-                      <p className="text-sm mt-1">Try adjusting your search or filters</p>
+                      <p className="text-lg font-medium">{t('eventDetails.stalls.table.empty.noStalls')}</p>
+                      <p className="text-sm mt-1">{t('eventDetails.stalls.table.empty.adjustSearch')}</p>
                     </div>
                   </td>
                 </tr>
@@ -604,7 +604,7 @@ export default function EventDetails() {
                         <button
                           onClick={() => handleCopyStallId(stall.id)}
                           className="text-gray-400 hover:text-gray-600 transition-colors"
-                          title="Copy Stall ID"
+                          title={t('eventDetails.stalls.table.copyStallId')}
                         >
                           <Copy className="h-4 w-4" />
                         </button>
@@ -653,7 +653,7 @@ export default function EventDetails() {
                             ? 'bg-green-100 text-green-600 hover:bg-green-200' 
                             : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
                         }`}
-                        title={stall.isActive ? 'Deactivate Stall' : 'Activate Stall'}
+                        title={stall.isActive ? t('eventDetails.stalls.table.deactivateStall') : t('eventDetails.stalls.table.activateStall')}
                       >
                         <Power className="h-4 w-4" />
                       </button>
@@ -664,7 +664,7 @@ export default function EventDetails() {
                           onClick={() => handleViewStall(stall.id)}
                           className="px-3 py-1.5 bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors"
                         >
-                          View
+                          {t('eventDetails.stalls.table.view')}
                         </button>
                         <KebabMenu
                           onEdit={() => handleEditClick(stall)}
@@ -708,10 +708,10 @@ export default function EventDetails() {
           setSelectedStallId(null);
         }}
         onConfirm={handleDeleteConfirm}
-        title="Delete Stall"
-        message="Are you sure you want to delete this stall? This action cannot be undone."
+        title={t('eventDetails.stalls.table.delete.title')}
+        message={t('eventDetails.stalls.table.delete.message')}
         isSubmitting={isDeleting}
       />
     </div>
   );
-} 
+}

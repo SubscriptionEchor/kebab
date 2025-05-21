@@ -43,7 +43,6 @@ export default function Orders() {
   const rowsPerPage = 10;
   const currencySymbol = getCurrencySymbol();
 
-
   // Mock data for orders
   const mockOrders = useMemo(() => {
     const statuses = ['pending', 'preparing', 'ready', 'completed', 'cancelled'];
@@ -258,22 +257,22 @@ export default function Orders() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Order
+                  {t('orders.orderHeader')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Items
+                  {t('orders.itemsHeader')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Payment
+                  {t('orders.paymentHeader')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  {t('orders.statusHeader')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
+                  {t('orders.dateHeader')}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {t('orders.actionsHeader')}
                 </th>
               </tr>
             </thead>

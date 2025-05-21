@@ -9,7 +9,6 @@ import { CREATE_MENU, GET_MENU, UPDATE_MENU, DELETE_MENU, OUT_OF_STOCK } from '.
 import { useParams } from 'react-router-dom';
 import { uploadImage } from '../../lib/api/upload';
 
-
 // Types
 interface MenuItemFormData {
   internalName: string;
@@ -163,8 +162,9 @@ export default function Menu() {
   });
   const [editItemId, setEditItemId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { bootStrapData } = useCurrency()
-  const { restaurantId } = useParams()
+  const { bootStrapData } = useCurrency();
+  const { restaurantId } = useParams();
+
   // Initialize menuItems from localStorage
   const [menuItems, setMenuItems] = useState<MenuItem[]>(() => {
     const savedItems = localStorage.getItem('menuItems');
@@ -199,16 +199,16 @@ export default function Menu() {
   };
 
   const [formData, setFormData] = useState<any>(initialFormState);
-  const [menuData, setMenuData] = useState<any>([])
+  const [menuData, setMenuData] = useState<any>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
-  const [variations, setVariations] = useState([])
+  const [variations, setVariations] = useState([]);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const [CREATE_NEW_MENU] = useMutation(CREATE_MENU)
-  const [UPDATE_NEW_MENU] = useMutation(UPDATE_MENU)
-  const [DELETE_NEW_MENU] = useMutation(DELETE_MENU)
-  const [OUT_OF_STOCK_MENU] = useMutation(OUT_OF_STOCK)
+  const [CREATE_NEW_MENU] = useMutation(CREATE_MENU);
+  const [UPDATE_NEW_MENU] = useMutation(UPDATE_MENU);
+  const [DELETE_NEW_MENU] = useMutation(DELETE_MENU);
+  const [OUT_OF_STOCK_MENU] = useMutation(OUT_OF_STOCK);
 
   const { data, loading, error, refetch } = useQuery(GET_MENU, {
     variables: {
@@ -224,10 +224,9 @@ export default function Menu() {
 
   useEffect(() => {
     if (data?.getMenu?.food?.length) {
-      setMenuData(data?.getMenu?.food)
+      setMenuData(data?.getMenu?.food);
     }
     if (data?.getMenu?.optionSetList?.length) {
-
       let updatedOptionSetList = data?.getMenu?.optionSetList.map(optionSet => {
         return {
           ...optionSet,
@@ -240,9 +239,10 @@ export default function Menu() {
           }) || []
         };
       });
-      setVariations(updatedOptionSetList)
+      setVariations(updatedOptionSetList);
     }
-  }, [data])
+  }, [data]);
+
   // Form handlers
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -296,36 +296,9 @@ export default function Menu() {
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    // e.currentTarget.classList.remove('border-brand-primary', 'bg-brand-accent/10');
-
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
-
-    // if (!file.type.startsWith('image/')) {
-    //   toast.error('Please upload an image file');
-    //   return;
-    // }
-
-    // const img = new Image();
-    // img.onload = () => {
-    //   const aspectRatio = img.width / img.height;
-    //   if (Math.abs(aspectRatio - 4 / 3) > 0.1) {
-    //     toast.error('Please upload an image with a 4:3 aspect ratio');
-    //     return;
-    //   }
-
-    //   setFormData((prev) => ({
-    //     ...prev,
-    //     image: file,
-    //     imagePreview: URL.createObjectURL(file),
-    //   }));
-    // };
-
-    // img.onerror = () => {
-    //   toast.error('Failed to load image');
-    // };
-
-    // img.src = URL.createObjectURL(file);
+    // Additional validation and handling as in handleImageChange
   };
 
   // Variation handlers
@@ -370,31 +343,26 @@ export default function Menu() {
   // Options handlers
   const toggleOptionSelection = (optionId: string) => {
     if (!availableOptions?.length) {
-      setAvailableOptions([optionId])
-    }
-    else {
+      setAvailableOptions([optionId]);
+    } else {
       if (availableOptions.includes(optionId)) {
         setAvailableOptions((prev) => prev.filter((opt: any) => opt !== optionId));
       } else {
         setAvailableOptions((prev) => [...prev, optionId]);
       }
     }
-
   };
 
   const handleOpenOptionsPanel = (variationId: string) => {
     setCurrentVariationId(variationId);
     setShowOptionsPanel(true);
     const currentVariation = formData.variations.find((v) => v.id === variationId);
-    setAvailableOptions(currentVariation?.optionSetList || [])
+    setAvailableOptions(currentVariation?.optionSetList || []);
     setActiveOptionsTab('available');
   };
 
   const handleSaveOptions = () => {
-    console.log(currentVariationId)
     if (!currentVariationId) return;
-
-    // const selectedOptions = availableOptions.filter((option) => option.selected);
 
     setFormData((prev) => ({
       ...prev,
@@ -408,7 +376,6 @@ export default function Menu() {
     toast.success('Options saved successfully');
     setShowOptionsPanel(false);
   };
-
 
   const handleCustomOptionChange = (field: keyof CustomOption, value: string) => {
     setCustomOption((prev) => ({
@@ -427,7 +394,6 @@ export default function Menu() {
 
   const handleAddDish = () => {
     if (!currentDish) return;
-    // console.log(formData)
     const newDish: Dish = {
       id: currentDish.value,
       name: currentDish.label,
@@ -439,8 +405,6 @@ export default function Menu() {
     setShowPriceModal(false);
     setCurrentDish(null);
     setNewPrice('');
-
-    // toast.success('Dish added successfully');
   };
 
   const handleRemoveDish = (dishId: string) => {
@@ -507,7 +471,6 @@ export default function Menu() {
     const payload = transformItemData(item);
 
     try {
-      // Prepare menu item data
       const newMenuItem: any = {
         internalName: payload.internalName,
         active: !item?.active,
@@ -553,7 +516,6 @@ export default function Menu() {
         newMenuItem.imageData = imageData;
       }
 
-      // Make the update API call
       const { data } = await UPDATE_NEW_MENU({
         variables: {
           restaurantId,
@@ -566,7 +528,6 @@ export default function Menu() {
         throw new Error('Failed to update menu item');
       }
 
-      // Update the menu data state
       setMenuData((prev: any) =>
         prev.map((item: any) =>
           item._id === payload.id ? data.updateFoodNew : item
@@ -580,7 +541,6 @@ export default function Menu() {
       toast.error(error.message || 'Failed to update menu item');
       throw error;
     }
-    // Add any additional toggle status logic here
   };
 
   const handleDelete = (id: string) => {
@@ -589,7 +549,6 @@ export default function Menu() {
   };
 
   const confirmDelete = async () => {
-
     try {
       if (!itemToDelete) return;
       setIsDeleting(true);
@@ -602,18 +561,15 @@ export default function Menu() {
       });
 
       setMenuData((prev: any) => prev.filter((item: any) => item._id !== itemToDelete));
-      toast.success('Menu item deleted successfully');
+      toast.success(t('menus.table.delete'));
       setShowDeleteModal(false);
       setItemToDelete(null);
     } catch (error) {
-      toast.error('Failed to delete menu item');
+      toast.error(t('menus.table.deleting'));
     } finally {
       setIsDeleting(false);
     }
   };
-
-  // Add this JSX at the end of your component, just before the final closing div:
-
 
   const toggleOutOfStock = async (id: string) => {
     try {
@@ -622,21 +578,18 @@ export default function Menu() {
           foodId: id,
           restaurantId
         }
-      })
+      });
       setMenuData((prev) =>
         prev.map((item: any) =>
           item?._id === id ? { ...item, outOfStock: !item.outOfStock } : item
         )
       );
-      toast.success('Stock status updated');
-    }
-    catch (e) {
-      console.log(e)
-      toast.success('failed to toogle out of stock');
+      toast.success(t('menus.table.outOfStock'));
+    } catch (e) {
+      console.log(e);
+      toast.error('Failed to toggle out of stock');
     }
   };
-
-  console.log(menuItems)
 
   // Form submission
   const handleSubmit = async () => {
@@ -644,56 +597,55 @@ export default function Menu() {
 
     // Validate form
     if (!formData.title.trim()) {
-      toast.error('Title is required');
+      toast.error(t('menus.form.title') + ' is required');
       setIsLoading(false);
       return;
     }
     if (!formData.internalName.trim()) {
-      toast.error('InternalName is required');
+      toast.error(t('menus.form.internalName') + ' is required');
       setIsLoading(false);
       return;
     }
     if (!formData.description.trim()) {
-      toast.error('Description is required');
+      toast.error(t('menus.form.description') + ' is required');
       setIsLoading(false);
       return;
     }
     if (!formData?.allergens?.length) {
-      toast.error('Atleast one allergen is required');
+      toast.error('At least one ' + t('menus.form.allergens') + ' is required');
       setIsLoading(false);
       return;
     }
     if (!formData?.dietary) {
-      toast.error('Atleast one dietary is required');
+      toast.error('At least one ' + t('menus.form.dietary') + ' is required');
       setIsLoading(false);
       return;
     }
     if (!formData?.image) {
-      toast.error('Image is required');
+      toast.error(t('menus.form.image') + ' is required');
       setIsLoading(false);
       return;
     }
     if (!formData?.variations?.length) {
-      toast.error('Atleast one variation is required');
+      toast.error('At least one ' + t('menus.form.variations') + ' is required');
       setIsLoading(false);
       return;
     }
     for (const variation of formData.variations) {
       if (!variation.title.trim()) {
-        toast.error('Variation title is required');
+        toast.error(t('menus.form.variations') + ' title is required');
         setIsLoading(false);
         return;
       }
 
-
       if (!variation?.price?.trim() || isNaN(parseFloat(variation.price))) {
-        toast.error('Valid price is required for all variations');
+        toast.error('Valid price is required for all ' + t('menus.form.variations'));
         setIsLoading(false);
         return;
       }
 
       if (variation.discounted && (!variation.discountPrice.trim() || isNaN(parseFloat(variation.discountPrice)))) {
-        toast.error('Valid discount price is required for discounted variations');
+        toast.error('Valid discount price is required for discounted ' + t('menus.form.variations'));
         setIsLoading(false);
         return;
       }
@@ -708,7 +660,6 @@ export default function Menu() {
       hiddenFromMenu: !formData?.showInMenu,
       name: formData.title,
       description: formData.description,
-      // price: parseFloat(formData.variations[0].price),
       outOfStock: false,
       tags: formData?.tags?.map((item: any) => item?.value),
       variationList: formData?.variations?.map((item: any) => ({
@@ -792,11 +743,10 @@ export default function Menu() {
               discountPrice: '',
             },
           ]
-        })
+        });
 
         setShowForm(false);
-        toast.success(`Menu item ${formData?.id ? 'updated' : 'created'} successfully`);
-
+        toast.success(t(formData?.id ? 'menus.form.update' : 'menus.form.save'));
       } catch (error) {
         toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
       } finally {
@@ -804,11 +754,10 @@ export default function Menu() {
       }
     } catch (error) {
       console.error('Error creating menu item:', error);
-      toast.error('Failed to create menu item');
+      toast.error(t('menus.form.saving'));
       setIsLoading(false);
     }
   };
-
 
   const handleCancel = () => {
     setShowForm(false);
@@ -858,14 +807,14 @@ export default function Menu() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-900">Restaurant Menu</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">{t('menus.pageTitle')}</h1>
         {showForm ? (
           <div className="flex space-x-4">
             <button
               onClick={handleCancel}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               onClick={handleSubmit}
@@ -875,12 +824,12 @@ export default function Menu() {
               {isLoading ? (
                 <>
                   <div className="h-4 w-4 border-2 border-black border-t-transparent rounded-full animate-spin mr-2" />
-                  Saving...
+                  {t('menus.form.saving')}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  {editItemId ? 'Update Menu Item' : 'Save Menu Item'}
+                  {editItemId ? t('menus.form.update') : t('menus.form.save')}
                 </>
               )}
             </button>
@@ -891,7 +840,7 @@ export default function Menu() {
             className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors flex items-center"
           >
             <PlusCircle className="h-4 w-4 mr-2" />
-            Add Menu Item
+            {t('menus.addButton')}
           </button>
         )}
       </div>
@@ -903,7 +852,7 @@ export default function Menu() {
               <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <PlusCircle className="h-12 w-12 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No menu items yet</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{t('menus.table.empty.noItems')}</h3>
               <p className="text-gray-500 max-w-md mx-auto mb-6">
                 Start building your restaurant menu by adding categories and items. Your customers will be able to browse and order from this menu.
               </p>
@@ -929,47 +878,46 @@ export default function Menu() {
                         discountPrice: '',
                       },
                     ]
-                  })
-                  setShowForm(true)
+                  });
+                  setShowForm(true);
                 }}
                 className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors inline-flex items-center"
               >
                 <PlusCircle className="h-4 w-4 mr-2" />
-                Add Your First Menu Item
+                {t('menus.table.empty.createFirst')}
               </button>
             </div>
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Menu Items</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('menus.pageTitle')}</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Image
+                      {t('menus.table.headers.image')}
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Title
+                      {t('menus.table.headers.title')}
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Category
+                      {t('menus.table.headers.category')}
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Description
+                      {t('menus.table.headers.description')}
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Price
+                      {t('menus.table.headers.price')}
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Out of Stock
+                      {t('menus.table.headers.outOfStock')}
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
+                      {t('menus.table.headers.status')}
                     </th>
-
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
+                      {t('menus.table.headers.actions')}
                     </th>
                   </tr>
                 </thead>
@@ -995,7 +943,6 @@ export default function Menu() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {item.category?.label || 'N/A'}
                       </td>
-
                       <td className="px-6 py-4 text-sm text-gray-500">
                         <div className="max-w-xs truncate">{item.description || 'No description'}</div>
                       </td>
@@ -1005,24 +952,20 @@ export default function Menu() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <button
                           onClick={() => toggleOutOfStock(item?._id)}
-                          className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-200 ease-in-out ${!item.outOfStock ? 'bg-gray-200' : 'bg-brand-primary'
-                            }`}
+                          className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-200 ease-in-out ${!item.outOfStock ? 'bg-gray-200' : 'bg-brand-primary'}`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 rounded-full bg-white transform transition-transform duration-200 ease-in-out ${!item.outOfStock ? 'translate-x-1' : 'translate-x-6'
-                              }`}
+                            className={`inline-block h-4 w-4 rounded-full bg-white transform transition-transform duration-200 ease-in-out ${!item.outOfStock ? 'translate-x-1' : 'translate-x-6'}`}
                           />
                         </button>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <button
                           onClick={() => toggleStatus(item)}
-                          className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-200 ease-in-out ${!item.active ? 'bg-gray-200' : 'bg-brand-primary'
-                            }`}
+                          className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-200 ease-in-out ${!item.active ? 'bg-gray-200' : 'bg-brand-primary'}`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 rounded-full bg-white transform transition-transform duration-200 ease-in-out ${!item.active ? 'translate-x-1' : 'translate-x-6'
-                              }`}
+                            className={`inline-block h-4 w-4 rounded-full bg-white transform transition-transform duration-200 ease-in-out ${!item.active ? 'translate-x-1' : 'translate-x-6'}`}
                           />
                         </button>
                       </td>
@@ -1031,14 +974,14 @@ export default function Menu() {
                           <button
                             onClick={() => handleEdit(item)}
                             className="text-blue-600 hover:text-blue-800"
-                            title="Edit"
+                            title={t('menus.table.edit')}
                           >
                             <Edit2 className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => handleDelete(item?._id)}
                             className="text-red-600 hover:text-red-800"
-                            title="Delete"
+                            title={t('menus.table.delete')}
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -1054,7 +997,7 @@ export default function Menu() {
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
-            <h2 className="text-xl font-semibold text-gray-900">{editItemId ? 'Edit Menu Item' : 'Add Menu Item'}</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{editItemId ? t('menus.form.editTitle') : t('menus.form.addTitle')}</h2>
             <button
               onClick={handleCancel}
               className="text-gray-400 hover:text-gray-500"
@@ -1068,7 +1011,7 @@ export default function Menu() {
               {/* Title */}
               <div>
                 <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                  Title
+                  {t('menus.form.title')}
                 </label>
                 <input
                   type="text"
@@ -1077,12 +1020,12 @@ export default function Menu() {
                   value={formData.title}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary"
-                  placeholder="Enter dish name"
+                  placeholder={t('menus.form.title')}
                 />
               </div>
               <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                  Internal Name
+                <label htmlFor="internalName" className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('menus.form.internalName')}
                 </label>
                 <input
                   type="text"
@@ -1091,14 +1034,14 @@ export default function Menu() {
                   value={formData.internalName}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary"
-                  placeholder="Enter dish name"
+                  placeholder={t('menus.form.internalName')}
                 />
               </div>
 
               {/* Description */}
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
+                  {t('menus.form.description')}
                 </label>
                 <textarea
                   id="description"
@@ -1107,7 +1050,7 @@ export default function Menu() {
                   onChange={handleInputChange}
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary"
-                  placeholder="Describe your dish"
+                  placeholder={t('menus.form.description')}
                 />
               </div>
 
@@ -1121,24 +1064,22 @@ export default function Menu() {
                   className="h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
                 />
                 <label htmlFor="showInMenu" className="ml-2 block text-sm text-gray-700">
-                  Show this dish in menu
+                  {t('menus.form.showInMenu')}
                 </label>
               </div>
 
               {/* Category & Dietary */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-
                 <div>
                   <label htmlFor="dietary" className="block text-sm font-medium text-gray-700 mb-1">
-                    Dietary
+                    {t('menus.form.dietary')}
                   </label>
                   <Select
                     id="dietary"
                     options={bootStrapData?.dietaryOptions?.map((item: any) => ({ ...item, value: item?.enumVal, label: item?.displayName }))}
                     value={formData.dietary}
                     onChange={(option) => setFormData((prev) => ({ ...prev, dietary: option }))}
-                    placeholder="Select dietary option"
+                    placeholder={t('menus.form.dietary')}
                     className="react-select-container"
                     classNamePrefix="react-select"
                     styles={selectStyles}
@@ -1150,14 +1091,14 @@ export default function Menu() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="allergens" className="block text-sm font-medium text-gray-700 mb-1">
-                    Allergens
+                    {t('menus.form.allergens')}
                   </label>
                   <Select
                     id="allergens"
                     options={bootStrapData?.allergens?.map((item: any) => ({ ...item, value: item?.enumVal, label: item?.displayName }))}
                     value={formData.allergens}
                     onChange={(options) => setFormData((prev) => ({ ...prev, allergens: options }))}
-                    placeholder="Select allergens"
+                    placeholder={t('menus.form.allergens')}
                     isMulti
                     className="react-select-container"
                     classNamePrefix="react-select"
@@ -1167,14 +1108,14 @@ export default function Menu() {
 
                 <div>
                   <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
-                    Tags
+                    {t('menus.form.tags')}
                   </label>
                   <Select
                     id="tags"
                     options={bootStrapData?.foodTags?.map((item: any) => ({ ...item, value: item?.enumVal, label: item?.displayName }))}
                     value={formData.tags}
                     onChange={(options) => setFormData((prev) => ({ ...prev, tags: options }))}
-                    placeholder="Select tags"
+                    placeholder={t('menus.form.tags')}
                     isMulti
                     className="react-select-container"
                     classNamePrefix="react-select"
@@ -1183,17 +1124,14 @@ export default function Menu() {
                 </div>
               </div>
 
-              {/* Show in Menu Checkbox */}
-
-
               {/* Variations Section */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Variations</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">{t('menus.form.variations')}</h3>
                 <div className="space-y-4">
                   {formData.variations.map((variation) => (
                     <div key={variation.id} className="border border-gray-200 rounded-lg p-4 space-y-4">
                       <div className="flex justify-between items-center">
-                        <h4 className="text-md font-medium text-gray-900">Variation {variation.id}</h4>
+                        <h4 className="text-md font-medium text-gray-900">{t('menus.form.variations')} {variation.id}</h4>
                         {formData.variations.length > 1 && (
                           <button
                             onClick={() => removeVariation(variation.id)}
@@ -1207,7 +1145,7 @@ export default function Menu() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label htmlFor={`variation-title-${variation.id}`} className="block text-sm font-medium text-gray-700 mb-1">
-                            Title
+                            {t('menus.form.title')}
                           </label>
                           <input
                             type="text"
@@ -1221,7 +1159,7 @@ export default function Menu() {
 
                         <div>
                           <label htmlFor={`variation-price-${variation.id}`} className="block text-sm font-medium text-gray-700 mb-1">
-                            Price
+                            {t('menus.table.headers.price')}
                           </label>
                           <input
                             type="text"
@@ -1263,53 +1201,12 @@ export default function Menu() {
                         </div>
                       )}
 
-                      {/* Options Button for each variation */}
                       <div>
-                        {/* {variation.selectedOptions && variation.selectedOptions.length > 0 && (
-                          <div className="mb-3 space-y-2">
-                            <h5 className="text-sm font-medium text-gray-700">Selected Options:</h5>
-                            <div className="space-y-2">
-                              {variation.selectedOptions.map((option) => (
-                                <div key={option.id} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
-                                  <div>
-                                    <p className="text-sm font-medium text-gray-900">{option.name}</p>
-                                    <p className="text-xs text-gray-500">{option.description}</p>
-                                  </div>
-                                  <div className="flex items-center">
-                                    <span className="text-xs text-gray-500 mr-2">Quantity: {option.quantity}</span>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setFormData((prev) => ({
-                                          ...prev,
-                                          variations: prev.variations.map((v) =>
-                                            v.id === variation.id
-                                              ? {
-                                                ...v,
-                                                selectedOptions: v.selectedOptions?.filter((o) => o.id !== option.id) || [],
-                                              }
-                                              : v
-                                          ),
-                                        }));
-                                        setAvailableOptions((prev) =>
-                                          prev.map((o) => (o.id === option.id ? { ...o, selected: false } : o))
-                                        );
-                                      }}
-                                      className="text-gray-400 hover:text-red-500"
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )} */}
                         <button
                           onClick={() => handleOpenOptionsPanel(variation.id)}
                           className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors"
                         >
-                          {variation.selectedOptions && variation.selectedOptions.length > 0 ? 'Edit Options' : 'Choose Options'}
+                          {variation.selectedOptions && variation.selectedOptions.length > 0 ? t('menus.optionsPanel.editOptions') : t('menus.optionsPanel.chooseOptions')}
                         </button>
                       </div>
                     </div>
@@ -1319,7 +1216,7 @@ export default function Menu() {
                     onClick={addVariation}
                     className="w-full py-2 text-sm font-medium text-brand-primary border border-dashed border-brand-primary rounded-md hover:bg-brand-accent/10 transition-colors"
                   >
-                    + Add Another Variation
+                    {t('menus.form.addVariation')}
                   </button>
                 </div>
               </div>
@@ -1328,14 +1225,11 @@ export default function Menu() {
             {/* Right Column - Image Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Food Image (4:3 ratio)
+                {t('menus.form.image')}
               </label>
               <div
                 className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:border-brand-primary transition-colors"
                 onClick={() => fileInputRef.current?.click()}
-              // onDragOver={handleDragOver}
-              // onDragLeave={handleDragLeave}
-              // onDrop={handleDrop}
               >
                 <div className="space-y-1 text-center">
                   {formData.imagePreview ? (
@@ -1367,7 +1261,7 @@ export default function Menu() {
                             e.stopPropagation();
                           }}
                         >
-                          <span>Upload a file</span>
+                          <span>{t('menus.form.upload')}</span>
                           <input
                             id="file-upload"
                             name="file-upload"
@@ -1378,7 +1272,7 @@ export default function Menu() {
                             accept="image/*"
                           />
                         </label>
-                        <p className="pl-1">or drag and drop</p>
+                        <p className="pl-1">{t('menus.form.orDrag')}</p>
                       </div>
                       <p className="text-xs text-gray-500">
                         PNG, JPG, GIF up to 10MB
@@ -1397,7 +1291,7 @@ export default function Menu() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Available options</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('menus.optionsPanel.availableOptions')}</h2>
               <button
                 onClick={() => setShowOptionsPanel(false)}
                 className="text-gray-400 hover:text-gray-500 transition-colors"
@@ -1414,17 +1308,8 @@ export default function Menu() {
                   : 'text-gray-500 hover:text-gray-700'
                   }`}
               >
-                Available options
+                {t('menus.optionsPanel.availableOptions')}
               </button>
-              {/* <button
-                onClick={() => setActiveOptionsTab('custom')}
-                className={`px-4 py-2 text-sm font-medium ${activeOptionsTab === 'custom'
-                  ? 'border-b-2 border-brand-primary text-brand-primary'
-                  : 'text-gray-500 hover:text-gray-700'
-                  }`}
-              >
-                Add custom option
-              </button> */}
             </div>
 
             <div className="p-4 overflow-y-auto flex-1">
@@ -1469,7 +1354,7 @@ export default function Menu() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Title
+                      {t('menus.form.title')}
                     </label>
                     <input
                       type="text"
@@ -1482,7 +1367,7 @@ export default function Menu() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Description
+                      {t('menus.form.description')}
                     </label>
                     <input
                       type="text"
@@ -1535,7 +1420,6 @@ export default function Menu() {
                     />
                   </div>
 
-                  {/* Selected Dishes */}
                   {selectedDishes.length > 0 && (
                     <div className="mt-4">
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Dishes with Price</h4>
@@ -1569,7 +1453,7 @@ export default function Menu() {
                 onClick={handleSaveOptions}
                 className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors"
               >
-                Save Changes
+                {t('menus.optionsPanel.saveChanges')}
               </button>
             </div>
           </div>
@@ -1581,13 +1465,13 @@ export default function Menu() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="p-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Set Price for {currentDish.label}</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('menus.priceModal.title', { dish: currentDish.label })}</h2>
             </div>
 
             <div className="p-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Current Price
+                  {t('menus.priceModal.currentPrice')}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1604,7 +1488,7 @@ export default function Menu() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  New Price
+                  {t('menus.priceModal.newPrice')}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1626,54 +1510,53 @@ export default function Menu() {
                 onClick={() => setShowPriceModal(false)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
               >
-                Cancel
+                {t('menus.priceModal.cancel')}
               </button>
               <button
                 onClick={handleAddDish}
                 className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors"
               >
-                Save
+                {t('menus.priceModal.save')}
               </button>
             </div>
           </div>
         </div>
       )}
-      {
-        showDeleteModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-4">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Delete Menu Item</h2>
-              <p className="text-gray-500 mb-6">Are you sure you want to delete this menu item? This action cannot be undone.</p>
-              <div className="flex justify-end space-x-3">
-                <button
-                  disabled={isDeleting}
-                  onClick={() => {
-                    setShowDeleteModal(false);
-                    setItemToDelete(null);
-                  }}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  disabled={isDeleting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                >
-                  {isDeleting ? (
-                    <>
-                      <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                      Deleting...
-                    </>
-                  ) : (
-                    'Delete'
-                  )}
-                </button>
-              </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('menus.table.delete')}</h2>
+            <p className="text-gray-500 mb-6">Are you sure you want to delete this menu item? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-3">
+              <button
+                disabled={isDeleting}
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setItemToDelete(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                {t('menus.table.cancel')}
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    {t('menus.table.deleting')}
+                  </>
+                ) : (
+                  t('menus.table.delete')
+                )}
+              </button>
             </div>
           </div>
-        )
-      }
+        </div>
+      )}
     </div>
   );
 }

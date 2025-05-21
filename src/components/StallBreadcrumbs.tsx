@@ -41,4 +41,4 @@ export default function StallBreadcrumbs() {
       </ol>
     </nav>
   );
-} 
+}

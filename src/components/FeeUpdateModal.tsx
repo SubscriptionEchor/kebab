@@ -37,9 +37,10 @@ export default function FeeUpdateModal({
     }
 
     if (isNaN(feeValue) || feeValue < 0 || feeValue > 100) {
-      toast.error(t('feeupdatemodel.validation.invalidFee'), {
-        description: t('feeupdatemodel.validation.feeRange')
-      });
+      toast.error(
+        t('feeupdatemodel.validation.invalidFee'),
+        { description: t('feeupdatemodel.validation.feeRange') }
+      );
       return;
     }
 
