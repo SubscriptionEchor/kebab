@@ -193,11 +193,10 @@ export default function RestaurantProfileView({
                 onChange={onInputChange}
                 disabled={!isFieldEditable('username')}
                 placeholder={t('restaurantprofile.enterusername')}
-                className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-md transition-shadow ${
-                  isFieldEditable('username')
+                className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-md transition-shadow ${isFieldEditable('username')
                     ? 'focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary'
                     : 'bg-gray-50 cursor-not-allowed'
-                }`}
+                  }`}
               />
             </div>
 
@@ -216,11 +215,10 @@ export default function RestaurantProfileView({
                 onChange={onInputChange}
                 disabled={!isFieldEditable('password')}
                 placeholder={t('restaurantprofile.enterpassword')}
-                className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-md transition-shadow ${
-                  isFieldEditable('password')
+                className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-md transition-shadow ${isFieldEditable('password')
                     ? 'focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary'
                     : 'bg-gray-50 cursor-not-allowed'
-                }`}
+                  }`}
               />
             </div>
           </div>
@@ -250,7 +248,7 @@ export default function RestaurantProfileView({
               />
             </div>
 
-            <div>
+            {/* <div>
               <label
                 htmlFor="minimumOrder"
                 className="block text-sm font-medium text-gray-700 mb-1"
@@ -271,9 +269,9 @@ export default function RestaurantProfileView({
                     : 'bg-gray-50 cursor-not-allowed'
                 }`}
               />
-            </div>
+            </div> */}
 
-            <div>
+            {/* <div>
               <label
                 htmlFor="deliveryTime"
                 className="block text-sm font-medium text-gray-700 mb-1"
@@ -294,7 +292,7 @@ export default function RestaurantProfileView({
                     : 'bg-gray-50 cursor-not-allowed'
                 }`}
               />
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -313,11 +311,10 @@ export default function RestaurantProfileView({
             onChange={onInputChange}
             disabled={!isFieldEditable('name')}
             placeholder={t('restaurantprofile.enterrestaurantname')}
-            className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-md transition-shadow ${
-              isFieldEditable('name')
+            className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-md transition-shadow ${isFieldEditable('name')
                 ? 'focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary'
                 : 'bg-gray-50 cursor-not-allowed'
-            }`}
+              }`}
           />
         </div>
 
@@ -337,11 +334,10 @@ export default function RestaurantProfileView({
               value={formData?.email}
               onChange={onInputChange}
               disabled={!isFieldEditable('email')}
-              className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-md transition-shadow ${
-                isFieldEditable('name')
+              className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-md transition-shadow ${isFieldEditable('name')
                   ? 'focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary'
                   : 'bg-gray-50 cursor-not-allowed'
-              }`}
+                }`}
             />
           </div>
         )}
@@ -362,11 +358,10 @@ export default function RestaurantProfileView({
               onChange={onInputChange}
               disabled={!isFieldEditable('phone')}
               placeholder={t('restaurantprofile.enterphonenumber')}
-              className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-md transition-shadow ${
-                isFieldEditable('phone')
+              className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-md transition-shadow ${isFieldEditable('phone')
                   ? 'focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary'
                   : 'bg-gray-50 cursor-not-allowed'
-              }`}
+                }`}
             />
           </div>
         )}
@@ -386,11 +381,10 @@ export default function RestaurantProfileView({
             disabled={!isFieldEditable('address')}
             placeholder={t('restaurantprofile.enterrestaurantaddress')}
             rows={3}
-            className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-md transition-shadow resize-none ${
-              isFieldEditable('address')
+            className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-md transition-shadow resize-none ${isFieldEditable('address')
                 ? 'focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary'
                 : 'bg-gray-50 cursor-not-allowed'
-            }`}
+              }`}
           />
         </div>
 
@@ -423,11 +417,10 @@ export default function RestaurantProfileView({
             )}
           </label>
           <div
-            className={`flex flex-wrap gap-2 p-2 border border-gray-300 rounded-md ${
-              isFieldEditable('cuisines')
+            className={`flex flex-wrap gap-2 p-2 border border-gray-300 rounded-md ${isFieldEditable('cuisines')
                 ? 'hover:border-brand-primary transition-colors cursor-pointer'
                 : 'bg-gray-50 cursor-not-allowed'
-            } min-h-[42px]`}
+              } min-h-[42px]`}
             onClick={(e) => {
               if (!isFieldEditable('cuisines')) {
                 e.preventDefault();
@@ -463,7 +456,7 @@ export default function RestaurantProfileView({
           </div>
         </div>
       </div>
-      
+
       {/* QR Code Section */}
       {!newRestaurant && formData.restaurantId && (
         <div className="col-span-2 mt-6">

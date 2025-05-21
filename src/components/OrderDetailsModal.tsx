@@ -26,17 +26,18 @@ interface OrderDetails {
 interface OrderDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  order: OrderDetails | null;
+  order: any | null;
 }
 
 export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetailsModalProps) {
   const currencySymbol = getCurrencySymbol();
-  
+
   if (!isOpen || !order) return null;
 
   const formatCurrency = (amount: number) => {
-    return `${currencySymbol}${amount.toFixed(2)}`;
+    return `${currencySymbol}${amount?.toFixed(2)}`;
   };
+
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
@@ -44,17 +45,16 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center">
             <ShoppingBag className="h-5 w-5 text-brand-primary mr-2" />
-            <h2 className="text-lg font-semibold text-gray-900">Order #{order.id}</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Order #{order?.id}</h2>
           </div>
           <div className="flex items-center space-x-4">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-              order.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-              order.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
-              order.status === 'Accepted' ? 'bg-purple-100 text-purple-800' :
-              'bg-yellow-100 text-yellow-800'
-            }`}>
-              {order.status}
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${order?.orderStatus === 'Delivered' ? 'bg-green-100 text-green-800' :
+              order.orderStatus === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                order.orderStatus === 'In Progress' ? 'bg-blue-100 text-blue-800' :
+                  order.orderStatus === 'Accepted' ? 'bg-purple-100 text-purple-800' :
+                    'bg-yellow-100 text-yellow-800'
+              }`}>
+              {order?.orderStatus}
             </span>
             <button
               onClick={onClose}
@@ -64,7 +64,7 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
             </button>
           </div>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto p-4">
           {/* Order Items */}
           <div className="space-y-4">
@@ -88,45 +88,59 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {order.items.map((item) => (
-                    <tr key={item.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {item.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
-                        {item.quantity}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
-                        {formatCurrency(item.price)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                        {formatCurrency(item.price * item.quantity)}
-                      </td>
-                    </tr>
-                  ))}
+                  {order?.items.map((item: any) => {
+                    let addonPrice = (item.addons?.reduce((addOnSum, addon) => {
+                      const optsTotal = addon.options?.reduce((optSum, opt) => optSum + opt.price, 0) ?? 0;
+                      return addOnSum + optsTotal;
+                    }, 0) ?? 0)
+
+                    return (
+                      <tr key={item.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {item?.title} ({item?.variation?.title})
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                          {item?.quantity}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                          {formatCurrency(
+                            // base variation price (or 0 if missing)
+                            (item.variation?.price ?? 0)
+                            + (addonPrice ?? 0)
+                            // total of all addon-option prices
+
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                          {formatCurrency(((item?.variation?.price || 0)
+                            + (addonPrice || 0)) * item?.quantity)}
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
           </div>
 
           {/* Customer Information (if available) */}
-          {(order.customerName || order.customerAddress || order.customerPhone) && (
+          {(order?.user && order?.deliveryAddress) && (
             <div className="mt-6 space-y-4">
               <h3 className="text-sm font-medium text-gray-700">Customer Information</h3>
               <div className="bg-gray-50 p-4 rounded-lg">
-                {order.customerName && (
+                {order?.user?.name && (
                   <p className="text-sm text-gray-700">
-                    <span className="font-medium">Name:</span> {order.customerName}
+                    <span className="font-medium">Name:</span> {order?.user?.name}
                   </p>
                 )}
-                {order.customerAddress && (
+                {order?.deliveryAddress?.deliveryAddress && (
                   <p className="text-sm text-gray-700 mt-2">
-                    <span className="font-medium">Address:</span> {order.customerAddress}
+                    <span className="font-medium">Address:</span> {order?.deliveryAddress?.deliveryAddress}
                   </p>
                 )}
-                {order.customerPhone && (
+                {order?.user?.phone && (
                   <p className="text-sm text-gray-700 mt-2">
-                    <span className="font-medium">Phone:</span> {order.customerPhone}
+                    <span className="font-medium">Phone:</span> {order?.user?.phone}
                   </p>
                 )}
               </div>
@@ -139,15 +153,15 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex justify-between py-2">
                 <span className="text-sm text-gray-500">Subtotal</span>
-                <span className="text-sm font-medium text-gray-900">{formatCurrency(order.subtotal)}</span>
+                <span className="text-sm font-medium text-gray-900">{formatCurrency(order?.orderAmount - order?.taxationAmount)}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-200">
                 <span className="text-sm text-gray-500">Tax</span>
-                <span className="text-sm font-medium text-gray-900">{formatCurrency(order.tax)}</span>
+                <span className="text-sm font-medium text-gray-900">{formatCurrency(order?.taxationAmount)}</span>
               </div>
               <div className="flex justify-between py-2 font-medium">
                 <span className="text-sm text-gray-900">Total</span>
-                <span className="text-sm text-gray-900">{formatCurrency(order.total)}</span>
+                <span className="text-sm text-gray-900">{formatCurrency(order?.orderAmount)}</span>
               </div>
             </div>
           </div>
@@ -161,7 +175,7 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
             </div>
           </div>
         </div>
-        
+
         <div className="flex justify-end p-4 border-t border-gray-200">
           <button
             onClick={onClose}

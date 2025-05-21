@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Search, Filter, ShoppingBag, Clock, CreditCard, ChevronDown, Eye } from 'lucide-react';
 import { toast } from 'sonner';
@@ -6,6 +6,10 @@ import Pagination from '../../components/Pagination';
 import OrderDetailsModal from '../../components/OrderDetailsModal';
 import { getCurrencySymbol } from '../../utils/currency';
 import { formatDate } from '../../utils/date';
+import { useLazyQuery, useQuery } from '@apollo/client';
+import { REST_ORDERS } from '../../lib/graphql/queries/orders';
+import moment from 'moment';
+import { debounce } from 'lodash';
 
 // Mock data for orders
 const generateMockOrders = (count = 50) => {
@@ -17,36 +21,36 @@ const generateMockOrders = (count = 50) => {
     'Chicken Wings', 'French Fries', 'Onion Rings', 'Mozzarella Sticks',
     'Chocolate Cake', 'Cheesecake', 'Ice Cream', 'Apple Pie'
   ];
-  
+
   const orders = [];
   const currencySymbol = getCurrencySymbol();
-  
+
   for (let i = 1; i <= count; i++) {
     const numItems = Math.floor(Math.random() * 5) + 1;
     const items = [];
     let subtotal = 0;
-    
+
     for (let j = 0; j < numItems; j++) {
       const dishName = dishes[Math.floor(Math.random() * dishes.length)];
       const price = parseFloat((Math.random() * 15 + 5).toFixed(2));
       const quantity = Math.floor(Math.random() * 3) + 1;
-      
+
       items.push({
         id: `item-${i}-${j}`,
         name: dishName,
         price: price,
         quantity: quantity
       });
-      
+
       subtotal += price * quantity;
     }
-    
+
     const tax = subtotal * 0.1; // 10% tax
     const total = subtotal + tax;
     const status = statuses[Math.floor(Math.random() * statuses.length)];
     const date = new Date();
     date.setDate(date.getDate() - Math.floor(Math.random() * 30));
-    
+
     orders.push({
       id: `ORD-${10000 + i}`,
       items: items,
@@ -63,7 +67,7 @@ const generateMockOrders = (count = 50) => {
       customerPhone: `+1 ${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`
     });
   }
-  
+
   return orders.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 };
 
@@ -77,38 +81,66 @@ export default function VendorOrders() {
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const rowsPerPage = 10;
   const currencySymbol = getCurrencySymbol();
-  
+
+  const [getOrders, { data }] = useLazyQuery(REST_ORDERS, {
+    fetchPolicy: 'cache-and-network'
+  });
+
+  const [debouncedSearch] = useState(() => {
+    const func = (value: string) => {
+      getOrders({
+        variables: {
+          restaurant: restaurantId,
+          page: currentPage,
+          rows: rowsPerPage,
+          search: value || null
+        }
+      });
+    };
+    return debounce(func, 500);
+  });
+
+  // // Initial fetch
+  // useEffect(() => {
+  //   getOrders({
+  //     variables: {
+  //       restaurant: restaurantId,
+  //       page: currentPage,
+  //       rows: rowsPerPage,
+  //       search: searchQuery || null
+  //     }
+  //   });
+  // }, [getOrders, restaurantId, currentPage, rowsPerPage]);
+
+  // Effect to handle debounced search
+  useEffect(() => {
+    debouncedSearch(searchQuery);
+    return () => debouncedSearch.cancel();
+  }, [searchQuery, restaurantId, currentPage, rowsPerPage, debouncedSearch]);
+
   // Generate mock orders
   const mockOrders = useMemo(() => generateMockOrders(), []);
-  
+
   // Filter orders based on search query and status filter
   const filteredOrders = useMemo(() => {
-    return mockOrders.filter(order => {
-      const matchesSearch = 
-        order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.itemsDisplay.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.status.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
-    });
-  }, [mockOrders, searchQuery, statusFilter]);
-  
+    return data?.ordersByRestId?.filter(order => {
+      const matchesStatus = statusFilter === 'all' || order.orderStatus === statusFilter;
+      return matchesStatus;
+    }) || []
+  }, [data?.ordersByRestId, statusFilter]);
   // Paginate orders
-  const paginatedOrders = useMemo(() => {
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    return filteredOrders.slice(startIndex, startIndex + rowsPerPage);
-  }, [filteredOrders, currentPage]);
-  
-  const totalPages = Math.ceil(filteredOrders.length / rowsPerPage);
-  
+  // const paginatedOrders = useMemo(() => {
+  //   const startIndex = (currentPage - 1) * rowsPerPage;
+  //   return filteredOrders.slice(startIndex, startIndex + rowsPerPage);
+  // }, [filteredOrders, currentPage]);
+
+  const totalPages = Math.ceil(filteredOrders?.length / rowsPerPage);
+
   const handleViewOrder = (order: any) => {
     setSelectedOrder(order);
     setShowOrderDetails(true);
   };
-  
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Delivered':
@@ -123,7 +155,7 @@ export default function VendorOrders() {
         return 'bg-yellow-100 text-yellow-800 ring-1 ring-yellow-600/20';
     }
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -141,7 +173,7 @@ export default function VendorOrders() {
               </span>
               <ChevronDown className="h-4 w-4 ml-2" />
             </button>
-            
+
             {showStatusFilter && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
                 <button
@@ -201,7 +233,7 @@ export default function VendorOrders() {
               </div>
             )}
           </div>
-          
+
           {/* Search Input */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -246,21 +278,21 @@ export default function VendorOrders() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedOrders.map((order) => (
-                <tr 
-                  key={order.id} 
+              {filteredOrders.map((order) => (
+                <tr
+                  key={order.id}
                   className="hover:bg-gray-50 transition-colors cursor-pointer"
                   onClick={() => handleViewOrder(order)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <ShoppingBag className="h-5 w-5 text-gray-400 mr-2" />
-                      <span className="text-sm font-medium text-gray-900">{order.id}</span>
+                      <span className="text-sm font-medium text-gray-900">{order.orderId}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900 max-w-xs truncate">
-                      {order.items.map(item => `${item.name} (${item.quantity})`).join(', ')}
+                      {order.items.map(item => `${item.title} (${item.quantity})`).join(', ')}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -271,13 +303,13 @@ export default function VendorOrders() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                      {order.status}
+                      {order.orderStatus}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center text-sm text-gray-500">
                       <Clock className="h-4 w-4 mr-1 text-gray-400" />
-                      {formatDate(order.updatedAt)}
+                      {moment(order.updatedAt).utc().format("YYYY-MM-DD HH:mm")}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -297,20 +329,20 @@ export default function VendorOrders() {
             </tbody>
           </table>
         </div>
-        
+
         {/* Empty State */}
         {filteredOrders.length === 0 && (
           <div className="text-center py-12">
             <ShoppingBag className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              {searchQuery || statusFilter !== 'all' 
+              {searchQuery || statusFilter !== 'all'
                 ? "Try adjusting your search or filter criteria"
                 : "When customers place orders, they will appear here"}
             </p>
           </div>
         )}
-        
+
         {/* Pagination */}
         {filteredOrders.length > 0 && (
           <div className="px-4 py-3 bg-white border-t border-gray-200">
@@ -322,17 +354,17 @@ export default function VendorOrders() {
           </div>
         )}
       </div>
-      
+
       {/* Order Details Modal */}
       <OrderDetailsModal
         isOpen={showOrderDetails}
         onClose={() => setShowOrderDetails(false)}
         order={selectedOrder}
       />
-      
+
       {/* Click outside handler for status filter */}
       {showStatusFilter && (
-        <div 
+        <div
           className="fixed inset-0 z-0"
           onClick={() => setShowStatusFilter(false)}
         />

@@ -69,6 +69,8 @@ export default function RestaurantProfile() {
           email: data.restaurant.owner?.email || '',
           phone: data.restaurant.phone || '',
           name: data.restaurant.name || '',
+          username: data.restaurant.username || '',
+          password: data.restaurant.password || '',
           address: data.restaurant.address || '',
           shopType: data.restaurant.shopType || '',
           cuisines: data.restaurant.cuisines || []

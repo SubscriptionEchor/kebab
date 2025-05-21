@@ -1,17 +1,20 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { config } from '../constants';
-const MapSearch = ({ setMarkerPosition, searchText, setSearchText }) => {
+const MapSearch = ({ setMarkerPosition, searchText = '', setSearchText }) => {
 
     const [searchResults, setSearchResults] = useState([]);
     const [loader, setLoader] = useState(false)
-    const [localSearch, setLocalSearch] = useState(searchText || '')
+    const [localSearch, setLocalSearch] = useState(searchText)
     const searchRef = useRef(null)
 
     // Add click outside handler
 
     useEffect(() => {
-        setLocalSearch(searchText)
+        if (searchText !== localSearch) {
+            setLocalSearch(searchText)
+        }
+        
         const handleClickOutside = (event) => {
             if (searchRef.current && !searchRef.current.contains(event.target)) {
                 setSearchResults([]);
@@ -74,13 +77,12 @@ const MapSearch = ({ setMarkerPosition, searchText, setSearchText }) => {
             style={{
                 position: 'absolute',
                 top: '10px',
-                right: '10px',
+                left: '10px',
                 background: 'white',
                 padding: '10px',
                 borderRadius: '4px',
                 boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                zIndex: 100000000
-
+                zIndex: 1000
             }}>
             <input
                 type="text"
@@ -96,11 +98,10 @@ const MapSearch = ({ setMarkerPosition, searchText, setSearchText }) => {
                 placeholder="Search location"
                 style={{
                     padding: '5px',
-                    marginRight: '10px',
+                    width: '200px',
                     border: '1px solid #ddd',
                     borderRadius: '3px',
-                    zIndex: 100000000,
-
+                    zIndex: 1000,
                 }}
             />
 
@@ -136,23 +137,11 @@ const MapSearch = ({ setMarkerPosition, searchText, setSearchText }) => {
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        padding: '10px'
+                        padding: '5px'
                     }}>
                         loading...
                     </div>
                 )}
-            {/* <button 
-        onClick={}
-        style={{
-          padding: '5px 10px',
-          background: '#f0f0f0',
-          border: '1px solid #ddd',
-          borderRadius: '3px',
-          cursor: 'pointer',
-        }}
-      >
-        Search
-      </button> */}
         </div >
     );
 };

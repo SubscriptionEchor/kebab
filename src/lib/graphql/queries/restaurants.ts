@@ -13,6 +13,8 @@ export const CREATE_RESTAURANT = gql`mutation CreateRestaurant($restaurant: Rest
 export const GET_RESTAURANT = gql`
   query Restaurant($id: String) {
     restaurant(id: $id) {
+    username
+    password
       _id
       name
       image
@@ -25,6 +27,7 @@ export const GET_RESTAURANT = gql`
       cuisines
       googleMapLink
       __typename
+      orderPrefix
       onboardingApplicationId
       owner {
         email

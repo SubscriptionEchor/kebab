@@ -1,11 +1,18 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useContext } from 'react';
 import { PlusCircle, Save, X, Upload, ChevronDown, ChevronRight, Check, Trash2, Plus, DollarSign, Edit2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Select from 'react-select';
 import { toast } from 'sonner';
+import { useCurrency } from '../../contexts/CurrencyContext';
+import { useMutation, useQuery } from '@apollo/client';
+import { CREATE_MENU, GET_MENU, UPDATE_MENU, DELETE_MENU, OUT_OF_STOCK } from '../../lib/graphql/queries/menu';
+import { useParams } from 'react-router-dom';
+import { uploadImage } from '../../lib/api/upload';
+
 
 // Types
 interface MenuItemFormData {
+  internalName: string;
   title: string;
   description: string;
   category: { value: string; label: string } | null;
@@ -51,6 +58,7 @@ interface CustomOption {
 }
 
 interface MenuItem {
+  internalName: String;
   id: string;
   title: string;
   description: string;
@@ -140,7 +148,7 @@ export default function Menu() {
   const [showForm, setShowForm] = useState(false);
   const [showOptionsPanel, setShowOptionsPanel] = useState(false);
   const [currentVariationId, setCurrentVariationId] = useState<string | null>(null);
-  const [availableOptions, setAvailableOptions] = useState<OptionItem[]>(AVAILABLE_OPTIONS);
+  const [availableOptions, setAvailableOptions] = useState<any>([]);
   const [activeOptionsTab, setActiveOptionsTab] = useState<OptionsTab>('available');
   const [selectedDishes, setSelectedDishes] = useState<Dish[]>([]);
   const [showPriceModal, setShowPriceModal] = useState(false);
@@ -155,7 +163,8 @@ export default function Menu() {
   });
   const [editItemId, setEditItemId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const { bootStrapData } = useCurrency()
+  const { restaurantId } = useParams()
   // Initialize menuItems from localStorage
   const [menuItems, setMenuItems] = useState<MenuItem[]>(() => {
     const savedItems = localStorage.getItem('menuItems');
@@ -168,6 +177,7 @@ export default function Menu() {
   }, [menuItems]);
 
   const initialFormState: MenuItemFormData = {
+    internalName: "",
     title: '',
     description: '',
     category: null,
@@ -188,8 +198,51 @@ export default function Menu() {
     ],
   };
 
-  const [formData, setFormData] = useState<MenuItemFormData>(initialFormState);
+  const [formData, setFormData] = useState<any>(initialFormState);
+  const [menuData, setMenuData] = useState<any>([])
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [variations, setVariations] = useState([])
+  const [isDeleting, setIsDeleting] = useState(false);
 
+  const [CREATE_NEW_MENU] = useMutation(CREATE_MENU)
+  const [UPDATE_NEW_MENU] = useMutation(UPDATE_MENU)
+  const [DELETE_NEW_MENU] = useMutation(DELETE_MENU)
+  const [OUT_OF_STOCK_MENU] = useMutation(OUT_OF_STOCK)
+
+  const { data, loading, error, refetch } = useQuery(GET_MENU, {
+    variables: {
+      restaurantId: restaurantId
+    },
+    fetchPolicy: 'cache-and-network',
+    onError: (error) => {
+      const errorMessage = error.graphQLErrors?.[0]?.message || error.message;
+      console.error('Failed to fetch restaurant applications:', errorMessage);
+      toast.error(errorMessage || t('rejected.failedtofetchapplications'));
+    },
+  });
+
+  useEffect(() => {
+    if (data?.getMenu?.food?.length) {
+      setMenuData(data?.getMenu?.food)
+    }
+    if (data?.getMenu?.optionSetList?.length) {
+
+      let updatedOptionSetList = data?.getMenu?.optionSetList.map(optionSet => {
+        return {
+          ...optionSet,
+          dishes: optionSet.optionData?.map(option => {
+            const food = data?.getMenu?.food.find(food => food?._id === option.foodId);
+            return {
+              ...option,
+              name: food?.name || null
+            };
+          }) || []
+        };
+      });
+      setVariations(updatedOptionSetList)
+    }
+  }, [data])
   // Form handlers
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -204,7 +257,6 @@ export default function Menu() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload an image file');
       return;
@@ -213,7 +265,7 @@ export default function Menu() {
     const img = new Image();
     img.onload = () => {
       const aspectRatio = img.width / img.height;
-      if (Math.abs(aspectRatio - 4/3) > 0.1) {
+      if (Math.abs(aspectRatio - 4 / 3) > 0.1) {
         toast.error('Please upload an image with a 4:3 aspect ratio');
         return;
       }
@@ -244,36 +296,36 @@ export default function Menu() {
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    e.currentTarget.classList.remove('border-brand-primary', 'bg-brand-accent/10');
+    // e.currentTarget.classList.remove('border-brand-primary', 'bg-brand-accent/10');
 
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image file');
-      return;
-    }
+    // if (!file.type.startsWith('image/')) {
+    //   toast.error('Please upload an image file');
+    //   return;
+    // }
 
-    const img = new Image();
-    img.onload = () => {
-      const aspectRatio = img.width / img.height;
-      if (Math.abs(aspectRatio - 4/3) > 0.1) {
-        toast.error('Please upload an image with a 4:3 aspect ratio');
-        return;
-      }
+    // const img = new Image();
+    // img.onload = () => {
+    //   const aspectRatio = img.width / img.height;
+    //   if (Math.abs(aspectRatio - 4 / 3) > 0.1) {
+    //     toast.error('Please upload an image with a 4:3 aspect ratio');
+    //     return;
+    //   }
 
-      setFormData((prev) => ({
-        ...prev,
-        image: file,
-        imagePreview: URL.createObjectURL(file),
-      }));
-    };
+    //   setFormData((prev) => ({
+    //     ...prev,
+    //     image: file,
+    //     imagePreview: URL.createObjectURL(file),
+    //   }));
+    // };
 
-    img.onerror = () => {
-      toast.error('Failed to load image');
-    };
+    // img.onerror = () => {
+    //   toast.error('Failed to load image');
+    // };
 
-    img.src = URL.createObjectURL(file);
+    // img.src = URL.createObjectURL(file);
   };
 
   // Variation handlers
@@ -317,44 +369,38 @@ export default function Menu() {
 
   // Options handlers
   const toggleOptionSelection = (optionId: string) => {
-    setAvailableOptions((prev) =>
-      prev.map((option) =>
-        option.id === optionId
-          ? { ...option, selected: !option.selected }
-          : option
-      )
-    );
+    if (!availableOptions?.length) {
+      setAvailableOptions([optionId])
+    }
+    else {
+      if (availableOptions.includes(optionId)) {
+        setAvailableOptions((prev) => prev.filter((opt: any) => opt !== optionId));
+      } else {
+        setAvailableOptions((prev) => [...prev, optionId]);
+      }
+    }
+
   };
 
   const handleOpenOptionsPanel = (variationId: string) => {
     setCurrentVariationId(variationId);
     setShowOptionsPanel(true);
-
     const currentVariation = formData.variations.find((v) => v.id === variationId);
-    if (currentVariation && currentVariation.selectedOptions) {
-      setAvailableOptions((prev) =>
-        prev.map((option) => ({
-          ...option,
-          selected: !!currentVariation.selectedOptions?.find((o) => o.id === option.id),
-        }))
-      );
-    } else {
-      setAvailableOptions((prev) => prev.map((option) => ({ ...option, selected: false })));
-    }
-
+    setAvailableOptions(currentVariation?.optionSetList || [])
     setActiveOptionsTab('available');
   };
 
   const handleSaveOptions = () => {
+    console.log(currentVariationId)
     if (!currentVariationId) return;
 
-    const selectedOptions = availableOptions.filter((option) => option.selected);
+    // const selectedOptions = availableOptions.filter((option) => option.selected);
 
     setFormData((prev) => ({
       ...prev,
       variations: prev.variations.map((variation) =>
         variation.id === currentVariationId
-          ? { ...variation, selectedOptions }
+          ? { ...variation, optionSetList: availableOptions }
           : variation
       ),
     }));
@@ -362,6 +408,7 @@ export default function Menu() {
     toast.success('Options saved successfully');
     setShowOptionsPanel(false);
   };
+
 
   const handleCustomOptionChange = (field: keyof CustomOption, value: string) => {
     setCustomOption((prev) => ({
@@ -380,7 +427,7 @@ export default function Menu() {
 
   const handleAddDish = () => {
     if (!currentDish) return;
-
+    // console.log(formData)
     const newDish: Dish = {
       id: currentDish.value,
       name: currentDish.label,
@@ -393,57 +440,206 @@ export default function Menu() {
     setCurrentDish(null);
     setNewPrice('');
 
-    toast.success('Dish added successfully');
+    // toast.success('Dish added successfully');
   };
 
   const handleRemoveDish = (dishId: string) => {
     setSelectedDishes((prev) => prev.filter((dish) => dish.id !== dishId));
   };
 
-  // Edit and Delete handlers
-  const handleEdit = (item: MenuItem) => {
-    setEditItemId(item.id);
-    setFormData({
-      title: item.title,
+  // Helper function to transform item data
+  const transformItemData = (item: any) => {
+    const diet = bootStrapData?.dietaryOptions?.find((item1: any) => item1?.enumVal == item?.dietaryType?.[0]);
+
+    const allergen = item?.allergen?.map((item: string) =>
+      bootStrapData?.allergens?.find((allergen: any) => allergen?.enumVal === item)
+    )
+      .filter(Boolean)
+      .map((allergen: any) => ({
+        ...allergen,
+        label: allergen?.displayName,
+        value: allergen?.enumVal
+      }));
+
+    const tags = item?.tags?.map((item: string) =>
+      bootStrapData?.foodTags?.find((tag: any) => tag?.enumVal === item)
+    )
+      .filter(Boolean)
+      .map((tag: any) => ({
+        ...tag,
+        label: tag?.displayName,
+        value: tag?.enumVal
+      }));
+
+    return {
+      id: item?._id,
+      internalName: item?.internalName,
+      title: item.name,
       description: item.description,
-      category: item.category,
-      dietary: null,
-      allergens: [],
-      tags: [],
-      showInMenu: true,
-      image: null,
-      imagePreview: item.imagePreview || null,
-      variations: [
-        {
-          id: '1',
-          title: 'Regular',
-          price: item.price,
-          discounted: false,
-          discountPrice: '',
-        },
-      ],
-    });
+      dietary: diet ? {
+        ...diet,
+        label: diet?.displayName,
+        value: diet?.enumVal
+      } : null,
+      allergens: allergen,
+      tags: tags,
+      showInMenu: !item?.hiddenFromMenu,
+      image: item?.imageData?.images?.[0]?.url || null,
+      imagePreview: item?.imageData?.images?.[0]?.url || null,
+      variations: item?.variationList?.map((item: any, index: number) => ({
+        ...item,
+        price: String(item?.price),
+        discounted: Boolean(item?.discountedPrice),
+        discountPrice: String(item?.discountedPrice),
+        id: index + 1
+      }))
+    };
+  };
+
+  // Edit and Delete handlers
+  const handleEdit = (item: any) => {
+    setEditItemId(item.id);
+    setFormData(transformItemData(item));
     setShowForm(true);
   };
 
+  const toggleStatus = async (item: any) => {
+    const payload = transformItemData(item);
+
+    try {
+      // Prepare menu item data
+      const newMenuItem: any = {
+        internalName: payload.internalName,
+        active: !item?.active,
+        allergen: payload.allergens?.map((item: any) => item?.value),
+        dietaryType: [payload.dietary?.value],
+        hasVariation: payload.variations?.length > 1,
+        hiddenFromMenu: !payload.showInMenu,
+        name: payload.title,
+        description: payload.description,
+        outOfStock: false,
+        tags: payload.tags?.map((item: any) => item?.value),
+        variationList: payload.variations?.map((item: any) => ({
+          title: item?.title,
+          optionSetList: item?.optionSetList || [],
+          outOfStock: false,
+          discountedPrice: parseFloat(item?.discountPrice),
+          price: parseFloat(item?.price),
+          "type": "ACTUAL_VARIATION",
+        }))
+      };
+
+      const imageData = {
+        images: [{
+          type: "MAIN",
+          url: payload.imagePreview?.includes("blob")
+            ? await (async () => {
+              const imageFormData = new FormData();
+              imageFormData.append("file", payload.image);
+              const uploadResult = await uploadImage(imageFormData) as any;
+
+              if (!uploadResult?.success) {
+                toast.error(uploadResult?.error || "Failed to upload image");
+                return null;
+              }
+
+              return uploadResult.url;
+            })()
+            : payload.image
+        }]
+      };
+
+      if (imageData.images[0].url) {
+        newMenuItem.imageData = imageData;
+      }
+
+      // Make the update API call
+      const { data } = await UPDATE_NEW_MENU({
+        variables: {
+          restaurantId,
+          input: { ...newMenuItem, _id: payload.id },
+          updateFoodNewId: payload.id
+        }
+      });
+
+      if (!data?.updateFoodNew) {
+        throw new Error('Failed to update menu item');
+      }
+
+      // Update the menu data state
+      setMenuData((prev: any) =>
+        prev.map((item: any) =>
+          item._id === payload.id ? data.updateFoodNew : item
+        )
+      );
+
+      toast.success('Menu item updated successfully');
+      return data.updateFoodNew;
+
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update menu item');
+      throw error;
+    }
+    // Add any additional toggle status logic here
+  };
+
   const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this menu item?')) {
-      setMenuItems((prev) => prev.filter((item) => item.id !== id));
+    setItemToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+
+    try {
+      if (!itemToDelete) return;
+      setIsDeleting(true);
+
+      const { data } = await DELETE_NEW_MENU({
+        variables: {
+          restaurantId,
+          deleteFoodNewId: itemToDelete
+        }
+      });
+
+      setMenuData((prev: any) => prev.filter((item: any) => item._id !== itemToDelete));
       toast.success('Menu item deleted successfully');
+      setShowDeleteModal(false);
+      setItemToDelete(null);
+    } catch (error) {
+      toast.error('Failed to delete menu item');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  const toggleOutOfStock = (id: string) => {
-    setMenuItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, outOfStock: !item.outOfStock } : item
-      )
-    );
-    toast.success('Stock status updated');
+  // Add this JSX at the end of your component, just before the final closing div:
+
+
+  const toggleOutOfStock = async (id: string) => {
+    try {
+      await OUT_OF_STOCK_MENU({
+        variables: {
+          foodId: id,
+          restaurantId
+        }
+      })
+      setMenuData((prev) =>
+        prev.map((item: any) =>
+          item?._id === id ? { ...item, outOfStock: !item.outOfStock } : item
+        )
+      );
+      toast.success('Stock status updated');
+    }
+    catch (e) {
+      console.log(e)
+      toast.success('failed to toogle out of stock');
+    }
   };
 
+  console.log(menuItems)
+
   // Form submission
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setIsLoading(true);
 
     // Validate form
@@ -452,13 +648,36 @@ export default function Menu() {
       setIsLoading(false);
       return;
     }
-
-    if (!formData.category) {
-      toast.error('Category is required');
+    if (!formData.internalName.trim()) {
+      toast.error('InternalName is required');
       setIsLoading(false);
       return;
     }
-
+    if (!formData.description.trim()) {
+      toast.error('Description is required');
+      setIsLoading(false);
+      return;
+    }
+    if (!formData?.allergens?.length) {
+      toast.error('Atleast one allergen is required');
+      setIsLoading(false);
+      return;
+    }
+    if (!formData?.dietary) {
+      toast.error('Atleast one dietary is required');
+      setIsLoading(false);
+      return;
+    }
+    if (!formData?.image) {
+      toast.error('Image is required');
+      setIsLoading(false);
+      return;
+    }
+    if (!formData?.variations?.length) {
+      toast.error('Atleast one variation is required');
+      setIsLoading(false);
+      return;
+    }
     for (const variation of formData.variations) {
       if (!variation.title.trim()) {
         toast.error('Variation title is required');
@@ -466,7 +685,8 @@ export default function Menu() {
         return;
       }
 
-      if (!variation.price.trim() || isNaN(parseFloat(variation.price))) {
+
+      if (!variation?.price?.trim() || isNaN(parseFloat(variation.price))) {
         toast.error('Valid price is required for all variations');
         setIsLoading(false);
         return;
@@ -479,34 +699,116 @@ export default function Menu() {
       }
     }
 
-    // Create or update menu item
-    const newMenuItem: MenuItem = {
-      id: editItemId || Date.now().toString(),
-      title: formData.title,
+    const newMenuItem: any = {
+      internalName: formData?.internalName,
+      active: true,
+      allergen: formData?.allergens?.map((item: any) => item?.value),
+      dietaryType: [formData?.dietary?.value],
+      hasVariation: formData?.variations?.length > 1,
+      hiddenFromMenu: !formData?.showInMenu,
+      name: formData.title,
       description: formData.description,
-      category: formData.category,
-      price: formData.variations[0].price,
-      imagePreview: formData.imagePreview,
-      outOfStock: editItemId ? menuItems.find((item) => item.id === editItemId)?.outOfStock || false : false,
+      // price: parseFloat(formData.variations[0].price),
+      outOfStock: false,
+      tags: formData?.tags?.map((item: any) => item?.value),
+      variationList: formData?.variations?.map((item: any) => ({
+        title: item?.title,
+        optionSetList: item?.optionSetList || [],
+        outOfStock: false,
+        discountedPrice: parseFloat(item?.discountPrice),
+        price: parseFloat(item?.price),
+        "type": "ACTUAL_VARIATION",
+      }))
+    };
+    const imageData = {
+      images: [{
+        type: "MAIN",
+        url: formData?.imagePreview?.includes("blob")
+          ? await (async () => {
+            const imageFormData = new FormData();
+            imageFormData.append("file", formData?.image);
+            const uploadResult = await uploadImage(imageFormData) as any;
+
+            if (!uploadResult?.success) {
+              toast.error(uploadResult?.error || "Failed to upload image");
+              return null;
+            }
+
+            return uploadResult.url;
+          })()
+          : formData?.image
+      }]
     };
 
-    // Simulate API call
-    setTimeout(() => {
-      if (editItemId) {
-        setMenuItems((prev) =>
-          prev.map((item) => (item.id === editItemId ? newMenuItem : item))
+    if (imageData.images[0].url) {
+      newMenuItem.imageData = imageData;
+    }
+    try {
+      try {
+        const mutation = formData?.id ? UPDATE_NEW_MENU : CREATE_NEW_MENU;
+        const variables = formData?.id ? {
+          restaurantId,
+          input: { ...newMenuItem, _id: formData.id },
+          updateFoodNewId: formData.id
+        } : {
+          restaurantId,
+          input: newMenuItem
+        };
+
+        const { data, errors } = await mutation({ variables });
+
+        if (errors) {
+          throw new Error(Array.isArray(errors) ? errors[0].message : 'Operation failed');
+        }
+
+        const updatedItem = formData?.id ? data?.updateFoodNew : data?.createFoodNew;
+
+        if (!updatedItem) {
+          throw new Error('No data received from server');
+        }
+
+        setMenuData((prev: any) =>
+          formData?.id
+            ? prev.map((item: any) => item._id === updatedItem._id ? updatedItem : item)
+            : [...prev, updatedItem]
         );
-        toast.success('Menu item updated successfully');
-        setEditItemId(null);
-      } else {
-        setMenuItems((prev) => [...prev, newMenuItem]);
-        toast.success('Menu item saved successfully');
+        setFormData({
+          internalName: "",
+          title: '',
+          description: '',
+          category: null,
+          dietary: null,
+          allergens: [],
+          tags: [],
+          showInMenu: true,
+          image: null,
+          imagePreview: null,
+          variations: [
+            {
+              id: '1',
+              title: 'Regular',
+              price: '',
+              discounted: false,
+              discountPrice: '',
+            },
+          ]
+        })
+
+        setShowForm(false);
+        toast.success(`Menu item ${formData?.id ? 'updated' : 'created'} successfully`);
+
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
+      } finally {
+        setIsLoading(false);
       }
+    } catch (error) {
+      console.error('Error creating menu item:', error);
+      toast.error('Failed to create menu item');
       setIsLoading(false);
-      setShowForm(false);
-      setFormData(initialFormState);
-    }, 1500);
+    }
   };
+
 
   const handleCancel = () => {
     setShowForm(false);
@@ -528,8 +830,8 @@ export default function Menu() {
       backgroundColor: state.isSelected
         ? '#EDCC27'
         : state.isFocused
-        ? '#F4E7B0'
-        : base.backgroundColor,
+          ? '#F4E7B0'
+          : base.backgroundColor,
       color: state.isSelected ? 'black' : 'inherit',
       '&:active': {
         backgroundColor: '#EDCC27',
@@ -595,7 +897,7 @@ export default function Menu() {
       </div>
 
       {!showForm ? (
-        menuItems.length === 0 ? (
+        menuData?.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12">
             <div className="text-center">
               <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -606,7 +908,30 @@ export default function Menu() {
                 Start building your restaurant menu by adding categories and items. Your customers will be able to browse and order from this menu.
               </p>
               <button
-                onClick={() => setShowForm(true)}
+                onClick={() => {
+                  setFormData({
+                    internalName: "",
+                    title: '',
+                    description: '',
+                    category: null,
+                    dietary: null,
+                    allergens: [],
+                    tags: [],
+                    showInMenu: true,
+                    image: null,
+                    imagePreview: null,
+                    variations: [
+                      {
+                        id: '1',
+                        title: 'Regular',
+                        price: '',
+                        discounted: false,
+                        discountPrice: '',
+                      },
+                    ]
+                  })
+                  setShowForm(true)
+                }}
                 className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors inline-flex items-center"
               >
                 <PlusCircle className="h-4 w-4 mr-2" />
@@ -634,21 +959,28 @@ export default function Menu() {
                       Description
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Price
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Out of Stock
                     </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {menuItems.map((item) => (
+                  {menuData?.map((item) => (
                     <tr key={item.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {item.imagePreview ? (
+                        {item.imageData?.images[0]?.url ? (
                           <img
-                            src={item.imagePreview}
-                            alt={item.title}
+                            src={item.imageData?.images[0]?.url}
+                            alt={item.name}
                             className="h-12 w-16 object-cover rounded-md"
                           />
                         ) : (
@@ -658,25 +990,39 @@ export default function Menu() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {item.title}
+                        {item.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {item.category?.label || 'N/A'}
                       </td>
+
                       <td className="px-6 py-4 text-sm text-gray-500">
                         <div className="max-w-xs truncate">{item.description || 'No description'}</div>
                       </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        <div className="max-w-xs truncate">{bootStrapData?.currencyConfig?.currencySymbol} {item?.variationList?.[0]?.price || 'No description'}</div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <button
-                          onClick={() => toggleOutOfStock(item.id)}
-                          className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-200 ease-in-out ${
-                            item.outOfStock ? 'bg-gray-200' : 'bg-brand-primary'
-                          }`}
+                          onClick={() => toggleOutOfStock(item?._id)}
+                          className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-200 ease-in-out ${!item.outOfStock ? 'bg-gray-200' : 'bg-brand-primary'
+                            }`}
                         >
                           <span
-                            className={`inline-block h-4 w-4 rounded-full bg-white transform transition-transform duration-200 ease-in-out ${
-                              item.outOfStock ? 'translate-x-1' : 'translate-x-6'
+                            className={`inline-block h-4 w-4 rounded-full bg-white transform transition-transform duration-200 ease-in-out ${!item.outOfStock ? 'translate-x-1' : 'translate-x-6'
+                              }`}
+                          />
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <button
+                          onClick={() => toggleStatus(item)}
+                          className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-200 ease-in-out ${!item.active ? 'bg-gray-200' : 'bg-brand-primary'
                             }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 rounded-full bg-white transform transition-transform duration-200 ease-in-out ${!item.active ? 'translate-x-1' : 'translate-x-6'
+                              }`}
                           />
                         </button>
                       </td>
@@ -690,7 +1036,7 @@ export default function Menu() {
                             <Edit2 className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => handleDelete(item.id)}
+                            onClick={() => handleDelete(item?._id)}
                             className="text-red-600 hover:text-red-800"
                             title="Delete"
                           >
@@ -734,6 +1080,20 @@ export default function Menu() {
                   placeholder="Enter dish name"
                 />
               </div>
+              <div>
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                  Internal Name
+                </label>
+                <input
+                  type="text"
+                  id="internalName"
+                  name="internalName"
+                  value={formData.internalName}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary"
+                  placeholder="Enter dish name"
+                />
+              </div>
 
               {/* Description */}
               <div>
@@ -751,23 +1111,23 @@ export default function Menu() {
                 />
               </div>
 
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="showInMenu"
+                  name="showInMenu"
+                  checked={formData.showInMenu}
+                  onChange={handleCheckboxChange}
+                  className="h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
+                />
+                <label htmlFor="showInMenu" className="ml-2 block text-sm text-gray-700">
+                  Show this dish in menu
+                </label>
+              </div>
+
               {/* Category & Dietary */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-                    Category
-                  </label>
-                  <Select
-                    id="category"
-                    options={CATEGORIES}
-                    value={formData.category}
-                    onChange={(option) => setFormData((prev) => ({ ...prev, category: option }))}
-                    placeholder="Select category"
-                    className="react-select-container"
-                    classNamePrefix="react-select"
-                    styles={selectStyles}
-                  />
-                </div>
+
 
                 <div>
                   <label htmlFor="dietary" className="block text-sm font-medium text-gray-700 mb-1">
@@ -775,7 +1135,7 @@ export default function Menu() {
                   </label>
                   <Select
                     id="dietary"
-                    options={DIETARY_OPTIONS}
+                    options={bootStrapData?.dietaryOptions?.map((item: any) => ({ ...item, value: item?.enumVal, label: item?.displayName }))}
                     value={formData.dietary}
                     onChange={(option) => setFormData((prev) => ({ ...prev, dietary: option }))}
                     placeholder="Select dietary option"
@@ -794,7 +1154,7 @@ export default function Menu() {
                   </label>
                   <Select
                     id="allergens"
-                    options={ALLERGENS}
+                    options={bootStrapData?.allergens?.map((item: any) => ({ ...item, value: item?.enumVal, label: item?.displayName }))}
                     value={formData.allergens}
                     onChange={(options) => setFormData((prev) => ({ ...prev, allergens: options }))}
                     placeholder="Select allergens"
@@ -811,7 +1171,7 @@ export default function Menu() {
                   </label>
                   <Select
                     id="tags"
-                    options={TAGS}
+                    options={bootStrapData?.foodTags?.map((item: any) => ({ ...item, value: item?.enumVal, label: item?.displayName }))}
                     value={formData.tags}
                     onChange={(options) => setFormData((prev) => ({ ...prev, tags: options }))}
                     placeholder="Select tags"
@@ -824,19 +1184,7 @@ export default function Menu() {
               </div>
 
               {/* Show in Menu Checkbox */}
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="showInMenu"
-                  name="showInMenu"
-                  checked={formData.showInMenu}
-                  onChange={handleCheckboxChange}
-                  className="h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
-                />
-                <label htmlFor="showInMenu" className="ml-2 block text-sm text-gray-700">
-                  Show this dish in menu
-                </label>
-              </div>
+
 
               {/* Variations Section */}
               <div>
@@ -917,7 +1265,7 @@ export default function Menu() {
 
                       {/* Options Button for each variation */}
                       <div>
-                        {variation.selectedOptions && variation.selectedOptions.length > 0 && (
+                        {/* {variation.selectedOptions && variation.selectedOptions.length > 0 && (
                           <div className="mb-3 space-y-2">
                             <h5 className="text-sm font-medium text-gray-700">Selected Options:</h5>
                             <div className="space-y-2">
@@ -937,9 +1285,9 @@ export default function Menu() {
                                           variations: prev.variations.map((v) =>
                                             v.id === variation.id
                                               ? {
-                                                  ...v,
-                                                  selectedOptions: v.selectedOptions?.filter((o) => o.id !== option.id) || [],
-                                                }
+                                                ...v,
+                                                selectedOptions: v.selectedOptions?.filter((o) => o.id !== option.id) || [],
+                                              }
                                               : v
                                           ),
                                         }));
@@ -956,7 +1304,7 @@ export default function Menu() {
                               ))}
                             </div>
                           </div>
-                        )}
+                        )} */}
                         <button
                           onClick={() => handleOpenOptionsPanel(variation.id)}
                           className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors"
@@ -985,9 +1333,9 @@ export default function Menu() {
               <div
                 className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:border-brand-primary transition-colors"
                 onClick={() => fileInputRef.current?.click()}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
+              // onDragOver={handleDragOver}
+              // onDragLeave={handleDragLeave}
+              // onDrop={handleDrop}
               >
                 <div className="space-y-1 text-center">
                   {formData.imagePreview ? (
@@ -1015,6 +1363,9 @@ export default function Menu() {
                         <label
                           htmlFor="file-upload"
                           className="relative cursor-pointer bg-white rounded-md font-medium text-brand-primary hover:text-brand-primary/80"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
                         >
                           <span>Upload a file</span>
                           <input
@@ -1058,24 +1409,22 @@ export default function Menu() {
             <div className="flex border-b border-gray-200">
               <button
                 onClick={() => setActiveOptionsTab('available')}
-                className={`px-4 py-2 text-sm font-medium ${
-                  activeOptionsTab === 'available'
-                    ? 'border-b-2 border-brand-primary text-brand-primary'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`px-4 py-2 text-sm font-medium ${activeOptionsTab === 'available'
+                  ? 'border-b-2 border-brand-primary text-brand-primary'
+                  : 'text-gray-500 hover:text-gray-700'
+                  }`}
               >
                 Available options
               </button>
-              <button
+              {/* <button
                 onClick={() => setActiveOptionsTab('custom')}
-                className={`px-4 py-2 text-sm font-medium ${
-                  activeOptionsTab === 'custom'
-                    ? 'border-b-2 border-brand-primary text-brand-primary'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`px-4 py-2 text-sm font-medium ${activeOptionsTab === 'custom'
+                  ? 'border-b-2 border-brand-primary text-brand-primary'
+                  : 'text-gray-500 hover:text-gray-700'
+                  }`}
               >
                 Add custom option
-              </button>
+              </button> */}
             </div>
 
             <div className="p-4 overflow-y-auto flex-1">
@@ -1086,31 +1435,30 @@ export default function Menu() {
                   </p>
 
                   <div className="space-y-3">
-                    {availableOptions.map((option) => (
+                    {variations.map((option) => (
                       <div
-                        key={option.id}
-                        className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                          option.selected
-                            ? 'border-brand-primary bg-brand-accent/10'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => toggleOptionSelection(option.id)}
+                        key={option._id}
+                        className={`border rounded-lg p-4 cursor-pointer transition-colors ${availableOptions?.includes(option?._id)
+                          ? 'border-brand-primary bg-brand-accent/10'
+                          : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        onClick={() => toggleOptionSelection(option?._id)}
                       >
                         <div className="flex items-start">
                           <div className="flex-shrink-0 h-5 w-5 mt-0.5">
                             <input
                               type="checkbox"
-                              checked={option.selected}
-                              onChange={() => toggleOptionSelection(option.id)}
+                              checked={availableOptions?.includes(option?._id)}
+                              onChange={() => toggleOptionSelection(option?._id)}
                               className="h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
                             />
                           </div>
-                          <div className="ml-3 flex-1">
+                          <div className="ml-3 flex-1 ">
                             <div className="flex justify-between">
-                              <p className="text-sm font-medium text-gray-900">{option.name}</p>
-                              <p className="text-sm text-gray-500">Quantity: {option.quantity}</p>
+                              <p className="text-sm font-medium text-gray-900">{option.title}</p>
+                              <p className="text-sm text-gray-500">Quantity: {option?.minQty}-{option?.maxQty}</p>
                             </div>
-                            <p className="text-sm text-gray-500">{option.description}</p>
+                            <p className="text-sm text-gray-500">{option.internalName}</p>
                           </div>
                         </div>
                       </div>
@@ -1290,6 +1638,42 @@ export default function Menu() {
           </div>
         </div>
       )}
+      {
+        showDeleteModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-4">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Delete Menu Item</h2>
+              <p className="text-gray-500 mb-6">Are you sure you want to delete this menu item? This action cannot be undone.</p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  disabled={isDeleting}
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setItemToDelete(null);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  disabled={isDeleting}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                >
+                  {isDeleting ? (
+                    <>
+                      <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      Deleting...
+                    </>
+                  ) : (
+                    'Delete'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
     </div>
   );
 }

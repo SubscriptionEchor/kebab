@@ -3,12 +3,14 @@ import { PlusCircle, Search, Edit2, Trash2, ArrowLeft, Save } from 'lucide-react
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useParams } from 'react-router-dom';
+import { useMutation, useQuery } from '@apollo/client';
+import { CREATE_CATEGORY, GET_CATEGORY_MENU, UPDATE_CATEGORY, DELETE_CATEGORY } from '../../lib/graphql/queries/category';
 
 // Mock data for categories - in a real app, this would come from an API
 interface Category {
-  id: string;
-  title: string;
-  description: string;
+  _id: string;
+  name: string;
+  foodList: any[];
 }
 
 export default function Category() {
@@ -21,39 +23,64 @@ export default function Category() {
   const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState({
     title: '',
-    description: ''
+    foodlist: []
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Load mock data - in a real app, this would be a GraphQL query
+  const [CREATE_CATEGORY_MENU] = useMutation(CREATE_CATEGORY)
+  const [UPDATE_CATEGORY_MENU] = useMutation(UPDATE_CATEGORY)
+  const [DELETE_CATEGORY_MENU] = useMutation(DELETE_CATEGORY)
+
+  const [categoryMenu, setCategoryMenu] = useState([])
+
+  const { data, error, loading } = useQuery(GET_CATEGORY_MENU, {
+    variables: {
+      restaurantId: restaurantId
+    },
+  });
+
   useEffect(() => {
-    // Simulating data loading
-    const mockCategories = localStorage.getItem(`categories-${restaurantId}`);
-    if (mockCategories) {
-      setCategories(JSON.parse(mockCategories));
+    if (data?.getMenu?.food) {
+      setCategoryMenu(data?.getMenu?.food)
     }
-  }, [restaurantId]);
 
-  // Save categories to localStorage
-  const saveCategories = (newCategories: Category[]) => {
-    localStorage.setItem(`categories-${restaurantId}`, JSON.stringify(newCategories));
-    setCategories(newCategories);
-  };
+    if (data?.getMenu?.categoryData?.length) {
+      const foodMap = {};
+      data.getMenu.food.forEach(food => {
+        foodMap[food._id] = food;
+      });
+      const categoriesWithFoods = data.getMenu.categoryData.map(category => {
+        const foods = category.foodList.map(id => foodMap[id]).filter(Boolean);
+        return {
+          ...category,
+          foods
+        };
+      });
+      setCategories(categoriesWithFoods)
+    }
+  }, [data])
+
+
+
 
   // Filter categories based on search query
   const filteredCategories = useMemo(() => {
-    return categories.filter(category => 
-      category.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      category.description.toLowerCase().includes(searchQuery.toLowerCase())
+    if (!searchQuery) {
+      return categories
+    }
+    return categories.filter(category =>
+      category?.name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [categories, searchQuery]);
+
 
   const handleAddCategory = () => {
     setIsEditing(false);
     setCurrentCategory(null);
     setFormData({
       title: '',
-      description: ''
+      foodlist: []
     });
     setShowForm(true);
   };
@@ -62,61 +89,162 @@ export default function Category() {
     setIsEditing(true);
     setCurrentCategory(category);
     setFormData({
-      title: category.title,
-      description: category.description
+      title: category.name,
+      foodlist: category.foodList
     });
     setShowForm(true);
   };
 
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+
   const handleDeleteCategory = (id: string) => {
-    if (confirm('Are you sure you want to delete this category?')) {
-      const newCategories = categories.filter(category => category.id !== id);
-      saveCategories(newCategories);
-      toast.success('Category deleted successfully');
+    setCategoryToDelete(id);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    if (categoryToDelete) {
+      try {
+
+        setIsLoading(true);
+        const { data, errors } = await DELETE_CATEGORY_MENU({
+          variables: {
+            deleteCategoryNewId: categoryToDelete,
+            restaurantId
+          }
+        })
+        if (errors) {
+          return toast.error(JSON.stringify(errors) || "failed to create category")
+        }
+        const newCategories = categories.filter(category => category._id !== categoryToDelete);
+        setCategories(newCategories)
+        toast.success('Category deleted successfully');
+        setShowDeleteDialog(false);
+        setCategoryToDelete(null);
+      } catch (error) {
+        toast.error('Failed to delete category');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
-  const handleSubmit = () => {
+
+
+  const handleSubmit = async () => {
     if (!formData.title.trim()) {
       toast.error('Category title is required');
       return;
     }
+    if (!formData?.foodlist?.length) {
+      toast.error('Atleast one food is required');
+      return;
+    }
+
+    // setIsSubmitting(true);
+
+    let payload = {
+      active: true,
+      name: formData?.title,
+      foodList: formData?.foodlist
+    }
+    if (isEditing) {
+      payload['_id'] = currentCategory?._id
+    }
 
     setIsSubmitting(true);
+    try {
+      if (currentCategory?._id) {
+        const { data, errors } = await UPDATE_CATEGORY_MENU({
+          variables: {
+            restaurantId: restaurantId,
+            input: payload,
+            updateCategoryNewId: currentCategory?._id
+          }
+        })
 
-    // Simulate API call
-    setTimeout(() => {
-      if (isEditing && currentCategory) {
-        // Update existing category
-        const updatedCategories = categories.map(category => 
-          category.id === currentCategory.id 
-            ? { ...category, title: formData.title, description: formData.description }
-            : category
-        );
-        saveCategories(updatedCategories);
-        toast.success('Category updated successfully');
-      } else {
-        // Create new category
-        const newCategory: Category = {
-          id: Date.now().toString(),
-          title: formData.title,
-          description: formData.description
-        };
-        saveCategories([...categories, newCategory]);
-        toast.success('Category created successfully');
+        if (errors) {
+          toast.error(JSON.stringify(errors) || 'Failed to create category');
+          return;
+        }
+        if (data) {
+          setCategories(prev => prev.map(item => {
+            if (item?._id == data?.updateCategoryNew?._id) {
+              let foods = []
+              data?.updateCategoryNew?.foodList?.every((item) => foods.push(categoryMenu.find(ci => ci?._id == item)))
+              return {
+                ...data?.updateCategoryNew,
+                foods
+              }
+            }
+            return item
+          }))
+          setFormData({ title: '', foodlist: [] });
+          setIsEditing(false)
+          setShowForm(false)
+        }
       }
-
-      setIsSubmitting(false);
-      setShowForm(false);
-      setFormData({ title: '', description: '' });
-    }, 500);
+      else {
+        const { data, errors } = await CREATE_CATEGORY_MENU({
+          variables: {
+            restaurantId: restaurantId,
+            input: payload
+          }
+        })
+        if (errors) {
+          toast.error(JSON.stringify(errors) || 'Failed to create category');
+          return;
+        }
+        if (data) {
+          let foods = []
+          data?.createCategoryNew?.foodList?.every((item) => foods.push(categoryMenu.find(ci => ci?._id == item)))
+          setCategories(prev => [...prev, { ...data?.createCategoryNew, foods }])
+          setFormData({ title: '', foodlist: [] });
+          setIsEditing(false)
+          setShowForm(false)
+        }
+      }
+    }
+    catch (e) {
+      console.log(e)
+    }
+    finally {
+      setIsSubmitting(false)
+    }
   };
 
   const handleCancel = () => {
     setShowForm(false);
-    setFormData({ title: '', description: '' });
+    setFormData({ title: '', foodlist: [] });
   };
-  
+
+  const onChangeStatus = async (category: any) => {
+    const updatedCategories = categories.map((c: any) =>
+      c._id === category._id ? { ...c, active: !c?.active } : c
+    );
+    setCategories(updatedCategories)
+    toast.success("Status updated successfully!")
+    let payload = {
+      _id: category?._id,
+      active: !category?.active,
+      foodList: category?.foodList,
+      name: category?.name
+    }
+    const { data, errors } = await UPDATE_CATEGORY_MENU({
+      variables: {
+        restaurantId: restaurantId,
+        input: payload,
+        updateCategoryNewId: category?._id
+      }
+    })
+    if (errors) {
+      toast.error(JSON.stringify(errors) || "Failed to update status")
+      return
+    }
+
+
+  }
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -159,7 +287,7 @@ export default function Category() {
               <ArrowLeft className="h-5 w-5" />
             </button>
           </div>
-          
+
           <div className="space-y-6">
             {/* Title */}
             <div>
@@ -171,28 +299,64 @@ export default function Category() {
                 id="title"
                 name="title"
                 value={formData.title}
-                onChange={(e) => setFormData({...formData, title: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary"
                 placeholder="Enter category title"
               />
             </div>
-            
+
             {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                Description
+              <label htmlFor="foodlist" className="block text-sm font-medium text-gray-700 mb-1">
+                Food List
               </label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                rows={3}
+              <select
+                id="foodlist"
+                name="foodlist"
+                onChange={(e) => {
+                  const selectedItem = e.target.value;
+                  if (selectedItem && !formData.foodlist.includes(selectedItem)) {
+                    setFormData({ ...formData, foodlist: [...formData.foodlist, selectedItem] });
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary"
-                placeholder="Describe this category"
-              />
+              >
+                <option value="">Select a food item</option>
+                {categoryMenu?.map((item: any) => {
+                  return <option value={item?._id}>{item?.name}</option>
+                })}
+                {/* <option value="Pizza">Pizza</option>
+                <option value="Burger">Burger</option>
+                <option value="Salad">Salad</option> */}
+              </select>
             </div>
-            
+            <div className="mt-4">
+              {formData?.foodlist?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Selected Food Items</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {formData?.foodlist?.map((food, index) => {
+                      let foodObj = categoryMenu?.find((item: any) => item?._id == food) as any
+                      return (
+                        <div key={index} className="flex items-center bg-gray-50 p-2 rounded-md">
+                          <p className="text-sm font-medium text-gray-900 mr-2">{foodObj?.name}</p>
+                          <button
+                            onClick={() => {
+                              const newFoodList = formData.foodlist.filter((_, i) => i !== index);
+                              setFormData({ ...formData, foodlist: newFoodList });
+                            }}
+                            className="text-gray-400 hover:text-red-500"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="flex justify-end space-x-4 pt-4">
               <button
                 onClick={handleCancel}
@@ -249,7 +413,10 @@ export default function Category() {
                     Category Name
                   </th>
                   <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Description
+                    Dishes
+                  </th>
+                  <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
                   </th>
                   <th className="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
@@ -257,13 +424,31 @@ export default function Category() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredCategories.map((category) => (
-                  <tr key={category.id} className="hover:bg-gray-50">
+                {filteredCategories.map((category: any) => (
+                  <tr key={category._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{category.title}</div>
+                      <div className="text-sm font-medium text-gray-900">{category.name}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500 line-clamp-2">{category.description}</div>
+                      <div className="text-sm text-gray-900 line-clamp-2 flex">
+                        {category?.foods?.slice(0, 2).map((food, index) => (
+                          <p key={index} className='p-1 me-2 bg-gray-200 rounded-lg'>{food?.name}</p>
+                        ))}
+                        {category?.foods?.length > 2 && (
+                          <p className='p-1 me-2 bg-yellow-200 rounded-lg'>+{category.foods.length - 2} more</p>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={category?.active}
+                          onChange={() => onChangeStatus(category)}
+                        />
+                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-brand-primary/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-primary"></div>
+                      </label>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-3">
@@ -274,7 +459,7 @@ export default function Category() {
                           <Edit2 className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => handleDeleteCategory(category.id)}
+                          onClick={() => handleDeleteCategory(category._id)}
                           className="text-red-500 hover:text-red-700"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -298,7 +483,39 @@ export default function Category() {
             </div>
           )}
         </div>
+      )
+      }
+      {showDeleteDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-medium mb-4">Delete Category</h3>
+            <p className="text-gray-600 mb-6">Are you sure you want to delete this category?</p>
+            <div className="flex justify-end gap-3">
+              <button
+                disabled={isLoading}
+                onClick={() => setShowDeleteDialog(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={isLoading}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-    </div>
+    </div >
   );
 }
