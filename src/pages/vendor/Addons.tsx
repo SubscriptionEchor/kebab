@@ -49,11 +49,12 @@ export default function Addons() {
   const [showPriceModal, setShowPriceModal] = useState(false);
   const [currentDish, setCurrentDish] = useState<{ value: string; label: string; price: string } | null>(null);
   const [newPrice, setNewPrice] = useState('');
-  const [dishes, setDishes] = useState([])
+  const [dishes, setDishes] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [addonToDelete, setAddonToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { bootStrapData } = useCurrency()
+  const { bootStrapData } = useCurrency();
+
   // Form state
   const [formData, setFormData] = useState<Addon>({
     _id: '',
@@ -64,19 +65,19 @@ export default function Addons() {
     dishes: []
   });
 
-  const [CREATE_NEW_OPTIONSET] = useMutation(CREATE_OPTION_SET)
-  const [UPDATE_NEW_OPTIONSET] = useMutation(UPDATE_OPTION_SET)
-  const [DELETE_NEW_OPTIONSET] = useMutation(DELETE_OPTIONSET)
+  const [CREATE_NEW_OPTIONSET] = useMutation(CREATE_OPTION_SET);
+  const [UPDATE_NEW_OPTIONSET] = useMutation(UPDATE_OPTION_SET);
+  const [DELETE_NEW_OPTIONSET] = useMutation(DELETE_OPTIONSET);
 
   const { data, error, loading } = useQuery(GET_OPTIONSET_MENU, {
     variables: {
       restaurantId
     }
-  })
+  });
 
   useEffect(() => {
     if (data) {
-      setDishes(data?.getMenu?.food)
+      setDishes(data?.getMenu?.food);
       let updatedOptionSetList = data?.getMenu?.optionSetList.map(optionSet => {
         return {
           ...optionSet,
@@ -90,12 +91,9 @@ export default function Addons() {
         };
       });
 
-      setAddons(updatedOptionSetList)
+      setAddons(updatedOptionSetList);
     }
-
-  }, [data])
-
-
+  }, [data]);
 
   // Save addons to localStorage
   const saveAddons = (newAddons: Addon[]) => {
@@ -109,7 +107,7 @@ export default function Addons() {
       addon?.title?.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [addons, searchQuery]);
 
-  // Custom styles for react-selec
+  // Custom styles for react-select
   const selectStyles = {
     control: (base: any) => ({
       ...base,
@@ -172,11 +170,9 @@ export default function Addons() {
       maxQuantity: addon?.maxQty,
       minQuantity: addon?.minQty,
       dishes: addon?.dishes?.map((item: any, index: number) => ({ ...item, id: index + 1, title: item?.name, isActive: item?.active, currentPrice: item?.price, newPrice: item?.price }))
-
     });
     setShowForm(true);
   };
-
 
   const handleDeleteAddon = (id: string) => {
     setAddonToDelete(id);
@@ -194,39 +190,36 @@ export default function Addons() {
           deleteOptionSetNewId: addonToDelete,
           restaurantId
         }
-      })
+      });
       setAddons(newAddons);
-      toast.success('Option set deleted successfully');
+      toast.success(t('optionset.deletesuccess'));
       setShowDeleteModal(false);
       setAddonToDelete(null);
-    }
-    catch (e) {
-      console.log(e)
-      toast.error('Failed to delete option set');
-    }
-    finally {
+    } catch (e) {
+      console.log(e);
+      toast.error(t('optionset.deleteerror'));
+    } finally {
       setIsDeleting(false);
     }
   };
 
-
-
   const handleCancel = () => {
     setShowForm(false);
   };
+
   const handleSubmit = async () => {
     if (!formData.title.trim()) {
-      toast.error('Option set title is required');
+      toast.error(t('optionset.titleerror'));
       return;
     }
 
     if (parseInt(formData.maxQuantity) < parseInt(formData.minQuantity)) {
-      toast.error('Maximum quantity must be greater than or equal to minimum quantity');
+      toast.error(t('optionset.quantityerror'));
       return;
     }
 
     if (formData.dishes.length === 0) {
-      toast.error('Please add at least one dish to this Option set');
+      toast.error(t('optionset.dishrequirederror'));
       return;
     }
 
@@ -252,9 +245,9 @@ export default function Addons() {
             },
             "restaurantId": restaurantId
           }
-        })
+        });
         if (errors) {
-          return toast.error(JSON.stringify(errors) || "Failed to create Option set")
+          return toast.error(JSON.stringify(errors) || t('optionset.updateerror'));
         }
         if (updated) {
           let dishesNew = updated?.updateOptionSetNew?.optionData?.map(option => {
@@ -263,18 +256,16 @@ export default function Addons() {
               ...option,
               name: food?.name || null
             };
-          }) || []
+          }) || [];
           let updatedData = {
             ...updated?.updateOptionSetNew,
             dishes: dishesNew
-          }
-          setAddons(prev => prev?.map((item: any) => item?._id == updatedData?._id ? updatedData : item))
-
-          setShowForm(false)
-          setCurrentAddon(null)
+          };
+          setAddons(prev => prev?.map((item: any) => item?._id == updatedData?._id ? updatedData : item));
+          setShowForm(false);
+          setCurrentAddon(null);
         }
-      }
-      else {
+      } else {
         let { data: created, errors } = await CREATE_NEW_OPTIONSET({
           variables: {
             "input": {
@@ -291,29 +282,26 @@ export default function Addons() {
             },
             "restaurantId": restaurantId
           }
-        })
+        });
         if (errors) {
-          return toast.error(JSON.stringify(errors) || "Failed to create Option set")
+          return toast.error(JSON.stringify(errors) || t('optionset.createerror'));
         }
         if (created) {
-
           let dishesNew = created?.createOptionSetNew?.optionData?.map(option => {
             const food = dishes.find(food => food?._id === option.foodId);
             return {
               ...option,
               name: food?.name || null
             };
-          }) || []
-          setAddons(prev => [...prev, { ...created?.createOptionSetNew, dishes: dishesNew }])
-          setShowForm(false)
+          }) || [];
+          setAddons(prev => [...prev, { ...created?.createOptionSetNew, dishes: dishesNew }]);
+          setShowForm(false);
         }
       }
-    }
-    catch (e) {
-      console.log(e)
-    }
-    finally {
-      setIsSubmitting(false)
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -336,7 +324,6 @@ export default function Addons() {
       displayPrice: parseFloat(newPrice) > 0,
       currentPrice: currentDish.price,
       newPrice: newPrice
-
     };
 
     const existingDishIndex = formData.dishes.findIndex(dish => dish.foodId === newDish.foodId);
@@ -360,9 +347,8 @@ export default function Addons() {
     setCurrentDish(null);
     setNewPrice('');
 
-    toast.success('Dish added successfully');
+    toast.success(t('optionset.dishaddedsuccess'));
   };
-
 
   // Remove dish from selected dishes
   const handleRemoveDish = (dishId: string) => {
@@ -375,7 +361,7 @@ export default function Addons() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-900">Menu Option Set</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">{t('optionset.title')}</h1>
         {!showForm && (
           <div className="flex items-center space-x-4">
             {addons?.length > 0 && (
@@ -383,7 +369,7 @@ export default function Addons() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search option set..."
+                  placeholder={t('optionset.searchplaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
@@ -395,7 +381,7 @@ export default function Addons() {
               className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors flex items-center"
             >
               <PlusCircle className="h-4 w-4 mr-2" />
-              Add New Option Set
+              {t('optionset.addnew')}
             </button>
           </div>
         )}
@@ -405,7 +391,7 @@ export default function Addons() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
             <h2 className="text-xl font-semibold text-gray-900">
-              {isEditing ? 'Edit Option Set' : 'Create New Option Set'}
+              {isEditing ? t('optionset.editformtitle') : t('optionset.createformtitle')}
             </h2>
             <button
               onClick={handleCancel}
@@ -418,34 +404,34 @@ export default function Addons() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Title
+                {t('optionset.titlelabel')}
               </label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary"
-                placeholder="e.g., Choose your sauce"
+                placeholder={t('optionset.titleplaceholder')}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Internal Name
+                {t('optionset.internallabel')}
               </label>
               <input
                 type="text"
                 value={formData.internalName}
                 onChange={(e) => setFormData({ ...formData, internalName: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary"
-                placeholder="Select your internal name"
+                placeholder={t('optionset.internalplaceholder')}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Min Quantity
+                  {t('optionset.minquantitylabel')}
                 </label>
                 <input
                   type="number"
@@ -458,7 +444,7 @@ export default function Addons() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Max Quantity
+                  {t('optionset.maxquantitylabel')}
                 </label>
                 <input
                   type="number"
@@ -472,12 +458,12 @@ export default function Addons() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Choose Dish
+                {t('optionset.choosedishlabel')}
               </label>
               <Select
                 options={dishes?.map((item: any) => ({ value: item?._id, label: item?.name, price: item?.variationList?.[0]?.price }))}
                 onChange={handleDishSelect}
-                placeholder="Select a dish"
+                placeholder={t('optionset.choosedishplaceholder')}
                 className="react-select-container"
                 classNamePrefix="react-select"
                 styles={selectStyles}
@@ -487,7 +473,7 @@ export default function Addons() {
             {/* Selected Dishes */}
             {formData.dishes.length > 0 && (
               <div className="mt-4">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Dishes with Price</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">{t('optionset.disheswithprice')}</h4>
                 <div className="space-y-2">
                   {formData.dishes.map((dish: any) => (
                     <div key={dish.id} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
@@ -543,7 +529,7 @@ export default function Addons() {
                 onClick={handleCancel}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
               >
-                Cancel
+                {t('optionset.cancelbutton')}
               </button>
               <button
                 onClick={handleSubmit}
@@ -553,12 +539,12 @@ export default function Addons() {
                 {isSubmitting ? (
                   <>
                     <div className="h-4 w-4 border-2 border-black border-t-transparent rounded-full animate-spin mr-2" />
-                    {isEditing ? 'Updating...' : 'Creating...'}
+                    {isEditing ? t('optionset.updating') : t('optionset.creating')}
                   </>
                 ) : (
                   <>
                     <Save className="h-4 w-4 mr-2" />
-                    {isEditing ? 'Update Option Set' : 'Create Option Set'}
+                    {isEditing ? t('optionset.updatebutton') : t('optionset.createbutton')}
                   </>
                 )}
               </button>
@@ -571,16 +557,16 @@ export default function Addons() {
             <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
               <PlusCircle className="h-12 w-12 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Option Set yet</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t('optionset.nooptionset')}</h3>
             <p className="text-gray-500 max-w-md mx-auto mb-6">
-              Create Option Set to enhance your menu items. Option Set allow customers to customize their orders with extra options.
+              {t('optionset.nooptionsetdescription')}
             </p>
             <button
               onClick={handleAddAddon}
               className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors inline-flex items-center"
             >
               <PlusCircle className="h-4 w-4 mr-2" />
-              Create Your First Option Set
+              {t('optionset.createfirst')}
             </button>
           </div>
         </div>
@@ -591,19 +577,19 @@ export default function Addons() {
               <thead>
                 <tr>
                   <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Option Set Name
+                    {t('optionset.nameheader')}
                   </th>
                   <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Internal Name
+                    {t('optionset.internalheader')}
                   </th>
                   <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Quantity
+                    {t('optionset.quantityheader')}
                   </th>
                   <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Dishes
+                    {t('optionset.dishesheader')}
                   </th>
                   <th className="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                    {t('optionset.actionsheader')}
                   </th>
                 </tr>
               </thead>
@@ -630,7 +616,7 @@ export default function Addons() {
                         ))}
                         {addon?.dishes?.length > 2 && (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            +{addon?.dishes?.length - 2} more
+                            +{addon?.dishes?.length - 2} {t('optionset.moredishes')}
                           </span>
                         )}
                       </div>
@@ -658,12 +644,12 @@ export default function Addons() {
           </div>
           {filteredAddons.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-gray-500">No Option Set found matching your search</p>
+              <p className="text-gray-500">{t('optionset.nooptionsetfound')}</p>
               <button
                 onClick={() => setSearchQuery('')}
                 className="mt-2 text-brand-primary hover:text-brand-primary/80 text-sm"
               >
-                Clear search
+                {t('optionset.clearsearch')}
               </button>
             </div>
           )}
@@ -675,13 +661,13 @@ export default function Addons() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="p-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Set Price for {currentDish.label}</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('optionset.setpricetitle', { dish: currentDish.label })}</h2>
             </div>
 
             <div className="p-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Current Price
+                  {t('optionset.currentpricelabel')}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -698,7 +684,7 @@ export default function Addons() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  New Price
+                  {t('optionset.newpricelabel')}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -709,7 +695,7 @@ export default function Addons() {
                     value={newPrice}
                     onChange={(e) => setNewPrice(e.target.value)}
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary"
-                    placeholder="0.00"
+                    placeholder={t('optionset.newpriceplaceholder')}
                   />
                 </div>
               </div>
@@ -720,30 +706,32 @@ export default function Addons() {
                 onClick={() => setShowPriceModal(false)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
               >
-                Cancel
+                {t('optionset.cancelbutton')}
               </button>
               <button
                 onClick={handleAddDish}
                 className="px-4 py-2 text-sm font-medium text-black bg-brand-primary rounded-md hover:bg-brand-primary/90 transition-colors"
               >
-                Save
+                {t('optionset.savebutton')}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Delete Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Delete Option Set</h3>
-            <p className="text-gray-600 mb-6">Are you sure you want to delete this option set? This action cannot be undone.</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('optionset.deletetitle')}</h3>
+            <p className="text-gray-600 mb-6">{t('optionset.deleteconfirm')}</p>
             <div className="flex justify-end space-x-3">
               <button
                 disabled={isDeleting}
                 onClick={() => setShowDeleteModal(false)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
               >
-                Cancel
+                {t('optionset.cancelbutton')}
               </button>
               <button
                 onClick={confirmDelete}
@@ -753,10 +741,10 @@ export default function Addons() {
                 {isDeleting ? (
                   <div className="flex items-center">
                     <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    Deleting...
+                    {t('optionset.deleting')}
                   </div>
                 ) : (
-                  'Delete'
+                  t('optionset.deletebutton')
                 )}
               </button>
             </div>

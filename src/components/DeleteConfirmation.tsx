@@ -1,4 +1,5 @@
-import { t } from 'i18next';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 
 interface DeleteConfirmationProps {
@@ -18,13 +19,17 @@ export default function DeleteConfirmation({
   message,
   isDeleting
 }: DeleteConfirmationProps) {
+  const { t } = useTranslation();
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            {t(title)}
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-500 transition-colors"
@@ -32,9 +37,9 @@ export default function DeleteConfirmation({
             <X className="h-5 w-5" />
           </button>
         </div>
-        
+
         <div className="p-4">
-          <p className="text-gray-600">{message}</p>
+          <p className="text-gray-600">{t(message)}</p>
         </div>
 
         <div className="flex justify-end gap-3 p-4 border-t border-gray-200">
@@ -42,7 +47,7 @@ export default function DeleteConfirmation({
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
           >
-           {t('common.cancel')} 
+            {t('common.cancel')}
           </button>
           <button
             onClick={onConfirm}
@@ -52,10 +57,10 @@ export default function DeleteConfirmation({
             {isDeleting ? (
               <>
                 <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                {t('delete.delete')}
+                {t('common.deleting')}
               </>
             ) : (
-             t('common.delete') 
+              t('common.delete')
             )}
           </button>
         </div>

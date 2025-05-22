@@ -1,3 +1,5 @@
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 
 interface DeleteConfirmationModalProps {
@@ -17,6 +19,8 @@ export default function DeleteConfirmationModal({
   message,
   isSubmitting = false
 }: DeleteConfirmationModalProps) {
+  const { t } = useTranslation();
+
   if (!isOpen) return null;
 
   return (
@@ -41,7 +45,7 @@ export default function DeleteConfirmationModal({
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={onConfirm}
@@ -51,14 +55,14 @@ export default function DeleteConfirmationModal({
             {isSubmitting ? (
               <>
                 <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                Deleting...
+                {t('common.deleting')}
               </>
             ) : (
-              'Delete'
+                t('common.delete')
             )}
           </button>
         </div>
       </div>
     </div>
   );
-} 
+}

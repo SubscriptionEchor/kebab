@@ -10,8 +10,8 @@ const Header = ({ languages }: any) => {
   const languageOptions = languages || [
     { code: 'en', label: t('language.english') },
     { code: 'tr', label: t('language.turkish') },
-    { code: 'de', label: t('language.german') }
-    // { code: 'hi', label: t('language.hindi') }
+    { code: 'de', label: t('language.german') },
+     { code: 'hi', label: t('language.hindi') }
     // Add more languages as needed
   ];
   // Initialize the selected language from localStorage (or i18n.language) if available

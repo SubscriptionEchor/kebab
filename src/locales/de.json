@@ -679,6 +679,9 @@
     "open": "Geöffnet",
     "closed": "Geschlossen",
     "to": "bis",
+    "close":"Schließen",
+    "status":"Status",
+    "day":"Day",
     "timingsupdated": "Öffnungszeiten erfolgreich aktualisiert",
     "failedtoupdatetimings": "Aktualisierung der Öffnungszeiten fehlgeschlagen",
     "monday": "Montag",
@@ -692,6 +695,7 @@
   "location": {
     "title": "Restaurant-Standort",
     "saving": "Speichern...",
+    "location":"Standort", 
     "savechanges": "Änderungen speichern",
     "failedtoloadlocation": "Laden des Standorts fehlgeschlagen",
     "errorloadinglocation": "Beim Laden des Restaurant-Standorts ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder wenden Sie sich an den Support, wenn das Problem weiterhin besteht.",
@@ -741,7 +745,22 @@
     "failedtoloadcuisines": "Laden der Küchen fehlgeschlagen",
     "selectcuisines": "Küchen auswählen",
     "restaurantimage": "Restaurantbild",
-    "restaurantlogo": "Restaurantlogo"
+    "restaurantlogo": "Restaurantlogo",
+    "emailplaceholder": "E-Mail eingeben",
+  "restauranturl": "Restaurant-URL",
+  "username": "Benutzername",
+  "password": "Passwort",
+  "orderprefix": "Bestell-Präfix",
+  "appcredentials": "App-Zugangsdaten",
+  "ordersettings": "Bestell-Einstellungen",
+  "minimumorder": "Mindestbestellwert",
+  "deliverytime": "Lieferzeit",
+  "qrcode": "QR-Code",
+  "enterusername": "Benutzernamen eingeben",
+  "enterpassword": "Passwort eingeben",
+  "enterminimumorder": "Mindestbestellwert eingeben",
+  "enterdeliverytime": "Lieferzeit eingeben",
+  "downloadqr": "QR-Code herunterladen"
   },
   "vendorsidebar": {
     "appname": "Kebab Admin",
@@ -787,16 +806,7 @@
     "failedtoloadrestaurantdetails": "Laden der Restaurantdetails fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "failedtofetchrestaurants": "Abrufen der Restaurants fehlgeschlagen. Bitte versuchen Sie es erneut."
   },
-  "common": {
-    "showingpage": "Seite anzeigen",
-    "of": "von",
-    "confirmsignout": "Abmeldung bestätigen",
-    "signoutmessage": "Sind Sie sicher, dass Sie sich abmelden möchten? Sie müssen sich erneut anmelden, um auf Ihr Konto zuzugreifen",
-    "cancel": "Abbrechen",
-    "signout": "Abmelden",
-    "delete": "Löschen",
-    "signedoutsuccessfully": "Erfolgreich abgemeldet"
-  },
+ 
   "applicationdetails": {
     "title": "Antragsdetails",
     "viewmsg": "Vollständige Informationen zum Restaurant-Onboarding-Antrag anzeigen",
@@ -853,7 +863,8 @@
     "cuisines": "Küchen",
     "banners": "Banner",
     "signout": "Abmelden",
-    "openmenu": "Menü öffnen"
+    "openmenu": "Menü öffnen",
+    "eventorganizers":"Veranstalter"
   },
   "modals": {
     "movetovendorreview": {
@@ -900,6 +911,1027 @@
     "maps": "Karte",
     "ratings": "Bewertungen",
     "timings": "Öffnungszeiten",
-    "clear": "Zurücksetzen"
+    "clear": "Zurücksetzen",
+    "validation": {
+    "requiredField": "Bitte füllen Sie das Feld {field} aus",
+    "requiredCuisines": "Bitte wählen Sie mindestens eine Küche aus",
+    "nameMinLength": "Der Name sollte mindestens 3 Zeichen lang sein",
+    "selectPosition": "Bitte wählen Sie die Position auf der Karte aus",
+    "atLeastOneDayOpen": "Das Restaurant sollte an mindestens einem Tag in der Woche geöffnet sein"
+  },
+  "successMessage": "Restaurant erfolgreich erstellt",
+  "errorMessage": "Fehler beim Erstellen des Restaurants"
+
+  },
+  "eventOrganizers": {
+    "addOrganizer": "Veranstalter hinzufügen",
+    "editOrganizer": "Veranstalter bearbeiten",
+    "name": "Name",
+    "contactNumber": "Kontaktnummer",
+    "email": "E-Mail",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "createOrganizer": "Veranstalter erstellen",
+    "creating": "Wird erstellt...",
+    "viewDetailsTitle": "Veranstalterdetails",
+    "title": "Veranstalter",
+    "searchPlaceholder": "Veranstalter suchen...",
+    "id": "ID",
+    "actions": "Aktionen",
+    "viewEvents": "Veranstaltungen anzeigen",
+    "viewDetails": "Details anzeigen",
+    "editTitle": "Veranstalter bearbeiten",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "saving": "Wird gespeichert...",
+    "fields": {
+      "id": "ID",
+      "name": "Name",
+      "contactNumber": "Kontaktnummer",
+      "email": "E-Mail",
+      "username": "Benutzername",
+      "eventPortfolio": "Veranstaltungsportfolio",
+      "events": "Veranstaltungen",
+      "password": "Passwort"
+    },
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort ausblenden",
+    "copyPassword": "Passwort kopieren",
+    "placeholders": {
+      "username": "Benutzernamen eingeben",
+      "password": "Passwort eingeben"
+    },
+    "validation1": {
+      "nameRequired": "Name ist erforderlich",
+      "contactRequired": "Kontaktnummer ist erforderlich",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Ungültiges E-Mail-Format",
+      "usernameRequired": "Benutzername ist erforderlich",
+      "passwordRequired": "Passwort ist erforderlich",
+      "passwordMinLength": "Passwort muss mindestens 6 Zeichen lang sein"
+    },
+    "pagination": {
+      "showing": "Zeige {{start}} bis {{end}} von {{total}} Veranstaltern",
+      "page": "Seite {{current}} von {{total}}"
+    }
+  },
+  "orders": {
+    "noorders": "Keine Bestellungen gefunden",
+    "items": "Bestellpositionen",
+    "minutes": "Minuten",
+    "pending": "Ausstehend",
+    "preparing": "In Vorbereitung",
+    "ready": "Bereit",
+    "completed": "Abgeschlossen",
+    "cancelled": "Storniert",
+    "title": "Bestellungen",
+  "allstatus": "Alle Status",
+  "searchorders": "Bestellungen suchen...",
+  "tryadjustingsearch": "Versuchen Sie, Ihre Suche oder Filter anzupassen, um zu finden, wonach Sie suchen.",
+  "orderswillappear": "Ihre Bestellungen werden hier angezeigt, sobald Sie sie erhalten.",
+  "view": "Anzeigen",
+  "orderHeader": "Bestellung",
+  "itemsHeader": "Artikel",
+  "paymentHeader": "Zahlung",
+  "statusHeader": "Status",
+  "dateHeader": "Datum",
+  "actionsHeader": "Aktionen"
+  },
+  
+  "dashboard": {
+    "title": "Dashboard",
+    "today": "Heute",
+    "week": "Woche",
+    "month": "Monat",
+    "year": "Jahr",
+    "custom": "Benutzerdefiniert",
+    "totalOrders": "Gesamtbestellungen",
+    "totalSales": "Gesamtumsatz",
+    "performanceOverview": "Leistungsübersicht",
+    "orders": "Bestellungen",
+    "sales": "Umsatz",
+    "fetcherror": "Fehler beim Abrufen der Dashboard-Daten",
+    "chartPlaceholder": "Diagramm wird hier angezeigt",
+    "noData": "Keine Daten für den ausgewählten Zeitraum verfügbar",
+    "loading": "Lade Dashboard-Daten...",
+    "dateRange": "Datumsbereich",
+    "applyRange": "Bereich anwenden",
+    "cancelRange": "Abbrechen",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "customRange": "Benutzerdefinierter Bereich",
+    "lastWeek": "Letzte Woche",
+    "lastMonth": "Letzter Monat",
+    "lastYear": "Letztes Jahr",
+    "allTime": "Gesamte Zeit"
+  },
+  "stalldashboard": {
+    "title": "Dashboard",
+    "today": "Heute",
+    "week": "Woche",
+    "month": "Monat",
+    "year": "Jahr",
+    "custom": "Benutzerdefiniert",
+    "totalOrders": "Gesamtbestellungen",
+    "totalSales": "Gesamtumsatz",
+    "performanceOverview": "Leistungsübersicht",
+    "orders": "Bestellungen",
+    "sales": "Umsatz",
+    "fetcherror": "Fehler beim Abrufen der Dashboard-Daten",
+    "chartPlaceholder": "Diagramm wird hier angezeigt",
+    "noData": "Keine Daten für den ausgewählten Zeitraum verfügbar",
+    "loading": "Lade Dashboard-Daten...",
+    "dateRange": "Datumsbereich",
+    "applyRange": "Bereich anwenden",
+    "cancelRange": "Abbrechen",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "customRange": "Benutzerdefinierter Bereich",
+    "lastWeek": "Letzte Woche",
+    "lastMonth": "Letzter Monat",
+    "lastYear": "Letztes Jahr",
+    "allTime": "Gesamte Zeit"
+  },
+  "stallvendorprofile": {
+  "title": "Stallprofil",
+  "save": "Änderungen speichern",
+  "saving": "Speichern...",
+  "saved": "Profil erfolgreich gespeichert",
+  "saveFailed": "Speichern des Profils fehlgeschlagen",
+  "fetchError": "Fehler beim Laden der Profildaten",
+  "novendorprofiledata": "Keine Profilinformationen verfügbar",
+  "nostallid": "Keine Stall-ID vorhanden",
+
+  "stallId": "Stall-ID",
+  "copyId": "ID kopieren",
+  "idCopied": "Stall-ID in die Zwischenablage kopiert",
+
+  "appCredentials": "App-Zugangsdaten",
+  "username": "Benutzername",
+  "password": "Passwort",
+  "enterUsername": "Benutzername eingeben",
+  "enterPassword": "Passwort eingeben",
+
+  "orderSettings": "Bestelleinstellungen",
+  "orderPrefix": "Bestellpräfix",
+  "minimumOrder": "Mindestbestellwert",
+  "deliveryTime": "Lieferzeit",
+  "minutes": "Minuten",
+
+  "qrCode": "QR-Code",
+  "stallUrl": "Stall-URL",
+  "downloadQr": "QR herunterladen",
+  "urlCopied": "Stall-URL in die Zwischenablage kopiert",
+  "qrDownloaded": "QR-Code erfolgreich heruntergeladen",
+
+  "basicInfo": "Allgemeine Informationen",
+  "stallName": "Stallname",
+  "email": "E-Mail",
+  "phone": "Telefonnummer",
+  "address": "Adresse",
+
+  "businessInfo": "Geschäftsinformationen",
+  "businessInfo.registrationNumber": "Registrierungsnummer",
+  "businessInfo.taxId": "Steuernummer",
+  "businessInfo.businessType": "Unternehmensart",
+  "businessInfo.cuisines": "Küchen",
+
+  "bankInfo": "Bankdaten",
+  "bankInfo.accountName": "Kontoinhaber",
+  "bankInfo.accountNumber": "Kontonummer",
+  "bankInfo.bankName": "Bankname",
+  "bankInfo.swiftCode": "SWIFT-Code",
+
+  "images": "Bilder",
+  "stallImage": "Stallbild",
+  "stallLogo": "Stall-Logo",
+  "chooseImage": "Bild auswählen",
+  "chooseLogo": "Logo auswählen",
+  "dragDrop": "oder ziehen und ablegen",
+  "imageSize": "PNG, JPG bis zu 10 MB",
+  "logoSize": "PNG, JPG bis zu 5 MB",
+
+  "upload": "Hochladen",
+  "uploadDocument": "Dokument hochladen",
+
+  "documents": "Dokumente",
+  "documents.stallImage": "Stallbild",
+  "documents.stallLogo": "Stall-Logo",
+  "documents.businessLicense": "Gewerbeschein",
+  "documents.registrationCertificate": "Registrierungsbescheinigung",
+  "documents.bankStatement": "Kontoauszug",
+  "documents.taxDocument": "Steuerdokument",
+  "documents.idCard": "Ausweis",
+
+  "documentUploaded": "Dokument erfolgreich hochgeladen",
+  "documentUploadError": "Dokument hochladen fehlgeschlagen",
+
+  "validation": {
+    "required": "Dieses Feld ist erforderlich",
+    "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+    "invalidPhone": "Bitte geben Sie eine gültige Telefonnummer ein"
+  }
+},
+
+  "stallcategory": {
+    "title": "Kategorien",
+    "addNew": "Neue Kategorie hinzufügen",
+    "editCategory": "Kategorie bearbeiten",
+    "name": "Kategoriename",
+    "description": "Beschreibung",
+    "order": "Anzeigereihenfolge",
+    "status": "Status",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "actions": "Aktionen",
+    "saveSuccess": "Kategorie erfolgreich gespeichert",
+    "deleteSuccess": "Kategorie erfolgreich gelöscht",
+    "saveError": "Fehler beim Speichern der Kategorie",
+    "deleteError": "Fehler beim Löschen der Kategorie",
+    "loading": "Lade Kategorien...",
+    "noCategories": "Keine Kategorien gefunden",
+    "confirmDelete": "Möchten Sie diese Kategorie wirklich löschen?"
+  },
+  "stalladdons": {
+    "title": "Zusatzoptionen",
+    "addNew": "Neue Zusatzoption hinzufügen",
+    "editAddon": "Zusatzoption bearbeiten",
+    "name": "Zusatzoptionsname",
+    "price": "Preis",
+    "maxQuantity": "Maximale Menge",
+    "availability": "Verfügbarkeit",
+    "available": "Verfügbar",
+    "unavailable": "Nicht verfügbar",
+    "actions": "Aktionen",
+    "saveSuccess": "Zusatzoption erfolgreich gespeichert",
+    "deleteSuccess": "Zusatzoption erfolgreich gelöscht",
+    "saveError": "Fehler beim Speichern der Zusatzoption",
+    "deleteError": "Fehler beim Löschen der Zusatzoption",
+    "loading": "Lade Zusatzoptionen...",
+    "noAddons": "Keine Zusatzoptionen gefunden",
+    "confirmDelete": "Möchten Sie diese Zusatzoption wirklich löschen?",
+    
+  
+    "status": "Status",
+    "deleteconfirm": "Möchten Sie diese Zusatzoption wirklich löschen?",
+    "added": "Zusatzoption erfolgreich hinzugefügt",
+    "updated": "Zusatzoption erfolgreich aktualisiert",
+    "deleted": "Zusatzoption erfolgreich gelöscht",
+    "addfailed": "Fehler beim Hinzufügen der Zusatzoption",
+    "updatefailed": "Fehler beim Aktualisieren der Zusatzoption",
+    "deletefailed": "Fehler beim Löschen der Zusatzoption",
+    "availabilityupdated": "Zusatzoptionsverfügbarkeit aktualisiert",
+    "availabilityupdatefailed": "Fehler beim Aktualisieren der Zusatzoptionsverfügbarkeit"
+  },
+  "stalloffers": {
+    "title": "Angebote",
+    "addNew": "Neues Angebot hinzufügen",
+    "editOffer": "Angebot bearbeiten",
+    "offerTitle": "Angebotstitel",
+    "description": "Beschreibung",
+    "discountType": "Rabattart",
+    "discountValue": "Rabattwert",
+    "minOrderValue": "Mindestbestellwert",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "code": "Angebotscode",
+    "status": "Status",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "actions": "Aktionen",
+    "saveSuccess": "Angebot erfolgreich gespeichert",
+    "deleteSuccess": "Angebot erfolgreich gelöscht",
+    "saveError": "Fehler beim Speichern des Angebots",
+    "deleteError": "Fehler beim Löschen des Angebots",
+    "loading": "Lade Angebote...",
+    "noOffers": "Keine Angebote gefunden",
+    "confirmDelete": "Möchten Sie dieses Angebot wirklich löschen?",
+    "percentage": "Prozentsatz",
+    "fixed": "Fester Betrag",
+    "add": "Angebot hinzufügen",
+    "edit": "Angebot bearbeiten",
+    "discount": "Rabatt",
+    "validity": "Gültigkeit",
+    "discounttype": "Rabattart",
+    "discountvalue": "Rabattwert",
+    "minordervalue": "Mindestbestellwert",
+    "minorder": "Min. Bestellung",
+    "startdate": "Startdatum",
+    "enddate": "Enddatum",
+    "deleteconfirm": "Möchten Sie dieses Angebot wirklich löschen?",
+    "added": "Angebot erfolgreich hinzugefügt",
+    "updated": "Angebot erfolgreich aktualisiert",
+    "deleted": "Angebot erfolgreich gelöscht",
+    "addfailed": "Fehler beim Hinzufügen des Angebots",
+    "updatefailed": "Fehler beim Aktualisieren des Angebots",
+    "deletefailed": "Fehler beim Löschen des Angebots",
+    "statusupdated": "Angebotsstatus aktualisiert",
+    "statusupdatefailed": "Fehler beim Aktualisieren des Angebotsstatus"
+  },
+  "stallprofile": {
+    "title": "Standprofil",
+    "savechanges": "Änderungen speichern",
+    "basicinfo": "Grundlegende Informationen",
+    "stallname": "Standname",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "cuisine": "Küche",
+    "profileupdated": "Profil erfolgreich aktualisiert",
+    "ordersettings": "Bestelleinstellungen",
+    "minimumorder": "Mindestbestellung",
+    "preparationtime": "Vorbereitungszeit",
+    "minutes": "Minuten",
+    "images": "Bilder",
+    "stallimage": "Standbild",
+    "stalllogo": "Standlogo",
+    "uploadfile": "Datei auswählen oder drag and drop",
+    "personalinfo": "Persönliche Informationen",
+    "businessinfo": "Geschäftsinformationen",
+    "bankinfo": "Bankkontoinformationen",
+    "name": "Vollständiger Name",
+    "address": "Adresse",
+    "businessname": "Geschäftsname",
+    "taxid": "Steuer-ID",
+    "accountname": "Kontoinhabername",
+    "accountnumber": "Kontonummer",
+    "bankname": "Bankname",
+    "swiftcode": "SWIFT-Code",
+    "saved": "Verkäuferprofil erfolgreich aktualisiert",
+    "savefailed": "Fehler beim Aktualisieren des Verkäuferprofils",
+    "saving": "Wird gespeichert...",
+    "uploadfilesize": {
+      "image": "PNG, JPG bis zu 10MB",
+      "logo": "PNG, JPG bis zu 5MB"
+    }
+  },
+  
+  "category": {
+    "title": "Kategorien",
+    "add": "Kategorie hinzufügen",
+    "edit": "Kategorie bearbeiten",
+    "name": "Kategoriename",
+    "description": "Beschreibung",
+    "order": "Reihenfolge",
+    "actions": "Aktionen",
+    "deleteconfirm": "Möchten Sie diese Kategorie wirklich löschen?",
+    "added": "Kategorie erfolgreich hinzugefügt",
+    "updated": "Kategorie erfolgreich aktualisiert",
+    "deleted": "Kategorie erfolgreich gelöscht",
+    "addfailed": "Fehler beim Hinzufügen der Kategorie",
+    "updatefailed": "Fehler beim Aktualisieren der Kategorie",
+    "deletefailed": "Fehler beim Löschen der Kategorie"
+  },
+ 
+  "addStall": {
+    "title": "Neuen Stand hinzufügen",
+    "stallName": "Standname",
+    "stallNamePlaceholder": "Geben Sie Ihren Standnamen ein",
+    "cuisineType": "Küchenart",
+    "cuisine": "Küche auswählen",
+    "profilePhoto": "Profilfoto",
+    "changePhoto": "Foto ändern",
+    "uploadPhoto": "Klicken zum Hochladen oder drag and drop",
+    "uploadPhotoSubtext": "PNG, JPG bis zu 5MB",
+    "operatingHours": "Öffnungszeiten",
+    "setCommonHours": "Gemeinsame Öffnungszeiten festlegen",
+    "enable": "Aktivieren",
+    "disable": "Deaktivieren",
+    "commonStartTime": "Gemeinsame Startzeit",
+    "commonEndTime": "Gemeinsame Endzeit",
+    "applyToAllDays": "Auf alle Tage anwenden",
+    "startTime": "Startzeit",
+    "endTime": "Endzeit",
+    "addStall": "Stand hinzufügen",
+    "days": {
+      "monday": "Montag",
+      "tuesday": "Dienstag",
+      "wednesday": "Mittwoch",
+      "thursday": "Donnerstag",
+      "friday": "Freitag",
+      "saturday": "Samstag",
+      "sunday": "Sonntag"
+    },
+    "cuisines": {
+  "arabian": "Arabisch",
+  "chinese": "Chinesisch",
+  "indian": "Indisch",
+  "italian": "Italienisch",
+  "japanese": "Japanisch",
+  "korean": "Koreanisch",
+  "mexican": "Mexikanisch",
+  "thai": "Thailändisch",
+  "turkish": "Türkisch",
+  "vietnamese": "Vietnamesisch",
+  "other": "Andere"
+}
+  },
+  "addEvent": {
+    "title": {
+      "add": "Neue Veranstaltung hinzufügen",
+      "edit": "Veranstaltung bearbeiten"
+    },
+    "subtitle": {
+      "add": "Füllen Sie die Details aus, um eine neue Veranstaltung zu erstellen",
+      "edit": "Aktualisieren Sie die Veranstaltungsinformationen unten"
+    },
+    "fields": {
+      "eventName": {
+        "label": "Veranstaltungsname",
+        "placeholder": "Veranstaltungsnamen eingeben"
+      },
+      "startDate": {
+        "label": "Startdatum"
+      },
+      "endDate": {
+        "label": "Enddatum"
+      },
+      "startTime": {
+        "label": "Startzeit"
+      },
+      "endTime": {
+        "label": "Endzeit"
+      },
+      "searchLocation": {
+        "label": "Ort suchen",
+        "placeholder": "Nach einem Ort suchen"
+      },
+      "address": {
+        "label": "Adresse"
+      }
+    },
+    "buttons": {
+      "cancel": "Abbrechen",
+      "add": "Veranstaltung hinzufügen",
+      "update": "Veranstaltung aktualisieren"
+    },
+    "calendar": {
+      "days": {
+        "sun": "So",
+        "mon": "Mo",
+        "tue": "Di",
+        "wed": "Mi",
+        "thu": "Do",
+        "fri": "Fr",
+        "sat": "Sa"
+      }
+    },
+    "timeDisplay": {
+      "startTime": "Startzeit",
+      "endTime": "Endzeit"
+    },
+    "limits": {
+      "eventName": "{{current}}/{{limit}} Zeichen",
+      "address": "{{current}}/{{limit}} Zeichen"
+    },
+    "validation": {
+      "required": "Dieses Feld ist erforderlich",
+      "invalidTime": "Bitte wählen Sie eine gültige Zeit aus"
+    }
+  },
+  "errors": {
+    "nameRequired": "Name ist erforderlich",
+    "nameMinLength": "Name muss mindestens 2 Zeichen lang sein",
+    "contactRequired": "Kontaktnummer ist erforderlich",
+    "invalidContact": "Bitte geben Sie eine gültige Kontaktnummer ein",
+    "emailRequired": "E-Mail ist erforderlich",
+    "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+    "usernameRequired": "Benutzername ist erforderlich",
+    "usernameMinLength": "Benutzername muss mindestens 3 Zeichen lang sein",
+    "usernameInvalid": "Benutzername darf nur Buchstaben, Zahlen und Unterstriche enthalten",
+    "passwordRequired": "Passwort ist erforderlich",
+    "passwordMinLength": "Passwort muss mindestens 8 Zeichen lang sein",
+    "passwordComplexity": "Passwort muss mindestens einen Großbuchstaben, einen Kleinbuchstaben und eine Zahl enthalten"
+  },
+  "existingStallModal": {
+    "title": "Vorhandenen Stand auswählen",
+    "searchPlaceholder": "Stände nach Name oder Küche suchen",
+    "selected": "Ausgewählt",
+    "noResults": "Keine Stände gefunden, die Ihrer Suche entsprechen.",
+    "detailsTitle": "Standinformationen",
+    "profilePhoto": "Profilfoto",
+    "basicDetails": "Grundlegende Details",
+    "stallName": "Standname",
+    "cuisine": "Küchenart",
+    "stallId": "Stand-ID",
+    "operatingHours": "Öffnungszeiten",
+    "editAdd": "Bearbeiten & Hinzufügen",
+    "addEvent": "Zu Veranstaltung hinzufügen"
+  },
+  "days": {
+    "mon": "Mo",
+    "tue": "Di",
+    "wed": "Mi",
+    "thu": "Do",
+    "fri": "Fr",
+    "sat": "Sa",
+    "sun": "So"
+  },
+  "breadcrumbs": {
+    "dashboard": "Dashboard",
+    "vendors": "Verkäufer",
+    "stalls": "Stände",
+    "stallDetails": "Standdetails"
+  },
+  "restaurantSidebar": {
+    "backToDashboard": "Zurück zum Dashboard",
+    "backToAdmin": "Zurück zum Admin",
+    "menu": {
+      "restaurantProfile": "Restaurantprofil",
+      "vendorProfile": "Verkäuferprofil",
+      "ratings": "Bewertungen",
+      "timings": "Zeiten",
+      "locations": "Standorte"
+    }
+  },
+  "orderDetails": {
+    "order": "Bestellung",
+    "itemsTitle": "Bestellpositionen",
+    "column": {
+      "item": "Artikel",
+      "quantity": "Menge",
+      "price": "Preis",
+      "total": "Gesamt"
+    },
+    "customerInfoTitle": "Kundeninformationen",
+    "customerNameLabel": "Name",
+    "customerAddressLabel": "Adresse",
+    "customerPhoneLabel": "Telefon",
+    "summaryTitle": "Bestellübersicht",
+    "subtotal": "Zwischensumme",
+    "tax": "Steuer",
+    "total": "Gesamt",
+    "paymentTitle": "Zahlungsmethode",
+    "status": {
+      "delivered": "Geliefert",
+      "cancelled": "Storniert",
+      "inprogress": "In Bearbeitung",
+      "accepted": "Akzeptiert",
+      "other": "Ausstehend"
+    }
+  },
+  "eventDetails": {
+    "pageTitle": "Veranstaltungsdetails",
+  "overview.title": "Übersicht",
+  "overview.totalSales": "Gesamtumsatz",
+  "overview.totalOrders": "Gesamtbestellungen",
+  "stalls.title": "Stände",
+  "stalls.searchPlaceholder": "Stände nach Name oder Küche suchen",
+  "stalls.addNew": "Neuen Stand hinzufügen",
+  "stalls.newStall": "Neuer Stand",
+  "stalls.existingStall": "Bestehender Stand",
+  "stalls.table.headers.stallId": "Stand-ID",
+  "stalls.table.headers.stallName": "Standname",
+  "stalls.table.headers.cuisine": "Küche",
+  "stalls.table.headers.profilePhoto": "Profilfoto",
+  "stalls.table.headers.operatingHours": "Öffnungszeiten",
+  "stalls.table.headers.status": "Status",
+  "stalls.table.headers.actions": "Aktionen",
+  "stalls.table.empty.noStalls": "Keine Stände gefunden",
+  "stalls.table.empty.adjustSearch": "Versuchen Sie, Ihre Suche oder Filter anzupassen",
+  "stalls.table.view": "Anzeigen",
+  "stalls.table.delete.title": "Stand löschen",
+  "stalls.table.delete.message": "Sind Sie sicher, dass Sie diesen Stand löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+
+    "breadcrumbs": {
+      "dashboard": "Dashboard",
+      "eventOrganizers": "Veranstalter",
+      "organizerDetails": "Veranstalterdetails",
+      "eventDetails": "Veranstaltungsdetails"
+    },
+    "overview": {
+    "title": "Übersicht",
+    "totalSales": "Gesamtumsatz",
+    "totalOrders": "Gesamtbestellungen",
+    "dateRangeSeparator": "bis",
+    "filter": {
+      "allStalls": "Alle Stände"
+    }
+  },
+    "cards": {
+      "totalSales": "Gesamtumsatz",
+      "totalOrders": "Gesamtbestellungen"
+    },
+    "stallsTable": {
+      "title": "Stände",
+      "searchPlaceholder": "Stände nach Name oder Küche suchen",
+      "addNew": "Neuen Stand hinzufügen",
+      "newStall": "Neuer Stand",
+      "existingStall": "Vorhandener Stand",
+      "columns": {
+        "stallId": "Stand-ID",
+        "stallName": "Standname",
+        "cuisine": "Küche",
+        "profilePhoto": "Profilfoto",
+        "operatingHours": "Öffnungszeiten",
+        "status": "Status",
+        "actions": "Aktionen"
+      },
+      "empty": {
+        "noStalls": "Keine Stände gefunden",
+        "tryAdjust": "Versuchen Sie, Ihre Suche oder Filter anzupassen",
+        "searchEmpty": "Keine Stände gefunden, die Ihrer Suche entsprechen"
+      },
+      "view": "Anzeigen",
+      "edit": "Bearbeiten",
+      "delete": "Stand löschen",
+      "copyId": "Stand-ID kopieren",
+      "activate": "Stand aktivieren",
+      "deactivate": "Stand deaktivieren"
+    }
+  },
+  
+  "eventOrganizerDetails": {
+    "breadcrumbs": {
+      "eventOrganizers": "Veranstalter"
+    },
+    "pageTitle": "Details zum Veranstalter",
+    "addNewEvent": "Neues Event hinzufügen",
+    "table": {
+      "headers": {
+        "eventName": "Eventname",
+        "startDate": "Startdatum",
+        "endDate": "Enddatum",
+        "eventTimings": "Eventzeiten",
+        "location": "Standort",
+        "status": "Status",
+        "actions": "Aktionen"
+      },
+      "viewEvent": "Event ansehen",
+      "moreOptions": "Weitere Optionen",
+      "editEvent": "Event bearbeiten",
+      "viewDetails": "Details ansehen",
+      "deactivateEvent": "Event deaktivieren",
+      "activateEvent": "Event aktivieren"
+    },
+    "viewModal": {
+      "title": "Event-Details",
+      "subtitle": "Vollständige Informationen zu diesem Event anzeigen",
+      "closeButton": "Schließen",
+      "eventName": "Eventname",
+      "eventSchedule": "Event-Zeitplan",
+      "startDate": "Startdatum",
+      "endDate": "Enddatum",
+      "dailyTimings": "Tägliche Zeiten",
+      "location": "Standort",
+      "status": "Status",
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    }
+  },
+
+  "addon": {
+    "pageTitle": "Menüoptionssatz",
+    "searchPlaceholder": "Optionssatz suchen...",
+    "addButton": "Neuen Optionssatz hinzufügen",
+    "table": {
+      "headers": {
+        "name": "Optionssatzname",
+        "internal": "Interner Name",
+        "quantity": "Menge",
+        "dishes": "Gerichte",
+        "actions": "Aktionen"
+      },
+      "empty": {
+        "noOption": "Noch kein Optionssatz",
+        "createFirst": "Erstellen Sie Ihren ersten Optionssatz"
+      }
+    },
+    "form": {
+      "title": "Titel",
+      "internalName": "Interner Name",
+      "minQty": "Min. Menge",
+      "maxQty": "Max. Menge",
+      "chooseDish": "Gericht auswählen",
+      "dishesWithPrice": "Gerichte mit Preis",
+      "cancel": "Abbrechen",
+      "create": "Optionssatz erstellen",
+      "update": "Optionssatz aktualisieren",
+      "creating": "Wird erstellt...",
+      "updating": "Wird aktualisiert..."
+    },
+    "delete": {
+      "title": "Optionssatz löschen",
+      "message": "Möchten Sie diesen Optionssatz wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "cancel": "Abbrechen",
+      "delete": "Löschen",
+      "deleting": "Wird gelöscht..."
+    },
+    "priceModal": {
+      "title": "Preis für {{dish}} festlegen",
+      "currentPrice": "Aktueller Preis",
+      "newPrice": "Neuer Preis",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
+    }
+  },
+  "categorys": {
+    "pageTitle": "Menükategorien",
+    "searchPlaceholder": "Kategorien suchen...",
+    "addButton": "Kategorie hinzufügen",
+    "table": {
+      "headers": {
+        "name": "Kategoriename",
+        "dishes": "Gerichte",
+        "status": "Status",
+        "actions": "Aktionen"
+      },
+      "empty": {
+        "noCategories": "Noch keine Kategorien",
+        "createFirst": "Fügen Sie Ihre erste Kategorie hinzu"
+      }
+    },
+    "form": {
+      "addTitle": "Neue Kategorie hinzufügen",
+      "editTitle": "Kategorie bearbeiten",
+      "title": "Kategorietitel",
+      "foodList": "Speisenliste",
+      "cancel": "Abbrechen",
+      "create": "Kategorie erstellen",
+      "update": "Kategorie aktualisieren",
+      "creating": "Wird erstellt...",
+      "updating": "Wird aktualisiert..."
+    },
+    "delete": {
+      "title": "Kategorie löschen",
+      "message": "Möchten Sie diese Kategorie wirklich löschen?",
+      "cancel": "Abbrechen",
+      "delete": "Löschen",
+      "deleting": "Wird gelöscht..."
+    }
+  },
+  "menus": {
+    "pageTitle": "Restaurantmenü",
+    "addButton": "Menüelement hinzufügen",
+    "form": {
+      "addTitle": "Menüelement hinzufügen",
+      "editTitle": "Menüelement bearbeiten",
+      "title": "Titel",
+      "internalName": "Interner Name",
+      "description": "Beschreibung",
+      "category": "Kategorie",
+      "dietary": "Diätetische Angaben",
+      "allergens": "Allergene",
+      "tags": "Tags",
+      "showInMenu": "Dieses Gericht im Menü anzeigen",
+      "image": "Speisenbild (4:3 Verhältnis)",
+      "upload": "Datei hochladen",
+      "orDrag": "oder drag and drop",
+      "variations": "Variationen",
+      "addVariation": "+ Weitere Variation hinzufügen",
+      "save": "Menüelement speichern",
+      "update": "Menüelement aktualisieren",
+      "saving": "Wird gespeichert..."
+    },
+    "table": {
+      "headers": {
+        "image": "Bild",
+        "title": "Titel",
+        "category": "Kategorie",
+        "description": "Beschreibung",
+        "price": "Preis",
+        "outOfStock": "Ausverkauft",
+        "status": "Status",
+        "actions": "Aktionen"
+      },
+      "empty": {
+        "noItems": "Noch keine Menüelemente",
+        "createFirst": "Fügen Sie Ihr erstes Menüelement hinzu"
+      },
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "deleting": "Wird gelöscht...",
+      "cancel": "Abbrechen"
+    },
+    "optionsPanel": {
+      "availableOptions": "Verfügbare Optionen",
+      "chooseOptions": "Optionen auswählen",
+      "editOptions": "Optionen bearbeiten",
+      "saveChanges": "Änderungen speichern",
+      "cancel": "Abbrechen"
+    },
+    "priceModal": {
+      "title": "Preis für {{dish}} festlegen",
+      "currentPrice": "Aktueller Preis",
+      "newPrice": "Neuer Preis",
+      "cancel": "Abbrechen",
+      "save": "Speichern"
+    }
+  },
+  "order": {
+    "pageTitle": "Bestellungen",
+    "filters": {
+      "filterButton": "Filter",
+      "allStatus": "Alle Status",
+      "pending": "Ausstehend",
+      "accepted": "Akzeptiert",
+      "inProgress": "In Bearbeitung",
+      "delivered": "Geliefert",
+      "cancelled": "Storniert"
+    },
+    "searchPlaceholder": "Bestellungen suchen...",
+    "table": {
+      "headers": {
+        "orderId": "Bestell-ID",
+        "items": "Artikel",
+        "payment": "Zahlung",
+        "status": "Status",
+        "updatedAt": "Aktualisiert am",
+        "actions": "Aktionen"
+      },
+      "empty": {
+        "noResults": "Keine Bestellungen gefunden",
+        "withCriteria": "Versuchen Sie, Ihre Such- oder Filterkriterien anzupassen",
+        "withoutCriteria": "Wenn Kunden Bestellungen aufgeben, erscheinen diese hier"
+      },
+      "view": "Anzeigen"
+    },
+    "modal": {
+      "title": "Bestelldetails",
+      "close": "Schließen"
+    },
+    "pagination": {
+      "previous": "Vorherige",
+      "next": "Nächste"
+    }
+  },
+  "dashboards": {
+    "pageTitle": "Dashboard",
+    "dateButtons": {
+      "custom": "Benutzerdefiniert"
+    },
+    "dateRange": {
+      "label": "Datumsbereich"
+    },
+    "cards": {
+      "totalOrders": "Gesamtbestellungen",
+      "totalSales": "Gesamtumsatz"
+    },
+    "customModal": {
+      "title": "Benutzerdefinierter Datumsbereich",
+      "startDate": "Startdatum",
+      "endDate": "Enddatum",
+      "cancel": "Abbrechen",
+      "apply": "Anwenden"
+    },
+    "loading": "Lade..."
+  },
+
+
+
+  "stall": {
+  "menu": {
+    "dashboard":            "Übersicht",
+    "stallProfile":         "Standprofil",
+    "vendorProfile":        "Anbieterprofil",
+    "orders":               "Bestellungen",
+    "menu":                 "Speisekarte",
+    "category":             "Kategorie",
+    "addOns":               "Zusatzoptionen",
+    "offers":               "Angebote",
+    "ratings":              "Bewertungen",
+    "timings":              "Öffnungszeiten",
+    "location":             "Standort",
+    "title":                "Stand-Dashboard",
+    "overview":             "Überblick",
+    "totalOrders":          "Gesamtbestellungen",
+    "totalRevenue":         "Gesamtumsatz",
+    "averageOrderValue":    "Durchschnittlicher Bestellwert"
+  },
+  "sidebar": {
+    "backToDashboard":      "Zurück zur Übersicht",
+    "backToAdmin":          "Zurück zum Admin"
+  }
+},
+
+  "menu": {
+    "title": "Menü",
+    "additem": "Artikel hinzufügen",
+    "searchitems": "Artikel suchen...",
+    "available": "Verfügbar",
+    "unavailable": "Nicht verfügbar",
+    "edititem": "Artikel bearbeiten",
+    "deleteconfirm": "Sind Sie sicher, dass Sie diesen Artikel löschen möchten?",
+    "itemdeleted": "Artikel erfolgreich gelöscht",
+    "categories": {
+      "all": "Alle Artikel",
+      "appetizers": "Vorspeisen",
+      "main": "Hauptgericht",
+      "desserts": "Desserts",
+      "beverages": "Getränke"
+    },
+    "dietary": {
+      "vegetarian": "Vegetarisch",
+      "vegan": "Vegan",
+      "gluten-free": "Glutenfrei",
+      "halal": "Halal"
+    },
+    "allergens": {
+      "nuts": "Nüsse",
+      "dairy": "Milchprodukte",
+      "eggs": "Eier",
+      "soy": "Soja",
+      "gluten": "Gluten"
+    },
+    "sidebar": {
+      "backToDashboard": "Zurück zum Dashboard",
+      "backToAdmin": "Zurück zum Admin"
+    },
+    "tags": {
+      "spicy": "Scharf",
+      "popular": "Beliebt",
+      "new": "Neu",
+      "recommended": "Empfohlen",
+      "healthy": "Gesund"
+    },
+    "items": {
+      "classicBurger": {
+        "name": "Klassischer Burger",
+        "description": "Saftiges Rinderpatty mit frischem Gemüse"
+      },
+      "caesarSalad": {
+        "name": "Caesar-Salat",
+        "description": "Frischer Römersalat mit Caesar-Dressing"
+      }
+    },
+    "variations": {
+      "regular": "Normal",
+      "large": "Groß"
+    },
+    "addons": {
+      "extraCheese": "Extra Käse",
+      "bacon": "Speck",
+      "grilledChicken": "Gegrilltes Hähnchen",
+      "extraDressing": "Extra Dressing"
+    }
+  },
+  "optionset": {
+    "title": "Menü-Optionssatz",
+    "searchplaceholder": "Optionssatz suchen...",
+    "addnew": "Neuen Optionssatz hinzufügen",
+    "editformtitle": "Optionssatz bearbeiten",
+    "createformtitle": "Neuen Optionssatz erstellen",
+    "titlelabel": "Titel",
+    "titleplaceholder": "z.B. Wählen Sie Ihre Sauce",
+    "internallabel": "Interner Name",
+    "internalplaceholder": "Wählen Sie Ihren internen Namen",
+    "minquantitylabel": "Mindestmenge",
+    "maxquantitylabel": "Höchstmenge",
+    "choosedishlabel": "Gericht auswählen",
+    "choosedishplaceholder": "Wählen Sie ein Gericht",
+    "disheswithprice": "Gerichte mit Preis",
+    "cancelbutton": "Abbrechen",
+    "updating": "Wird aktualisiert...",
+    "creating": "Wird erstellt...",
+    "updatebutton": "Optionssatz aktualisieren",
+    "createbutton": "Optionssatz erstellen",
+    "nooptionset": "Noch kein Optionssatz vorhanden",
+    "nooptionsetdescription": "Erstellen Sie Optionssätze, um Ihre Menüpunkte zu erweitern. Optionssätze ermöglichen es Kunden, ihre Bestellungen mit zusätzlichen Optionen anzupassen.",
+    "createfirst": "Erstellen Sie Ihren ersten Optionssatz",
+    "nameheader": "Name des Optionssatzes",
+    "internalheader": "Interner Name",
+    "quantityheader": "Menge",
+    "dishesheader": "Gerichte",
+    "actionsheader": "Aktionen",
+    "moredishes": "mehr",
+    "nooptionsetfound": "Kein Optionssatz gefunden, der Ihrer Suche entspricht",
+    "clearsearch": "Suche löschen",
+    "setpricetitle": "Preis für {{dish}} festlegen",
+    "currentpricelabel": "Aktueller Preis",
+    "newpricelabel": "Neuer Preis",
+    "newpriceplaceholder": "0.00",
+    "savebutton": "Speichern",
+    "deletetitle": "Optionssatz löschen",
+    "deleteconfirm": "Sind Sie sicher, dass Sie diesen Optionssatz löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleting": "Wird gelöscht...",
+    "deletebutton": "Löschen",
+    "titleerror": "Der Titel des Optionssatzes ist erforderlich",
+    "quantityerror": "Die maximale Menge muss größer oder gleich der minimalen Menge sein",
+    "dishrequirederror": "Bitte fügen Sie mindestens ein Gericht zu diesem Optionssatz hinzu",
+    "createerror": "Fehler beim Erstellen des Optionssatzes",
+    "deleteerror": "Fehler beim Löschen des Optionssatzes",
+    "deletesuccess": "Optionssatz erfolgreich gelöscht",
+    "dishaddedsuccess": "Gericht erfolgreich hinzugefügt"
+  },
+  "common": {
+    "showingpage": "Zeige Seite",
+    "of": "von",
+    "confirmsignout": "Abmeldung bestätigen",
+    "signoutmessage": "Möchten Sie sich wirklich abmelden? Sie müssen sich erneut anmelden, um auf Ihr Konto zuzugreifen",
+    "cancel": "Abbrechen",
+    "signout": "Abmelden",
+    "delete": "Löschen",
+    "signedoutsuccessfully": "Erfolgreich abgemeldet",
+    "save": "Speichern",
+    "add": "Hinzufügen",
+    "close": "Schließen",
+    "edit": "Bearbeiten",
+    "deleting": "Wird gelöscht...",
+    "signedOutSuccessfully": "Erfolgreich abgemeldet",
+    "confirmSignOut": "Möchten Sie sich wirklich abmelden?",
+    "signOutMessage": "Sie müssen sich erneut anmelden, um fortzufahren.",
+    "signOut": "Abmelden",
+    "loading": "Wird geladen...",
+  "error": "Ein Fehler ist aufgetreten",
+  "success": "Erfolg"
   }
 }

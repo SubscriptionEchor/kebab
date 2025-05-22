@@ -3,6 +3,7 @@ import { useEffect, useState, Dispatch, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
 import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 import { CHECK_ZONE_RESTRICTIONS } from "../lib/graphql/queries/zones";
+import { toast } from "sonner";
 import { throttle } from "lodash";
 import { config } from "../constants";
 import { Icon } from "leaflet";
@@ -12,11 +13,13 @@ import { ADMIN_DASHBOARD_BOOTSTRAP } from "../lib/graphql/queries/admin";
 
 // Fix for default marker icon
 const icon = new Icon({
-    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
+  iconUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
 });
 
 interface MapsComponentProps {
@@ -38,7 +41,7 @@ export default function MapsComponent({
     const { t } = useTranslation();
 
     async function getCoordsDetails(newCoordinates) {
-        const response = await fetch(
+    const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${newCoordinates?.[0]}&lon=${newCoordinates?.[1]}&format=json`
         );
         const data = await response.json();
@@ -77,12 +80,13 @@ export default function MapsComponent({
                     return
                 }
                 if (!zoneData?.checkZoneRestrictions?.selectedZone) {
-                    console.warn("Location outside service area")
+                  toast.error(t("location.outsideServiceFallback"));
                     setIsValidZone(false);
                     setPosition([position[0], position[1]]);
                     getCoordsDetails(position)
                     return
                 }
+                toast.success(t("location.activedelivery"));
                 setIsValidZone(true);
                 setPosition(value)
             }} />

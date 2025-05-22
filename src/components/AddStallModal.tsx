@@ -45,28 +45,32 @@ interface AddStallModalProps {
   };
 }
 
+interface ErrorsMap {
+  [key: string]: string;
+}
+
 const DAYS = [
-  { id: 'monday', label: 'Monday' },
-  { id: 'tuesday', label: 'Tuesday' },
-  { id: 'wednesday', label: 'Wednesday' },
-  { id: 'thursday', label: 'Thursday' },
-  { id: 'friday', label: 'Friday' },
-  { id: 'saturday', label: 'Saturday' },
-  { id: 'sunday', label: 'Sunday' }
+  { id: 'monday', label: 'days.monday' },
+  { id: 'tuesday', label: 'days.tuesday' },
+  { id: 'wednesday', label: 'days.wednesday' },
+  { id: 'thursday', label: 'days.thursday' },
+  { id: 'friday', label: 'days.friday' },
+  { id: 'saturday', label: 'days.saturday' },
+  { id: 'sunday', label: 'days.sunday' }
 ];
 
 const CUISINES = [
-  'Arabian',
-  'Chinese',
-  'Indian',
-  'Italian',
-  'Japanese',
-  'Korean',
-  'Mexican',
-  'Thai',
-  'Turkish',
-  'Vietnamese',
-  'Other'
+  { id: 'Arabian', label: 'addStall.cuisines.arabian' },
+  { id: 'Chinese', label: 'addStall.cuisines.chinese' },
+  { id: 'Indian', label: 'addStall.cuisines.indian' },
+  { id: 'Italian', label: 'addStall.cuisines.italian' },
+  { id: 'Japanese', label: 'addStall.cuisines.japanese' },
+  { id: 'Korean', label: 'addStall.cuisines.korean' },
+  { id: 'Mexican', label: 'addStall.cuisines.mexican' },
+  { id: 'Thai', label: 'addStall.cuisines.thai' },
+  { id: 'Turkish', label: 'addStall.cuisines.turkish' },
+  { id: 'Vietnamese', label: 'addStall.cuisines.vietnamese' },
+  { id: 'Other', label: 'addStall.cuisines.other' }
 ];
 
 const STALL_NAME_LIMIT = 50;
@@ -412,7 +416,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
               {/* Header */}
               <div className="sticky top-0 z-20 bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-900">Add New Stall</h2>
+                <h2 className="text-xl font-semibold text-gray-900">{t('addStall.title')}</h2>
                 <button
                   onClick={onClose}
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -427,14 +431,14 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
                   {/* Stall Name */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Stall Name
+                      {t('addStall.stallName')}
                     </label>
                     <TextField
                       fullWidth
                       value={formData.name}
                       onChange={handleNameChange}
                       variant="outlined"
-                      placeholder="Enter your stall name"
+                      placeholder={t('addStall.stallNamePlaceholder')}
                       required
                       InputProps={{
                         endAdornment: (
@@ -451,7 +455,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
                   {/* Cuisine Dropdown */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Cuisine Type
+                      {t('addStall.cuisineType')}
                     </label>
                     <TextField
                       select
@@ -469,8 +473,8 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
                       }}
                     >
                       {CUISINES.map(cuisine => (
-                        <MenuItem key={cuisine} value={cuisine}>
-                          {cuisine}
+                        <MenuItem key={cuisine.id} value={cuisine.id}>
+                          {t(cuisine.label)}
                         </MenuItem>
                       ))}
                     </TextField>
@@ -479,7 +483,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
                   {/* Profile Photo Upload */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Profile Photo
+                      {t('addStall.profilePhoto')}
                     </label>
                     <div className="w-full" onClick={() => fileInputRef.current?.click()}>
                       {previewUrl ? (
@@ -498,7 +502,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
                           >
                             <div className="text-white text-center">
                               <Upload className="h-8 w-8 mx-auto mb-2" />
-                              <p className="text-sm">Change Photo</p>
+                              <p className="text-sm">{t('addStall.changePhoto')}</p>
                             </div>
                           </div>
                         </div>
@@ -507,8 +511,8 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
                           className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-brand-primary hover:bg-brand-primary/5 transition-all duration-200 cursor-pointer"
                         >
                           <Upload className="h-10 w-10 mx-auto text-gray-400 mb-3" />
-                          <p className="text-sm text-gray-600 font-medium">Click to upload or drag and drop</p>
-                          <p className="text-xs text-gray-400 mt-2">PNG, JPG up to 5MB</p>
+                          <p className="text-sm text-gray-600 font-medium">{t('addStall.uploadPhoto')}</p>
+                          <p className="text-xs text-gray-400 mt-2">{t('addStall.uploadPhotoSubtext')}</p>
                         </div>
                       )}
                       <input
@@ -524,12 +528,12 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
                   {/* Operating Hours */}
                   <div className="space-y-6">
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-gray-900">Operating Hours</h3>
+                      <h3 className="text-lg font-medium text-gray-900">{t('addStall.operatingHours')}</h3>
                       
                       {/* Common Time Settings */}
                       <div className="bg-gray-50 rounded-xl p-4 space-y-4">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium text-gray-600">Set Common Hours</p>
+                          <p className="text-sm font-medium text-gray-600">{t('addStall.setCommonHours')}</p>
                           <button
                             type="button"
                             onClick={() => setIsCommonHoursEnabled(!isCommonHoursEnabled)}
@@ -542,12 +546,12 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
                             {isCommonHoursEnabled ? (
                               <>
                                 <X className="h-4 w-4" />
-                                Disable
+                                {t('addStall.disable')}
                               </>
                             ) : (
                               <>
                                 <Check className="h-4 w-4" />
-                                Enable
+                                {t('addStall.enable')}
                               </>
                             )}
                           </button>
@@ -558,7 +562,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                               <div className="col-span-1 sm:col-span-2">
                                 <TimePicker
-                                  label="Common Start Time"
+                                  label={t('addStall.commonStartTime')}
                                   value={dayjs(commonTiming.startTime, 'HH:mm')}
                                   onChange={(value) => {
                                     if (value) {
@@ -576,7 +580,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
                               </div>
                               <div className="col-span-1 sm:col-span-2">
                                 <TimePicker
-                                  label="Common End Time"
+                                  label={t('addStall.commonEndTime')}
                                   value={dayjs(commonTiming.endTime, 'HH:mm')}
                                   onChange={(value) => {
                                     if (value) {
@@ -599,7 +603,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
                               className="w-full sm:w-auto px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium flex items-center justify-center gap-2 border border-gray-200"
                             >
                               <Clock className="h-4 w-4" />
-                              Apply to All Days
+                              {t('addStall.applyToAllDays')}
                             </button>
                           </>
                         )}
@@ -628,13 +632,13 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
                                 >
                                   {formData.timings[day.id].isOpen && <Check className="w-4 h-4" />}
                                 </button>
-                                <span className="font-medium text-gray-700">{day.label}</span>
+                                <span className="font-medium text-gray-700">{t(`addStall.days.${day.id}`)}</span>
                               </div>
 
                               {formData.timings[day.id].isOpen && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                   <TimePicker
-                                    label="Start Time"
+                                    label={t('addStall.startTime')}
                                     value={dayjs(formData.timings[day.id].startTime, 'HH:mm')}
                                     onChange={(value) => {
                                       if (value) {
@@ -650,7 +654,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
                                     }}
                                   />
                                   <TimePicker
-                                    label="End Time"
+                                    label={t('addStall.endTime')}
                                     value={dayjs(formData.timings[day.id].endTime, 'HH:mm')}
                                     onChange={(value) => {
                                       if (value) {
@@ -728,7 +732,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
                     onClick={onClose}
                     className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                   <button
                     type="submit"
@@ -743,7 +747,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
                     ) : (
                       <>
                         <Check className="h-4 w-4" />
-                        Add Stall
+                        {t('addStall.addStall')}
                       </>
                     )}
                   </button>
@@ -755,4 +759,5 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
       </LocalizationProvider>
     </ThemeProvider>
   );
+}
 }

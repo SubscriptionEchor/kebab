@@ -66,12 +66,11 @@ export default function EventOrganizerDetails() {
     }
   });
 
-  // Mock organizer data - replace with actual API call
   const [organizer] = useState({
     id: organizerId,
     name: organizerId === 'ORG-001' ? 'Event Masters Pro' :
           organizerId === 'ORG-002' ? 'Celebration Experts' :
-          organizerId === 'ORG-003' ? 'Prime Events' : ''
+          organizerId === 'ORG-003' ? 'Prime Events' : 'Unknown Organizer'
   });
 
   // Fetch events data from API
@@ -267,20 +266,20 @@ export default function EventOrganizerDetails() {
           onClick={() => navigate('/dashboard/event-organizers')}
           className="text-gray-600 hover:text-brand-primary transition-colors text-sm font-medium"
         >
-          Event Organizers
+          {t('eventOrganizerDetails.breadcrumbs.eventOrganizers')}
         </button>
         <ChevronRight className="h-4 w-4 text-gray-400" />
         <span className="text-sm font-medium text-gray-900">{organizer.name}</span>
       </div>
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Event Organizer Details</h1>
+        <h1 className="text-2xl font-semibold">{t('eventOrganizerDetails.pageTitle')}</h1>
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 px-4 py-2 bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors"
         >
           <Plus className="h-5 w-5" />
-          Add New Event
+          {t('eventOrganizerDetails.addNewEvent')}
         </button>
       </div>
 
@@ -311,25 +310,25 @@ export default function EventOrganizerDetails() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[22%]">
-                  Event Name
+                  {t('eventOrganizerDetails.table.headers.eventName')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[11%]">
-                  Start Date
+                  {t('eventOrganizerDetails.table.headers.startDate')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[11%]">
-                  End Date
+                  {t('eventOrganizerDetails.table.headers.endDate')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[13%]">
-                  Event Timings
+                  {t('eventOrganizerDetails.table.headers.eventTimings')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
-                  Location
+                  {t('eventOrganizerDetails.table.headers.location')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[8%]">
-                  Status
+                  {t('eventOrganizerDetails.table.headers.status')}
                 </th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
-                  Actions
+                  {t('eventOrganizerDetails.table.headers.actions')}
                 </th>
               </tr>
             </thead>
@@ -369,7 +368,7 @@ export default function EventOrganizerDetails() {
                           ? 'bg-green-100 text-green-600 hover:bg-green-200' 
                           : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
                       }`}
-                      title={event.isActive ? 'Deactivate Event' : 'Activate Event'}
+                      title={event.isActive ? t('eventOrganizerDetails.table.deactivateEvent') : t('eventOrganizerDetails.table.activateEvent')}
                       disabled={isTogglingStatus === event.id}
                     >
                       {isTogglingStatus === event.id ? (
@@ -388,18 +387,18 @@ export default function EventOrganizerDetails() {
                         }}
                         className="inline-flex items-center px-3 py-1.5 bg-brand-primary text-white text-xs font-medium hover:bg-brand-primary/90 rounded transition-colors"
                       >
-                        View Event
+                        {t('eventOrganizerDetails.table.viewEvent')}
                       </button>
                       <div className="relative z-30">
                         <KebabMenu
                           menuItems={[
                             {
-                              label: "Edit Event",
+                              label: t('eventOrganizerDetails.table.editEvent'),
                               icon: Edit,
                               onClick: () => handleEditEvent(event)
                             },
                             {
-                              label: "View Details",
+                              label: t('eventOrganizerDetails.table.viewDetails'),
                               icon: Eye,
                               onClick: () => handleViewDetails(event)
                             }
@@ -458,8 +457,8 @@ export default function EventOrganizerDetails() {
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
             <div className="flex justify-between items-center mb-6 border-b pb-4">
               <div>
-                <h2 className="text-2xl font-semibold">Event Details</h2>
-                <p className="text-sm text-gray-500 mt-1">View complete information about this event</p>
+                <h2 className="text-2xl font-semibold">{t('eventOrganizerDetails.viewModal.title')}</h2>
+                <p className="text-sm text-gray-500 mt-1">{t('eventOrganizerDetails.viewModal.subtitle')}</p>
               </div>
               <button
                 onClick={() => {
@@ -473,40 +472,40 @@ export default function EventOrganizerDetails() {
             </div>
             <div className="space-y-6">
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Event Name</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">{t('eventOrganizerDetails.viewModal.eventName')}</h3>
                 <p className="text-lg font-medium">{selectedEvent.name}</p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Event Schedule</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">{t('eventOrganizerDetails.viewModal.eventSchedule')}</h3>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-gray-500">Start Date</p>
+                      <p className="text-sm text-gray-500">{t('eventOrganizerDetails.viewModal.startDate')}</p>
                       <p className="font-medium">{selectedEvent.startDate}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">End Date</p>
+                      <p className="text-sm text-gray-500">{t('eventOrganizerDetails.viewModal.endDate')}</p>
                       <p className="font-medium">{selectedEvent.endDate}</p>
                     </div>
                   </div>
                   <div className="mt-4">
-                    <p className="text-sm text-gray-500">Daily Timings</p>
+                    <p className="text-sm text-gray-500">{t('eventOrganizerDetails.viewModal.dailyTimings')}</p>
                     <p className="font-medium">{selectedEvent.startTime} - {selectedEvent.endTime}</p>
                   </div>
                 </div>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Location</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">{t('eventOrganizerDetails.viewModal.location')}</h3>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="font-medium">{selectedEvent.address}</p>
                 </div>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Status</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">{t('eventOrganizerDetails.viewModal.status')}</h3>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${selectedEvent.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
-                    <p className="font-medium">{selectedEvent.isActive ? 'Active' : 'Inactive'}</p>
+                    <p className="font-medium">{selectedEvent.isActive ? t('eventOrganizerDetails.viewModal.active') : t('eventOrganizerDetails.viewModal.inactive')}</p>
                   </div>
                 </div>
               </div>
@@ -516,4 +515,5 @@ export default function EventOrganizerDetails() {
       )}
     </div>
   );
+}
 }

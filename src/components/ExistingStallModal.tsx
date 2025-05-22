@@ -3,6 +3,7 @@ import { X, Search, Store } from 'lucide-react';
 import { useQuery } from '@apollo/client';
 import { GET_STALLS_BY_OWNER } from '../lib/graphql/queries/stalls';
 import LoadingState from './LoadingState';
+import { useTranslation } from 'react-i18next';
 
 interface ExistingStallModalProps {
   isOpen: boolean;
@@ -18,7 +19,7 @@ export default function ExistingStallModal({
   ownerId = "default-owner" // You should pass the actual owner ID from parent
 }: ExistingStallModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
-
+  const { t } = useTranslation();
   const { data, loading, error } = useQuery(GET_STALLS_BY_OWNER, {
     variables: { ownerId },
     skip: !ownerId
@@ -34,7 +35,7 @@ export default function ExistingStallModal({
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4">
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold">Add Existing Stall</h2>
+          <h2 className="text-xl font-semibold">{t('existingStallModal.title')}</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-500 transition-colors"
@@ -49,7 +50,7 @@ export default function ExistingStallModal({
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Search stalls by name"
+                placeholder={t('existingStallModal.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary"
@@ -66,7 +67,7 @@ export default function ExistingStallModal({
           ) : filteredStalls.length === 0 ? (
             <div className="text-center py-8">
               <Store className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No stalls found</p>
+              <p className="text-gray-500">{t('existingStallModal.noResults')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 max-h-[400px] overflow-y-auto">
@@ -128,4 +129,4 @@ export default function ExistingStallModal({
       </div>
     </div>
   );
-} 
+}

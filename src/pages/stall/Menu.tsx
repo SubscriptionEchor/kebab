@@ -41,25 +41,25 @@ interface Category {
 }
 
 const DIETARY_OPTIONS = [
-  { value: 'vegetarian', label: 'Vegetarian' },
-  { value: 'vegan', label: 'Vegan' },
-  { value: 'gluten-free', label: 'Gluten Free' },
-  { value: 'halal', label: 'Halal' }
+  { value: 'vegetarian', label: 'menu.dietary.vegetarian' },
+  { value: 'vegan', label: 'menu.dietary.vegan' },
+  { value: 'gluten-free', label: 'menu.dietary.gluten-free' },
+  { value: 'halal', label: 'menu.dietary.halal' }
 ];
 
 const ALLERGENS = [
-  { value: 'nuts', label: 'Nuts' },
-  { value: 'dairy', label: 'Dairy' },
-  { value: 'eggs', label: 'Eggs' },
-  { value: 'soy', label: 'Soy' },
-  { value: 'gluten', label: 'Gluten' }
+  { value: 'nuts', label: 'menu.allergens.nuts' },
+  { value: 'dairy', label: 'menu.allergens.dairy' },
+  { value: 'eggs', label: 'menu.allergens.eggs' },
+  { value: 'soy', label: 'menu.allergens.soy' },
+  { value: 'gluten', label: 'menu.allergens.gluten' }
 ];
 
 const TAGS = [
-  { value: 'spicy', label: 'Spicy' },
-  { value: 'popular', label: 'Popular' },
-  { value: 'new', label: 'New' },
-  { value: 'recommended', label: 'Recommended' }
+  { value: 'spicy', label: 'menu.tags.spicy' },
+  { value: 'popular', label: 'menu.tags.popular' },
+  { value: 'new', label: 'menu.tags.new' },
+  { value: 'recommended', label: 'menu.tags.recommended' }
 ];
 
 export default function Menu() {
@@ -74,52 +74,52 @@ export default function Menu() {
   
   // Mock data
   const [categories] = useState<Category[]>([
-    { id: 'all', name: 'All Items' },
-    { id: 'appetizers', name: 'Appetizers' },
-    { id: 'main', name: 'Main Course' },
-    { id: 'desserts', name: 'Desserts' },
-    { id: 'beverages', name: 'Beverages' }
+    { id: 'all', name: t('menu.categories.all') },
+    { id: 'appetizers', name: t('menu.categories.appetizers') },
+    { id: 'main', name: t('menu.categories.main') },
+    { id: 'desserts', name: t('menu.categories.desserts') },
+    { id: 'beverages', name: t('menu.categories.beverages') }
   ]);
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>([
     {
       id: '1',
-      name: 'Classic Burger',
-      description: 'Juicy beef patty with fresh vegetables',
+      name: t('menu.items.classicBurger.name'),
+      description: t('menu.items.classicBurger.description'),
       price: 12.99,
       category: 'main',
       image: 'https://example.com/burger.jpg',
       isAvailable: true,
       variations: [
-        { id: 'v1', name: 'Regular', price: 12.99, isDefault: true },
-        { id: 'v2', name: 'Large', price: 14.99, isDefault: false }
+        { id: 'v1', name: t('menu.variations.regular'), price: 12.99, isDefault: true },
+        { id: 'v2', name: t('menu.variations.large'), price: 14.99, isDefault: false }
       ],
       dietary: 'halal',
       allergens: ['gluten', 'dairy'],
       tags: ['popular'],
       addons: [
-        { id: 'a1', name: 'Extra Cheese', price: 1.50, maxQuantity: 1 },
-        { id: 'a2', name: 'Bacon', price: 2.00, maxQuantity: 1 }
+        { id: 'a1', name: t('menu.addons.extraCheese'), price: 1.50, maxQuantity: 1 },
+        { id: 'a2', name: t('menu.addons.bacon'), price: 2.00, maxQuantity: 1 }
       ]
     },
     {
       id: '2',
-      name: 'Caesar Salad',
-      description: 'Fresh romaine lettuce with caesar dressing',
+      name: t('menu.items.caesarSalad.name'),
+      description: t('menu.items.caesarSalad.description'),
       price: 8.99,
       category: 'appetizers',
       image: 'https://example.com/salad.jpg',
       isAvailable: true,
       variations: [
-        { id: 'v3', name: 'Regular', price: 8.99, isDefault: true },
-        { id: 'v4', name: 'Large', price: 10.99, isDefault: false }
+        { id: 'v3', name: t('menu.variations.regular'), price: 8.99, isDefault: true },
+        { id: 'v4', name: t('menu.variations.large'), price: 10.99, isDefault: false }
       ],
       dietary: 'vegetarian',
       allergens: ['eggs', 'dairy'],
       tags: ['healthy'],
       addons: [
-        { id: 'a3', name: 'Grilled Chicken', price: 3.00, maxQuantity: 1 },
-        { id: 'a4', name: 'Extra Dressing', price: 0.50, maxQuantity: 2 }
+        { id: 'a3', name: t('menu.addons.grilledChicken'), price: 3.00, maxQuantity: 1 },
+        { id: 'a4', name: t('menu.addons.extraDressing'), price: 0.50, maxQuantity: 2 }
       ]
     }
   ]);
@@ -235,7 +235,7 @@ export default function Menu() {
                 <div className="absolute top-2 left-2 flex gap-2">
                   {item.tags.map(tag => (
                     <span key={tag} className="px-2 py-1 text-xs font-medium bg-black/50 text-white rounded-full">
-                      {tag}
+                      {t(`menu.tags.${tag}`)}
                     </span>
                   ))}
                 </div>
@@ -261,12 +261,12 @@ export default function Menu() {
               <div className="flex flex-wrap gap-2 mb-4">
                 {item.dietary && (
                   <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                    {item.dietary}
+                    {t(`menu.dietary.${item.dietary}`)}
                   </span>
                 )}
                 {item.allergens && item.allergens.map(allergen => (
                   <span key={allergen} className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
-                    {allergen}
+                    {t(`menu.allergens.${allergen}`)}
                   </span>
                 ))}
               </div>
@@ -324,4 +324,4 @@ export default function Menu() {
       )}
     </div>
   );
-} 
+}
