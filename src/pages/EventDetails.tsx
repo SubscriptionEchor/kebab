@@ -696,7 +696,7 @@ export default function EventDetails() {
       </div>
 
       {/* Overview Section */}
-      <div className="mb-12">
+      {/* <div className="mb-12">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">{t('eventDetails.overview.title')}</h2>
           <div className="flex items-center gap-4">
@@ -732,11 +732,11 @@ export default function EventDetails() {
               </select>
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Total Sales Card */}
-          <div className="bg-white rounded-lg shadow p-6">
+          {/* <div className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-sm text-gray-500">{t('eventDetails.overview.totalSales')}</p>
@@ -753,10 +753,10 @@ export default function EventDetails() {
                 <div className="h-2 bg-green-500 rounded-full" style={{ width: '75%' }} />
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Total Orders Card */}
-          <div className="bg-white rounded-lg shadow p-6">
+          {/* <div className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-sm text-gray-500">{t('eventDetails.overview.totalOrders')}</p>
@@ -773,8 +773,8 @@ export default function EventDetails() {
                 <div className="h-2 bg-blue-500 rounded-full" style={{ width: '60%' }} />
               </div>
             </div>
-          </div>
-        </div>
+          </div> */}
+        {/* </div> */}
       </div>
 
       {/* Stalls Table */}

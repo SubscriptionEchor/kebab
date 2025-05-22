@@ -28,6 +28,7 @@ interface MapsComponentProps {
     setIsValidZone: Dispatch<SetStateAction<boolean>>;
     searchText?: string;
     setSearchText?: Dispatch<SetStateAction<string>>;
+    country?: string;
 }
 
 export default function MapsComponent({ 
@@ -35,7 +36,8 @@ export default function MapsComponent({
     setPosition, 
     setIsValidZone, 
     searchText, 
-    setSearchText 
+    setSearchText,
+    country = 'GERMANY'
 }: MapsComponentProps) {
     const [CHECK_ZONE] = useLazyQuery(CHECK_ZONE_RESTRICTIONS)
     const { t } = useTranslation();
@@ -65,31 +67,36 @@ export default function MapsComponent({
 
     return (
         <div className="h-[400px]">
-            <MapSearch searchText={searchText || ''} setSearchText={setSearchText} setMarkerPosition={async (value) => {
-                let { data: zoneData, error } = await CHECK_ZONE({
-                    variables: {
-                        inputValues: {
-                            latitude: value[0],
-                            longitude: value[1]
-                        }
-                    },
-                });
-                if (error) {
-                    console.error("Error checking zone:", error)
-                    setIsValidZone(false);
-                    return
-                }
-                if (!zoneData?.checkZoneRestrictions?.selectedZone) {
-                  toast.error(t("location.outsideServiceFallback"));
-                    setIsValidZone(false);
-                    setPosition([position[0], position[1]]);
-                    getCoordsDetails(position)
-                    return
-                }
-                toast.success(t("location.activedelivery"));
-                setIsValidZone(true);
-                setPosition(value)
-            }} />
+            <MapSearch 
+                searchText={searchText || ''} 
+                setSearchText={setSearchText} 
+                setMarkerPosition={async (value) => {
+                    let { data: zoneData, error } = await CHECK_ZONE({
+                        variables: {
+                            inputValues: {
+                                latitude: value[0],
+                                longitude: value[1]
+                            }
+                        },
+                    });
+                    if (error) {
+                        console.error("Error checking zone:", error)
+                        setIsValidZone(false);
+                        return
+                    }
+                    if (!zoneData?.checkZoneRestrictions?.selectedZone) {
+                        toast.error(t("location.outsideServiceFallback"));
+                        setIsValidZone(false);
+                        setPosition([position[0], position[1]]);
+                        getCoordsDetails(position)
+                        return
+                    }
+                    toast.success(t("location.activedelivery"));
+                    setIsValidZone(true);
+                    setPosition(value)
+                }}
+                country={country}
+            />
             <MapContainer
                 center={position}
                 zoom={13}

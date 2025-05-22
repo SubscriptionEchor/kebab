@@ -1,7 +1,14 @@
-
 import React, { useRef, useState, useEffect } from 'react';
-import { config } from '../constants';
-const MapSearch = ({ setMarkerPosition, searchText = '', setSearchText }) => {
+import { getEnvVar } from '../utils/env';
+
+interface MapSearchProps {
+    setMarkerPosition: (position: [number, number]) => void;
+    searchText?: string;
+    setSearchText?: (text: string) => void;
+    country?: string;
+}
+
+const MapSearch = ({ setMarkerPosition, searchText = '', setSearchText, country = 'GERMANY' }: MapSearchProps) => {
 
     const [searchResults, setSearchResults] = useState([]);
     const [loader, setLoader] = useState(false)
@@ -39,7 +46,8 @@ const MapSearch = ({ setMarkerPosition, searchText = '', setSearchText }) => {
                 return
             }
             setLoader(true)
-            const response = await fetch(`${config.OSM_SEARCH_URL}/api?q=${encodeURIComponent(text)}&limit=10`);
+            const osmSearchUrl = getEnvVar('MAPS_URL', country);
+            const response = await fetch(`${osmSearchUrl}?q=${encodeURIComponent(text)}&limit=10`);
             const data = await response.json();
             const formattedResults = data.features.map(feature => ({
                 id: feature.properties.osm_id,
