@@ -304,6 +304,7 @@ export default function RestaurantLocations() {
           setPosition={setPosition}
           searchText={searchText}
           setSearchText={setSearchText}
+          country={data?.restaurant?.country || 'GERMANY'}
         />
 
         {/* Address Section */}

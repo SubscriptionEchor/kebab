@@ -1,10 +1,17 @@
 /**
  * Get environment variable with fallback values
  */
-export function getEnvVar(key: string): string {
+export function getEnvVar(key: string, country?: string): string {
   switch (key) {
     case 'MAPS_URL':
-      return 'https://maps.kebapp-chefs.com:444/api';
+      // Return different URLs based on country
+      if (country === 'AUSTRIA') {
+        return 'https://maps.kebapp-chefs.com:8008/api';
+      } else if (country === 'GERMANY') {
+        return 'https://maps.kebapp-chefs.com:8009/api';
+      }
+      // Default to Germany URL if no country specified
+      return 'https://maps.kebapp-chefs.com:8009/api';
     case 'TILES_URL':
       return 'https://d3qp57w6m10wuf.cloudfront.net/styles/basic-preview/512/{z}/{x}/{y}.png';
     default:

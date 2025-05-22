@@ -524,6 +524,7 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                     setIsValidZone={setIsValidZone}
                     searchText={searchText}
                     setSearchText={setSearchText}
+                    country={formData.country}
                   />
                 </div>
 

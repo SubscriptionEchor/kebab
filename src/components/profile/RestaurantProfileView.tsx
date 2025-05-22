@@ -140,6 +140,7 @@ export default function RestaurantProfileView({
     return false;
   };
 
+
   return (
     <div className="space-y-6">
       {/* Basic Information */}
@@ -237,14 +238,14 @@ export default function RestaurantProfileView({
               >
                 {t('restaurantprofile.orderprefix')}
               </label>
+
               <input
                 type="text"
                 id="orderPrefix"
                 name="orderPrefix"
                 value={formData?.orderPrefix || ''}
                 onChange={onInputChange}
-                disabled={true}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md transition-shadow focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary"
               />
             </div>
 
