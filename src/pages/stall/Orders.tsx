@@ -38,7 +38,22 @@ export default function Orders() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [showStatusFilter, setShowStatusFilter] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<{
+    id: string;
+    items: {
+      id: string;
+      title: string;
+      quantity: number;
+      variation: { title: string; price: number };
+      addons?: Array<{ options?: Array<{ price: number }> }>;
+    }[];
+    orderAmount: number;
+    taxationAmount: number;
+    paymentMethod: string;
+    orderStatus: string;
+    user?: { name?: string; phone?: string };
+    deliveryAddress?: { deliveryAddress?: string };
+  } | null>(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const rowsPerPage = 10;
   const currencySymbol = getCurrencySymbol();
@@ -142,7 +157,26 @@ export default function Orders() {
   };
 
   const handleViewOrder = (order: Order) => {
-    setSelectedOrder(order);
+    setSelectedOrder({
+      id: order.id,
+      items: order.items.map(item => ({
+        id: item.id,
+        title: item.name,
+        quantity: item.quantity,
+        variation: { title: '', price: item.price }
+      })),
+      orderAmount: order.total,
+      taxationAmount: order.tax,
+      paymentMethod: order.paymentMethod,
+      orderStatus: order.status,
+      user: {
+        name: order.customerName,
+        phone: order.customerPhone
+      },
+      deliveryAddress: order.customerAddress ? {
+        deliveryAddress: order.customerAddress
+      } : undefined
+    });
     setShowOrderDetails(true);
   };
 

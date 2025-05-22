@@ -6,9 +6,12 @@ import { useTranslation } from 'react-i18next';
 interface OrderItem {
   id: string;
   title: string;
-  variation?: { title: string; price: number };
-  addons?: Array<{ options?: Array<{ price: number }> }>;
   quantity: number;
+  variation: {
+    title: string;
+    price: number;
+  };
+  addons?: Array<{ options?: Array<{ price: number }> }>;
 }
 
 interface OrderDetailsModalProps {

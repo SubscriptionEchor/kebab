@@ -760,4 +760,3 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, init
     </ThemeProvider>
   );
 }
-}

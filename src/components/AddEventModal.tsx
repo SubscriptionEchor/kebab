@@ -16,6 +16,8 @@ import { useMutation } from '@apollo/client';
 import { CREATE_EVENT } from '../lib/graphql/queries/eventOrganizers';
 import 'leaflet/dist/leaflet.css';
 
+const EVENT_NAME_LIMIT = 50;
+
 const theme = createTheme({
   palette: {
     primary: {
@@ -216,37 +218,41 @@ function TimeDisplay({ startTime, endTime }: { startTime: string; endTime: strin
 
 export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, isEditing = false, organizerId }: AddEventModalProps) {
   const { t } = useTranslation();
-  const [title, setTitle] = useState(initialData?.name || '');
-  const [startDate, setStartDate] = useState(initialData?.startDate || '');
-  const [endDate, setEndDate] = useState(initialData?.endDate || '');
-  const [startTime, setStartTime] = useState(initialData?.startTime || '');
-  const [endTime, setEndTime] = useState(initialData?.endTime || '');
+  const [formData, setFormData] = useState({
+    name: initialData?.name || '',
+    startDate: initialData?.startDate || '',
+    startTime: initialData?.startTime || '',
+    endDate: initialData?.endDate || '',
+    endTime: initialData?.endTime || '',
+    location: initialData?.location || { lat: defaultPosition[0], lng: defaultPosition[1] },
+    address: initialData?.address || '',
+    country: initialData?.country || 'GERMANY'
+  });
   const [position, setPosition] = useState<[number, number]>(
     initialData?.location
       ? [initialData.location.lat, initialData.location.lng] 
       : defaultPosition
   );
   const [isValidZone, setIsValidZone] = useState(true);
-  const [address, setAddress] = useState(initialData?.address || '');
   const [searchText, setSearchText] = useState(initialData?.address || '');
-  const [country, setCountry] = useState<string>(initialData?.country || 'GERMANY');
   const [createEvent, { loading: isCreating }] = useMutation(CREATE_EVENT);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Initialize form data with initialData if provided
   useEffect(() => {
     if (initialData && isEditing) {
-      setTitle(initialData.name);
-      setStartDate(initialData.startDate);
-      setEndDate(initialData.endDate);
-      setStartTime(initialData.startTime);
-      setEndTime(initialData.endTime);
+      setFormData({
+        name: initialData.name,
+        startDate: initialData.startDate,
+        endDate: initialData.endDate,
+        startTime: initialData.startTime,
+        endTime: initialData.endTime,
+        location: initialData.location,
+        address: initialData.address,
+        country: initialData.country || 'GERMANY'
+      });
       if (initialData.location) {
         setPosition([initialData.location.lat, initialData.location.lng]);
-      }
-      setAddress(initialData.address);
-      if (initialData.country) {
-        setCountry(initialData.country);
       }
     }
   }, [initialData, isEditing]);
@@ -264,17 +270,17 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
       
       // Prepare data for API
       const eventData = {
-        name: title,
-        startDate,
-        endDate,
-        startTime,
-        endTime,
+        name: formData.name,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
         location: {
           lat: position[0],
           lng: position[1],
         },
-        address,
-        country
+        address: formData.address,
+        country: formData.country
       };
       
       // If we're in a real implementation, call the API
@@ -284,17 +290,17 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
             variables: {
               eventInput: {
                 ownerId: organizerId, // Using organizerId from props
-                name: title,
-                address: address,
+                name: formData.name,
+                address: formData.address,
                 location: {
                   type: "Point",
                   coordinates: [position[1], position[0]] // API expects [lng, lat]
                 },
-                startDate: startDate,
-                endDate: endDate,
-                startTime: startTime,
-                endTime: endTime,
-                country: country.toLowerCase()
+                startDate: formData.startDate,
+                endDate: formData.endDate,
+                startTime: formData.startTime,
+                endTime: formData.endTime,
+                country: formData.country.toLowerCase()
               }
             }
           });
@@ -354,8 +360,8 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                 <div>
                   <TextField
                     label={t('addEvent.fields.eventName.label')}
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     fullWidth
                     required
                     variant="outlined"
@@ -385,8 +391,8 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                     <Select
                       labelId="country-select-label"
                       id="country-select"
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value as string)}
+                      value={formData.country}
+                      onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value as string }))}
                       label="Country"
                       required
                     >
@@ -408,8 +414,8 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
                           type="date"
-                          value={startDate}
-                          onChange={(e) => setStartDate(e.target.value)}
+                          value={formData.startDate}
+                          onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                           required
                         />
@@ -424,8 +430,8 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
                           type="date"
-                          value={endDate}
-                          onChange={(e) => setEndDate(e.target.value)}
+                          value={formData.endDate}
+                          onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                           required
                         />
@@ -434,10 +440,10 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                   </div>
 
                   {/* Calendar View */}
-                  {startDate && endDate && (
+                  {formData.startDate && formData.endDate && (
                     <DateRangeCalendar
-                      startDate={startDate}
-                      endDate={endDate}
+                      startDate={formData.startDate}
+                      endDate={formData.endDate}
                     />
                   )}
                 </div>
@@ -451,10 +457,10 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                        {t('addEvent.fields.startTime.label')}
                       </label>
                       <TimePicker
-                        value={startTime ? dayjs(startTime, 'HH:mm') : null}
+                        value={formData.startTime ? dayjs(formData.startTime, 'HH:mm') : null}
                         onChange={(value) => {
                           if (value) {
-                            setStartTime(value.format('HH:mm'));
+                            setFormData(prev => ({ ...prev, startTime: value.format('HH:mm') }));
                           }
                         }}
                         ampm={false}
@@ -478,10 +484,10 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                         {t('addEvent.fields.endTime.label')}
                       </label>
                       <TimePicker
-                        value={endTime ? dayjs(endTime, 'HH:mm') : null}
+                        value={formData.endTime ? dayjs(formData.endTime, 'HH:mm') : null}
                         onChange={(value) => {
                           if (value) {
-                            setEndTime(value.format('HH:mm'));
+                            setFormData(prev => ({ ...prev, endTime: value.format('HH:mm') }));
                           }
                         }}
                         ampm={false}
@@ -502,10 +508,10 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                   </div>
 
                   {/* Time Display */}
-                  {startTime && endTime && (
+                  {formData.startTime && formData.endTime && (
                     <TimeDisplay
-                      startTime={startTime}
-                      endTime={endTime}
+                      startTime={formData.startTime}
+                      endTime={formData.endTime}
                     />
                   )}
                 </div>
@@ -527,8 +533,8 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                     {t('addEvent.fields.address.label')}
                   </label>
                   <textarea
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
+                    value={formData.address}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent resize-none"
                     rows={3}
                     required

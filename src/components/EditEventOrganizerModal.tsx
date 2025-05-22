@@ -69,28 +69,24 @@ export default function EditEventOrganizerModal({
     validateField(field, formData[field]);
   };
 
-  const validateField = (field: keyof typeof formData, value: string): string | undefined => {
-    switch (field) {
+  const validateField = (name: keyof typeof formData, value: string): string | undefined => {
+    switch (name) {
       case 'name':
-        return value.trim()
-          ? undefined
-          : t('eventOrganizers.validation1.nameRequired');
+        if (!value.trim()) return t('errors.nameRequired');
+        if (value.length < 2) return t('errors.nameMinLength');
+        return undefined;
       case 'contactNumber':
-        return value.trim()
-          ? undefined
-          : t('eventOrganizers.validation1.contactRequired');
+        if (!value.trim()) return t('errors.contactRequired');
+        if (!/^\+?[\d\s-]{10,}$/.test(value)) return t('errors.invalidContact');
+        return undefined;
       case 'email':
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-          ? undefined
-          : t('eventOrganizers.validation1.emailInvalid');
-      case 'username':
-        return value.trim()
-          ? undefined
-          : t('eventOrganizers.validation1.usernameRequired');
+        if (!value.trim()) return t('errors.emailRequired');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('errors.invalidEmail');
+        return undefined;
       case 'password':
-        return value.length >= 6
-          ? undefined
-          : t('eventOrganizers.validation1.passwordMinLength');
+        if (value && value.length < 8) return t('errors.passwordMinLength');
+        if (value && !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) return t('errors.passwordComplexity');
+        return undefined;
       default:
         return undefined;
     }

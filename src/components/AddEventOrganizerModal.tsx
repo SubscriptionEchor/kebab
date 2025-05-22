@@ -42,33 +42,28 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
 
   // Validate individual field
   const validateField = (name: keyof typeof formData, value: string): string | undefined => {
-  switch (name) {
-    case 'name':
-      if (!value.trim()) return t('errors.nameRequired');
-      if (value.length < 2) return t('errors.nameMinLength');
-      return undefined;
-    case 'contactNumber':
-      if (!value.trim()) return t('errors.contactRequired');
-      if (!/^\+?[\d\s-]{10,}$/.test(value)) return t('errors.invalidContact');
-      return undefined;
-    case 'email':
-      if (!value.trim()) return t('errors.emailRequired');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('errors.invalidEmail');
-      return undefined;
-    case 'username':
-      if (!value.trim()) return t('errors.usernameRequired');
-      if (value.length < 3) return t('errors.usernameMinLength');
-      if (!/^[a-zA-Z0-9_]+$/.test(value)) return t('errors.usernameInvalid');
-      return undefined;
-    case 'password':
-      if (!value.trim()) return t('errors.passwordRequired');
-      if (value.length < 8) return t('errors.passwordMinLength');
-      if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) return t('errors.passwordComplexity');
-      return undefined;
-    default:
-      return undefined;
-  }
-};
+    switch (name) {
+      case 'name':
+        if (!value.trim()) return t('errors.nameRequired');
+        if (value.length < 2) return t('errors.nameMinLength');
+        return undefined;
+      case 'contactNumber':
+        if (!value.trim()) return t('errors.contactRequired');
+        if (!/^\+?[\d\s-]{10,}$/.test(value)) return t('errors.invalidContact');
+        return undefined;
+      case 'email':
+        if (!value.trim()) return t('errors.emailRequired');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('errors.invalidEmail');
+        return undefined;
+      case 'password':
+        if (!value.trim()) return t('errors.passwordRequired');
+        if (value.length < 8) return t('errors.passwordMinLength');
+        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) return t('errors.passwordComplexity');
+        return undefined;
+      default:
+        return undefined;
+    }
+  };
 
   // Handle field blur
   const handleBlur = (field: keyof typeof formData) => {
