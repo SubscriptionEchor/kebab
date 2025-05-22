@@ -7,26 +7,19 @@ interface EditEventOrganizerModalProps {
   onClose: () => void;
   organizer: {
     id: string;
+    displayId?: string;
     name: string;
     contactNumber: string;
     email: string;
-    username: string;
     password: string;
   } | null;
-  onSubmit: (data: {
-    name: string;
-    contactNumber: string;
-    email: string;
-    username: string;
-    password: string;
-  }) => void;
+  onSubmit: (data: { name: string; contactNumber: string; email: string; password: string }) => void;
 }
 
 interface FormErrors {
   name?: string;
   contactNumber?: string;
   email?: string;
-  username?: string;
   password?: string;
 }
 
@@ -41,7 +34,6 @@ export default function EditEventOrganizerModal({
     name: '',
     contactNumber: '',
     email: '',
-    username: '',
     password: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -49,7 +41,6 @@ export default function EditEventOrganizerModal({
     name: false,
     contactNumber: false,
     email: false,
-    username: false,
     password: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,7 +52,6 @@ export default function EditEventOrganizerModal({
         name: organizer.name,
         contactNumber: organizer.contactNumber,
         email: organizer.email,
-        username: organizer.username,
         password: organizer.password,
       });
     }
@@ -108,7 +98,7 @@ export default function EditEventOrganizerModal({
 
   const isFormValid = (): boolean => {
     return Object.values(formData).every(value => value.trim() !== '') &&
-           Object.values(errors).every(error => !error);
+          Object.values(errors).every(error => !error);
   };
 
   const validateForm = (): boolean => {
@@ -232,31 +222,29 @@ export default function EditEventOrganizerModal({
             )}
           </div>
 
-          {/* Username */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('eventOrganizers.fields.username')} <span className="text-red-500">*</span>
+              Username
+              <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={formData.username}
-              onChange={e => handleChange('username', e.target.value)}
+              onChange={(e) => handleChange('username', e.target.value)}
               onBlur={() => handleBlur('username')}
-              placeholder={t('eventOrganizers.placeholders.username')}
-              disabled={isSubmitting}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
-                errors.username
-                  ? 'border-red-500 focus:border-red-500'
-                  : 'border-gray-300 focus:border-brand-primary'
+              className={`w-full px-3 py-2 border rounded-md transition-colors ${
+                errors.username ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-brand-primary'
               }`}
+              placeholder="Enter username"
+              disabled={isSubmitting}
             />
             {errors.username && touched.username && (
-              <p className="mt-1 text-sm text-red-500 flex items-center">
+              <div className="flex items-center mt-1 text-red-500 text-sm">
                 <AlertCircle className="h-4 w-4 mr-1" />
-                {errors.username}
-              </p>
+                {t('eventOrganizers.validation.usernameRequired')}
+              </div>
             )}
-          </div>
+          </div> */}
 
           {/* Password */}
           <div>
@@ -285,6 +273,10 @@ export default function EditEventOrganizerModal({
               >
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-1">ID</label>
+              <div className="text-sm text-gray-900">{organizer.displayId || organizer.id}</div>
             </div>
             {errors.password && touched.password && (
               <p className="mt-1 text-sm text-red-500 flex items-center">
