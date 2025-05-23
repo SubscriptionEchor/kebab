@@ -3,20 +3,21 @@ import { X, MapPin, Calendar, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import { Icon, LeafletMouseEvent } from 'leaflet';
-import debounce from 'lodash/debounce';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { TextField } from '@mui/material';
+import { TimePicker } from '@mui/x-date-pickers';
+import { ThemeProvider, createTheme, MenuItem } from '@mui/material';
+import { TextField, Select, FormControl, InputLabel } from '@mui/material';
 import dayjs from 'dayjs';
 import { getEnvVar } from '../utils/env';
+import MapsComponent from './Maps';
+import { toast } from 'sonner';
+import { useMutation } from '@apollo/client';
+import { CREATE_EVENT } from '../lib/graphql/queries/eventOrganizers';
 import 'leaflet/dist/leaflet.css';
 
-const OSM_SEARCH_URL = getEnvVar('MAPS_URL');
-const TILE_URL = getEnvVar('TILES_URL');
+const EVENT_NAME_LIMIT = 50;
 
-// Create a custom theme to match your app's styling
 const theme = createTheme({
   palette: {
     primary: {
@@ -87,14 +88,6 @@ const theme = createTheme({
   },
 });
 
-// Fix for default marker icon
-const icon = new Icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
 interface AddEventModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -109,6 +102,7 @@ interface AddEventModalProps {
       lng: number;
     };
     address: string;
+    country: string;
   }) => void;
   initialData?: {
     name: string;
@@ -121,26 +115,17 @@ interface AddEventModalProps {
       lng: number;
     };
     address: string;
+    country?: string;
   };
   isEditing?: boolean;
-}
+  organizerId: string; // Added organizerId prop
+} 
 
-function SetViewOnClick({ coords }: { coords: [number, number] }) {
-  const map = useMap();
-  map.setView(coords, map.getZoom());
-  return null;
-}
-
-function MapClickHandler({ onMapClick }: { onMapClick: (e: LeafletMouseEvent) => void }) {
-  useMapEvents({
-    click: onMapClick
-  });
-  return null;
-}
-
-const defaultPosition: [number, number] = [25.2048, 55.2708]; // Dubai coordinates as default
+// Default position (Berlin coordinates)
+const defaultPosition: [number, number] = [52.5200, 13.4050];
 
 function DateRangeCalendar({ startDate, endDate }: { startDate: string; endDate: string }) {
+  const { t } = useTranslation();
   const startDateTime = new Date(startDate);
   const endDateTime = new Date(endDate);
   const today = new Date();
@@ -188,9 +173,9 @@ function DateRangeCalendar({ startDate, endDate }: { startDate: string; endDate:
         </h3>
       </div>
       <div className="grid grid-cols-7 gap-1 mb-2">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+        {['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'].map(day => (
           <div key={day} className="text-center text-xs font-medium text-gray-500">
-            {day}
+            {t(`days.${day}`)}
           </div>
         ))}
       </div>
@@ -207,11 +192,12 @@ function formatTo24Hour(timeString: string): string {
 }
 
 function TimeDisplay({ startTime, endTime }: { startTime: string; endTime: string }) {
+  const { t } = useTranslation();
   return (
     <div className="mt-6 bg-gray-50 rounded-lg p-6 border border-gray-100">
       <div className="flex items-center justify-center gap-12">
         <div className="text-center">
-          <div className="text-sm font-medium text-gray-500 mb-3">Start Time</div>
+          <div className="text-sm font-medium text-gray-500 mb-3">{t('addEvent.timeDisplay.startTime')}</div>
           <div className="text-3xl font-semibold text-brand-primary flex items-center gap-3">
             <Clock className="h-6 w-6" />
             {startTime}
@@ -219,7 +205,7 @@ function TimeDisplay({ startTime, endTime }: { startTime: string; endTime: strin
         </div>
         <div className="h-12 w-px bg-gray-200"></div>
         <div className="text-center">
-          <div className="text-sm font-medium text-gray-500 mb-3">End Time</div>
+          <div className="text-sm font-medium text-gray-500 mb-3">{t('addEvent.timeDisplay.endTime')}</div>
           <div className="text-3xl font-semibold text-brand-primary flex items-center gap-3">
             <Clock className="h-6 w-6" />
             {endTime}
@@ -230,150 +216,113 @@ function TimeDisplay({ startTime, endTime }: { startTime: string; endTime: strin
   );
 }
 
-export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, isEditing = false }: AddEventModalProps) {
+export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, isEditing = false, organizerId }: AddEventModalProps) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
-    name: '',
-    startDate: '',
-    startTime: '',
-    endDate: '',
-    endTime: '',
-    location: {
-      lat: defaultPosition[0],
-      lng: defaultPosition[1]
-    },
-    address: '',
-    searchLocation: ''
+    name: initialData?.name || '',
+    startDate: initialData?.startDate || '',
+    startTime: initialData?.startTime || '',
+    endDate: initialData?.endDate || '',
+    endTime: initialData?.endTime || '',
+    location: initialData?.location || { lat: defaultPosition[0], lng: defaultPosition[1] },
+    address: initialData?.address || '',
+    country: initialData?.country || 'GERMANY'
   });
-  const [position, setPosition] = useState<[number, number]>(defaultPosition);
-  const [searchResults, setSearchResults] = useState<Array<{
-    display_name: string;
-    lat: string;
-    lon: string;
-  }>>([]);
-  const [showResults, setShowResults] = useState(false);
-
-  // Character limits
-  const EVENT_NAME_LIMIT = 50;
-  const ADDRESS_LIMIT = 200;
+  const [position, setPosition] = useState<[number, number]>(
+    initialData?.location
+      ? [initialData.location.lat, initialData.location.lng] 
+      : defaultPosition
+  );
+  const [isValidZone, setIsValidZone] = useState(true);
+  const [searchText, setSearchText] = useState(initialData?.address || '');
+  const [createEvent, { loading: isCreating }] = useMutation(CREATE_EVENT);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Initialize form data with initialData if provided
   useEffect(() => {
     if (initialData && isEditing) {
-      setFormData(prev => ({
-        ...prev,
-        ...initialData,
-        searchLocation: initialData.address
-      }));
-      setPosition([initialData.location.lat, initialData.location.lng]);
+      setFormData({
+        name: initialData.name,
+        startDate: initialData.startDate,
+        endDate: initialData.endDate,
+        startTime: initialData.startTime,
+        endTime: initialData.endTime,
+        location: initialData.location,
+        address: initialData.address,
+        country: initialData.country || 'GERMANY'
+      });
+      if (initialData.location) {
+        setPosition([initialData.location.lat, initialData.location.lng]);
+      }
     }
   }, [initialData, isEditing]);
 
-  // Debounced search function
-  const searchAddress = debounce(async (query: string) => {
-    if (!query.trim() || query.length < 3) {
-      setSearchResults([]);
-      setShowResults(false);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!isValidZone) {
+      toast.error("Please select a valid location");
       return;
     }
 
     try {
-      const response = await fetch(
-        `${OSM_SEARCH_URL}/search?format=json&q=${encodeURIComponent(query)}`
-      );
-      const data = await response.json();
-      setSearchResults(data);
-      setShowResults(true);
-    } catch (error) {
-      console.error('Failed to search address:', error);
-      setSearchResults([]);
-      setShowResults(false);
-    }
-  }, 300);
-
-  const handleEventNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value.length <= EVENT_NAME_LIMIT) {
-      setFormData(prev => ({ ...prev, name: value }));
-    }
-  };
-
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setFormData(prev => ({ ...prev, searchLocation: value }));
-    searchAddress(value);
-  };
-
-  const handleResultSelect = (result: { display_name: string; lat: string; lon: string }) => {
-    const newPosition: [number, number] = [parseFloat(result.lat), parseFloat(result.lon)];
-    setPosition(newPosition);
-    setFormData(prev => ({
-      ...prev,
-      address: result.display_name,
-      searchLocation: result.display_name,
-      location: {
-        lat: newPosition[0],
-        lng: newPosition[1]
-      }
-    }));
-    setShowResults(false);
-  };
-
-  const handleMapClick = (e: LeafletMouseEvent) => {
-    const newPosition: [number, number] = [e.latlng.lat, e.latlng.lng];
-    setPosition(newPosition);
-    setFormData(prev => ({
-      ...prev,
-      location: {
-        lat: newPosition[0],
-        lng: newPosition[1]
-      }
-    }));
-
-    // Reverse geocode to get address
-    fetch(`${OSM_SEARCH_URL}/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}`)
-      .then(response => response.json())
-      .then(data => {
-        if (data.display_name) {
-          setFormData(prev => ({
-            ...prev,
-            address: data.display_name,
-            searchLocation: data.display_name
-          }));
+      setIsSubmitting(true);
+      
+      // Prepare data for API
+      const eventData = {
+        name: formData.name,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        location: {
+          lat: position[0],
+          lng: position[1],
+        },
+        address: formData.address,
+        country: formData.country
+      };
+      
+      // If we're in a real implementation, call the API
+      if (!isEditing) {
+        try {
+          const { data } = await createEvent({
+            variables: {
+              eventInput: {
+                ownerId: organizerId, // Using organizerId from props
+                name: formData.name,
+                address: formData.address,
+                location: {
+                  type: "Point",
+                  coordinates: [position[1], position[0]] // API expects [lng, lat]
+                },
+                startDate: formData.startDate,
+                endDate: formData.endDate,
+                startTime: formData.startTime,
+                endTime: formData.endTime,
+                country: formData.country.toLowerCase()
+              }
+            }
+          });
+          
+          if (data?.createEvent) {
+            toast.success("Event created successfully");
+          }
+        } catch (error) {
+          console.error("Error creating event:", error);
+          toast.error(`Error creating event: ${error.message}`);
+          throw error;
         }
-      })
-      .catch(error => console.error('Failed to reverse geocode:', error));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-    onClose();
-  };
-
-  const handleStartTimeChange = (value: dayjs.Dayjs | null) => {
-    if (value) {
-      setFormData(prev => ({
-        ...prev,
-        startTime: value.format('HH:mm')
-      }));
-    }
-  };
-
-  const handleEndTimeChange = (value: dayjs.Dayjs | null) => {
-    if (value) {
-      setFormData(prev => ({
-        ...prev,
-        endTime: value.format('HH:mm')
-      }));
-    }
-  };
-
-  // Handle address change with limit
-  const handleAddressTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    if (value.length <= ADDRESS_LIMIT) {
-      setFormData(prev => ({ ...prev, address: value }));
+      }
+      
+      // Call the onSubmit callback with the form data
+      onSubmit(eventData);
+      onClose();
+    } catch (error) {
+      console.error("Error creating event:", error);
+      toast.error("Failed to create event");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -382,23 +331,19 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <div
-          className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto py-6 ${
-            isOpen ? 'block' : 'hidden'
-          }`}
-        >
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 my-auto relative">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
             <div className="max-h-[85vh] overflow-y-auto">
               <div className="sticky top-0 bg-white z-10 pb-6 border-b mb-6">
                 <div className="flex justify-between items-center">
                   <div>
                     <h2 className="text-2xl font-semibold">
-                      {isEditing ? 'Edit Event' : 'Add New Event'}
+                      {isEditing ? t('addEvent.title.edit') : t('addEvent.title.add')}
                     </h2>
                     <p className="text-sm text-gray-500 mt-1">
                       {isEditing 
-                        ? 'Update the event information below'
-                        : 'Fill in the details to create a new event'}
+                        ? t('addEvent.subtitle.edit')
+                        : t('addEvent.subtitle.add')}
                     </p>
                   </div>
                   <button
@@ -414,16 +359,20 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                 {/* Event Name */}
                 <div>
                   <TextField
-                    label="Event Name"
+                    label={t('addEvent.fields.eventName.label')}
                     value={formData.name}
-                    onChange={handleEventNameChange}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     fullWidth
                     required
                     variant="outlined"
+                    placeholder={t('addEvent.fields.eventName.placeholder')}
                     inputProps={{
                       maxLength: EVENT_NAME_LIMIT
                     }}
-                    helperText={`${formData.name.length}/${EVENT_NAME_LIMIT} characters`}
+                    helperText={t('addEvent.limits.eventName', { 
+                      current: formData.name.length, 
+                      limit: EVENT_NAME_LIMIT 
+                    })}
                     FormHelperTextProps={{
                       sx: {
                         marginLeft: 'auto',
@@ -435,37 +384,54 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                   />
                 </div>
 
+                {/* Country Selection */}
+                <div>
+                  <FormControl fullWidth variant="outlined">
+                    <InputLabel id="country-select-label">Country</InputLabel>
+                    <Select
+                      labelId="country-select-label"
+                      id="country-select"
+                      value={formData.country}
+                      onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value as string }))}
+                      label="Country"
+                      required
+                    >
+                      <MenuItem value="GERMANY">Germany</MenuItem>
+                      <MenuItem value="AUSTRIA">Austria</MenuItem>
+                    </Select>
+                  </FormControl>
+                </div>
+
                 {/* Date Selection */}
                 <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-6">
                     {/* Start Date */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Start Date
+                        {t('addEvent.fields.startDate.label')}
                       </label>
                       <div className="relative">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
                           type="date"
                           value={formData.startDate}
-                          onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                          onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                           required
                         />
                       </div>
                     </div>
-
                     {/* End Date */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        End Date
+                        {t('addEvent.fields.endDate.label')}
                       </label>
                       <div className="relative">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
                           type="date"
                           value={formData.endDate}
-                          onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                          onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                           required
                         />
@@ -488,64 +454,51 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                     {/* Start Time */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Start Time
+                       {t('addEvent.fields.startTime.label')}
                       </label>
                       <TimePicker
                         value={formData.startTime ? dayjs(formData.startTime, 'HH:mm') : null}
-                        onChange={handleStartTimeChange}
+                        onChange={(value) => {
+                          if (value) {
+                            setFormData(prev => ({ ...prev, startTime: value.format('HH:mm') }));
+                          }
+                        }}
                         ampm={false}
-                        minutesStep={15}
-                        skipDisabled
-                        views={['hours', 'minutes']}
                         slotProps={{
                           textField: {
+                            size: "small",
                             fullWidth: true,
-                            required: true,
                             InputProps: {
                               startAdornment: (
                                 <Clock className="h-5 w-5 text-gray-400 mr-2" />
                               ),
-                            },
-                          },
-                          popper: {
-                            sx: {
-                              '& .MuiPaper-root': {
-                                border: '1px solid #E5E7EB',
-                              },
                             },
                           },
                         }}
                         format="HH:mm"
                       />
                     </div>
-
                     {/* End Time */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        End Time
+                        {t('addEvent.fields.endTime.label')}
                       </label>
                       <TimePicker
                         value={formData.endTime ? dayjs(formData.endTime, 'HH:mm') : null}
-                        onChange={handleEndTimeChange}
+                        onChange={(value) => {
+                          if (value) {
+                            setFormData(prev => ({ ...prev, endTime: value.format('HH:mm') }));
+                          }
+                        }}
                         ampm={false}
-                        minutesStep={15}
-                        skipDisabled
-                        views={['hours', 'minutes']}
                         slotProps={{
                           textField: {
+                            size: "small",
                             fullWidth: true,
-                            required: true,
                             InputProps: {
                               startAdornment: (
                                 <Clock className="h-5 w-5 text-gray-400 mr-2" />
                               ),
-                            },
-                          },
-                          popper: {
-                            sx: {
-                              '& .MuiPaper-root': {
-                                border: '1px solid #E5E7EB',
-                              },
                             },
                           },
                         }}
@@ -563,78 +516,30 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                   )}
                 </div>
 
-                {/* Location Search */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Search Location
-                  </label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      type="text"
-                      value={formData.searchLocation}
-                      onChange={handleAddressChange}
-                      placeholder="Search for a location"
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-                    />
-                    {/* Search Results Dropdown */}
-                    {showResults && searchResults.length > 0 && (
-                      <div className="absolute z-10 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 max-h-60 overflow-auto">
-                        {searchResults.map((result, index) => (
-                          <button
-                            key={index}
-                            type="button"
-                            onClick={() => handleResultSelect(result)}
-                            className="w-full px-4 py-3 text-sm text-left hover:bg-gray-50 focus:outline-none focus:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
-                          >
-                            <p className="font-medium text-gray-900">{result.display_name}</p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {result.lat}, {result.lon}
-                            </p>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Map */}
-                <div className="h-72 w-full rounded-lg overflow-hidden border border-gray-200">
-                  <MapContainer
-                    center={position}
-                    zoom={13}
-                    style={{ height: '100%', width: '100%' }}
-                  >
-                    <TileLayer
-                      url={TILE_URL}
-                      attribution="Kebab Maps"
-                    />
-                    <Marker position={position} icon={icon} />
-                    <SetViewOnClick coords={position} />
-                    <MapClickHandler onMapClick={handleMapClick} />
-                  </MapContainer>
+                {/* Map Component */}
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden relative">
+                  <MapsComponent 
+                    position={position} 
+                    setPosition={setPosition} 
+                    setIsValidZone={setIsValidZone}
+                    searchText={searchText}
+                    setSearchText={setSearchText}
+                    country={formData.country}
+                  />
                 </div>
 
                 {/* Address */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Address
+                    {t('addEvent.fields.address.label')}
                   </label>
-                  <div className="relative">
-                    <textarea
-                      value={formData.address}
-                      onChange={handleAddressTextChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-                      rows={3}
-                      required
-                      maxLength={ADDRESS_LIMIT}
-                    />
-                    <div className={`text-xs mt-1 text-right ${
-                      formData.address.length === ADDRESS_LIMIT ? 'text-red-500' : 'text-gray-500'
-                    }`}>
-                      {formData.address.length}/{ADDRESS_LIMIT} characters
-                    </div>
-                  </div>
+                  <textarea
+                    value={formData.address}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent resize-none"
+                    rows={3}
+                    required
+                  />
                 </div>
 
                 {/* Action Buttons */}
@@ -644,13 +549,14 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
                     onClick={onClose}
                     className="px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                   >
-                    Cancel
+                    {t('addEvent.buttons.cancel')}
                   </button>
                   <button
                     type="submit"
                     className="px-6 py-3 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 transition-colors"
+                    disabled={isSubmitting}
                   >
-                    {isEditing ? 'Update Event' : 'Add Event'}
+                    {isSubmitting ? 'Saving...' : isEditing ? 'Update Event' : 'Add Event'}
                   </button>
                 </div>
               </form>
@@ -660,4 +566,4 @@ export default function AddEventModal({ isOpen, onClose, onSubmit, initialData, 
       </LocalizationProvider>
     </ThemeProvider>
   );
-} 
+}

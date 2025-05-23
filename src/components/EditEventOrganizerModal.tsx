@@ -7,30 +7,33 @@ interface EditEventOrganizerModalProps {
   onClose: () => void;
   organizer: {
     id: string;
+    displayId?: string;
     name: string;
     contactNumber: string;
     email: string;
-    username: string;
     password: string;
   } | null;
-  onSubmit: (data: { name: string; contactNumber: string; email: string; username: string; password: string }) => void;
+  onSubmit: (data: { name: string; contactNumber: string; email: string; password: string }) => void;
 }
 
 interface FormErrors {
   name?: string;
   contactNumber?: string;
   email?: string;
-  username?: string;
   password?: string;
 }
 
-export default function EditEventOrganizerModal({ isOpen, onClose, organizer, onSubmit }: EditEventOrganizerModalProps) {
+export default function EditEventOrganizerModal({
+  isOpen,
+  onClose,
+  organizer,
+  onSubmit
+}: EditEventOrganizerModalProps) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     contactNumber: '',
     email: '',
-    username: '',
     password: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -38,20 +41,17 @@ export default function EditEventOrganizerModal({ isOpen, onClose, organizer, on
     name: false,
     contactNumber: false,
     email: false,
-    username: false,
     password: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Initialize form data when organizer changes
   useEffect(() => {
     if (organizer) {
       setFormData({
         name: organizer.name,
         contactNumber: organizer.contactNumber,
         email: organizer.email,
-        username: organizer.username,
         password: organizer.password,
       });
     }
@@ -69,18 +69,24 @@ export default function EditEventOrganizerModal({ isOpen, onClose, organizer, on
     validateField(field, formData[field]);
   };
 
-  const validateField = (field: keyof typeof formData, value: string): string | undefined => {
-    switch (field) {
+  const validateField = (name: keyof typeof formData, value: string): string | undefined => {
+    switch (name) {
       case 'name':
-        return value.trim() ? undefined : 'Name is required';
+        if (!value.trim()) return t('errors.nameRequired');
+        if (value.length < 2) return t('errors.nameMinLength');
+        return undefined;
       case 'contactNumber':
-        return value.trim() ? undefined : 'Contact number is required';
+        if (!value.trim()) return t('errors.contactRequired');
+        if (!/^\+?[\d\s-]{10,}$/.test(value)) return t('errors.invalidContact');
+        return undefined;
       case 'email':
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? undefined : 'Invalid email format';
-      case 'username':
-        return value.trim() ? undefined : 'Username is required';
+        if (!value.trim()) return t('errors.emailRequired');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('errors.invalidEmail');
+        return undefined;
       case 'password':
-        return value.length >= 6 ? undefined : 'Password must be at least 6 characters';
+        if (value && value.length < 8) return t('errors.passwordMinLength');
+        if (value && !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) return t('errors.passwordComplexity');
+        return undefined;
       default:
         return undefined;
     }
@@ -88,7 +94,7 @@ export default function EditEventOrganizerModal({ isOpen, onClose, organizer, on
 
   const isFormValid = (): boolean => {
     return Object.values(formData).every(value => value.trim() !== '') &&
-           Object.values(errors).every(error => !error);
+          Object.values(errors).every(error => !error);
   };
 
   const validateForm = (): boolean => {
@@ -102,7 +108,6 @@ export default function EditEventOrganizerModal({ isOpen, onClose, organizer, on
         isValid = false;
       }
     });
-
     setErrors(newErrors);
     return isValid;
   };
@@ -110,7 +115,6 @@ export default function EditEventOrganizerModal({ isOpen, onClose, organizer, on
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
     if (validateForm()) {
       try {
         await onSubmit(formData);
@@ -119,99 +123,102 @@ export default function EditEventOrganizerModal({ isOpen, onClose, organizer, on
         console.error('Error submitting form:', error);
       }
     }
-    
     setIsSubmitting(false);
   };
 
   if (!isOpen || !organizer) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">{t('eventOrganizers.editTitle')}</h2>
-          <button 
-            onClick={onClose} 
-            className="text-gray-500 hover:text-gray-700 transition-colors"
+          <h2 className="text-xl font-semibold">
+            {t('eventOrganizers.editOrganizer')}
+          </h2>
+          <button
+            onClick={onClose}
             disabled={isSubmitting}
+            className="text-gray-500 hover:text-gray-700"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('eventOrganizers.name')}
-              <span className="text-red-500">*</span>
+              {t('eventOrganizers.fields.name')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
+              onChange={e => handleChange('name', e.target.value)}
               onBlur={() => handleBlur('name')}
-              className={`w-full px-3 py-2 border rounded-md transition-colors ${
+              disabled={isSubmitting}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
                 errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-brand-primary'
               }`}
-              disabled={isSubmitting}
             />
             {errors.name && touched.name && (
-              <div className="flex items-center mt-1 text-red-500 text-sm">
+              <p className="mt-1 text-sm text-red-500 flex items-center">
                 <AlertCircle className="h-4 w-4 mr-1" />
-                {t('eventOrganizers.validation.nameRequired')}
-              </div>
+                {errors.name}
+              </p>
             )}
           </div>
 
+          {/* Contact Number */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('eventOrganizers.contactNumber')}
-              <span className="text-red-500">*</span>
+              {t('eventOrganizers.fields.contactNumber')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={formData.contactNumber}
-              onChange={(e) => handleChange('contactNumber', e.target.value)}
+              onChange={e => handleChange('contactNumber', e.target.value)}
               onBlur={() => handleBlur('contactNumber')}
-              className={`w-full px-3 py-2 border rounded-md transition-colors ${
-                errors.contactNumber ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-brand-primary'
-              }`}
               placeholder="+49 123 456 7890"
               disabled={isSubmitting}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
+                errors.contactNumber
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-gray-300 focus:border-brand-primary'
+              }`}
             />
             {errors.contactNumber && touched.contactNumber && (
-              <div className="flex items-center mt-1 text-red-500 text-sm">
+              <p className="mt-1 text-sm text-red-500 flex items-center">
                 <AlertCircle className="h-4 w-4 mr-1" />
-                {t('eventOrganizers.validation.contactRequired')}
-              </div>
+                {errors.contactNumber}
+              </p>
             )}
           </div>
 
+          {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('eventOrganizers.email')}
-              <span className="text-red-500">*</span>
+              {t('eventOrganizers.fields.email')} <span className="text-red-500">*</span>
             </label>
             <input
               type="email"
               value={formData.email}
-              onChange={(e) => handleChange('email', e.target.value)}
+              onChange={e => handleChange('email', e.target.value)}
               onBlur={() => handleBlur('email')}
-              className={`w-full px-3 py-2 border rounded-md transition-colors ${
-                errors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-brand-primary'
-              }`}
               placeholder="example@domain.com"
               disabled={isSubmitting}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
+                errors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-brand-primary'
+              }`}
             />
             {errors.email && touched.email && (
-              <div className="flex items-center mt-1 text-red-500 text-sm">
+              <p className="mt-1 text-sm text-red-500 flex items-center">
                 <AlertCircle className="h-4 w-4 mr-1" />
-                {t('eventOrganizers.validation.emailInvalid')}
-              </div>
+                {errors.email}
+              </p>
             )}
           </div>
 
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Username
               <span className="text-red-500">*</span>
@@ -233,65 +240,68 @@ export default function EditEventOrganizerModal({ isOpen, onClose, organizer, on
                 {t('eventOrganizers.validation.usernameRequired')}
               </div>
             )}
-          </div>
+          </div> */}
 
+          {/* Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-              <span className="text-red-500">*</span>
+              {t('eventOrganizers.fields.password')} <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <input
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 value={formData.password}
-                onChange={(e) => handleChange('password', e.target.value)}
+                onChange={e => handleChange('password', e.target.value)}
                 onBlur={() => handleBlur('password')}
-                className={`w-full px-3 py-2 border rounded-md transition-colors ${
-                  errors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-brand-primary'
-                }`}
-                placeholder="Enter password"
+                placeholder={t('eventOrganizers.placeholders.password')}
                 disabled={isSubmitting}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none ${
+                  errors.password
+                    ? 'border-red-500 focus:border-red-500'
+                    : 'border-gray-300 focus:border-brand-primary'
+                }`}
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                onClick={() => setShowPassword(v => !v)}
                 disabled={isSubmitting}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-500 mb-1">ID</label>
+              <div className="text-sm text-gray-900">{organizer.displayId || organizer.id}</div>
+            </div>
             {errors.password && touched.password && (
-              <div className="flex items-center mt-1 text-red-500 text-sm">
+              <p className="mt-1 text-sm text-red-500 flex items-center">
                 <AlertCircle className="h-4 w-4 mr-1" />
-                {t('eventOrganizers.validation.passwordMinLength')}
-              </div>
+                {errors.password}
+              </p>
             )}
           </div>
 
+          {/* Actions */}
           <div className="flex justify-end gap-3 mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
               disabled={isSubmitting}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
             >
-              {t('eventOrganizers.cancel')}
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-brand-primary text-black rounded-md hover:bg-brand-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isSubmitting || !isFormValid()}
+              className="px-4 py-2 bg-brand-primary text-black rounded-md hover:bg-brand-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isSubmitting ? t('eventOrganizers.saving') : t('eventOrganizers.save')}
+              {isSubmitting ? t('eventOrganizers.creating') : t('common.save')}
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-} 
+}

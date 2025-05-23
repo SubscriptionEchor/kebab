@@ -1,0 +1,336 @@
+{
+  "stall": {
+    "dashboard": {
+      "title": "स्टॉल डैशबोर्ड",
+      "overview": "संक्षिप्त विवरण",
+      "totalOrders": "कुल आदेश",
+      "totalRevenue": "कुल राजस्व",
+      "averageOrderValue": "औसत आदेश मूल्य",
+      "sidebar": {
+        "backToDashboard": "डैशबोर्ड पर वापस जाएँ",
+        "backToAdmin": "एडमिन पर वापस जाएँ"
+      }
+    }
+  },
+  "menu": {
+    "dashboard": "डैशबोर्ड",
+    "stallProfile": "स्टॉल प्रोफ़ाइल",
+    "vendorProfile": "विक्रेता प्रोफ़ाइल",
+    "orders": "आदेश",
+    "menu": "मेनू",
+    "category": "श्रेणी",
+    "addOns": "ऐड-ऑन",
+    "offers": "ऑफ़र",
+    "ratings": "रेटिंग",
+    "timings": "समय",
+    "location": "स्थान"
+  },
+  "vendorprofile": {
+    "title": "विक्रेता प्रोफ़ाइल",
+    "personalinfo": "व्यक्तिगत जानकारी",
+    "businessinfo": "व्यवसाय संबंधी जानकारी",
+    "bankinfo": "बैंक खाता जानकारी",
+    "name": "पूरा नाम",
+    "email": "ईमेल पता",
+    "phone": "फोन नंबर",
+    "address": "पता",
+    "businessname": "व्यवसाय का नाम",
+    "taxid": "टैक्स आईडी",
+    "accountname": "खाताधारक का नाम",
+    "accountnumber": "खाता संख्या",
+    "bankname": "बैंक का नाम",
+    "swiftcode": "SWIFT कोड",
+    "saved": "विक्रेता प्रोफ़ाइल सफलतापूर्वक अपडेट हुई",
+    "savefailed": "विक्रेता प्रोफ़ाइल अपडेट करने में विफल",
+    "saving": "सहेजा जा रहा है...",
+    "savechanges": "परिवर्तन सहेजें"
+  },
+  "category": {
+    "title": "श्रेणियाँ",
+    "add": "श्रेणी जोड़ें",
+    "edit": "श्रेणी संपादित करें",
+    "name": "श्रेणी का नाम",
+    "description": "विवरण",
+    "order": "क्रम",
+    "actions": "क्रियाएँ",
+    "deleteconfirm": "क्या आप वाकई इस श्रेणी को हटाना चाहते हैं?",
+    "added": "श्रेणी सफलतापूर्वक जोड़ी गई",
+    "updated": "श्रेणी सफलतापूर्वक अपडेट हुई",
+    "deleted": "श्रेणी सफलतापूर्वक हटाई गई",
+    "addfailed": "श्रेणी जोड़ने में विफल",
+    "updatefailed": "श्रेणी अपडेट करने में विफल",
+    "deletefailed": "श्रेणी हटाने में विफल"
+  },
+  "addons": {
+    "title": "ऐड-ऑन",
+    "add": "ऐड-ऑन जोड़ें",
+    "edit": "ऐड-ऑन संपादित करें",
+    "name": "ऐड-ऑन का नाम",
+    "price": "मूल्य",
+    "maxquantity": "अधिकतम मात्रा",
+    "status": "स्थिति",
+    "actions": "क्रियाएँ",
+    "available": "उपलब्ध",
+    "unavailable": "अनउपलब्ध",
+    "deleteconfirm": "क्या आप वाकई इस ऐड-ऑन को हटाना चाहते हैं?",
+    "added": "ऐड-ऑन सफलतापूर्वक जोड़ा गया",
+    "updated": "ऐड-ऑन सफलतापूर्वक अपडेट हुआ",
+    "deleted": "ऐड-ऑन सफलतापूर्वक हटाया गया",
+    "addfailed": "ऐड-ऑन जोड़ने में विफल",
+    "updatefailed": "ऐड-ऑन अपडेट करने में विफल",
+    "deletefailed": "ऐड-ऑन हटाने में विफल",
+    "availabilityupdated": "ऐड-ऑन उपलब्धता सफलतापूर्वक अपडेट हुई",
+    "availabilityupdatefailed": "ऐड-ऑन उपलब्धता अपडेट करने में विफल"
+  },
+  "offers": {
+    "title": "ऑफ़र",
+    "add": "ऑफ़र जोड़ें",
+    "edit": "ऑफ़र संपादित करें",
+    "discount": "छूट",
+    "validity": "वैधता",
+    "code": "ऑफ़र कोड",
+    "status": "स्थिति",
+    "actions": "क्रियाएँ",
+    "active": "सक्रिय",
+    "inactive": "निष्क्रिय",
+    "discounttype": "छूट प्रकार",
+    "discountvalue": "छूट राशि",
+    "minordervalue": "न्यूनतम आदेश मूल्य",
+    "minorder": "न्यूनतम आदेश",
+    "startdate": "आरंभ तिथि",
+    "enddate": "समाप्ति तिथि",
+    "percentage": "प्रतिशत",
+    "fixed": "नियत राशि",
+    "deleteconfirm": "क्या आप वाकई इस ऑफ़र को हटाना चाहते हैं?",
+    "added": "ऑफ़र सफलतापूर्वक जोड़ा गया",
+    "updated": "ऑफ़र सफलतापूर्वक अपडेट हुआ",
+    "deleted": "ऑफ़र सफलतापूर्वक हटाया गया",
+    "addfailed": "ऑफ़र जोड़ने में विफल",
+    "updatefailed": "ऑफ़र अपडेट करने में विफल",
+    "deletefailed": "ऑफ़र हटाने में विफल",
+    "statusupdated": "ऑफ़र की स्थिति सफलतापूर्वक अपडेट हुई",
+    "statusupdatefailed": "ऑफ़र की स्थिति अपडेट करने में विफल"
+  },
+  "addStall": {
+    "title": "नया स्टॉल जोड़ें",
+    "stallName": "स्टॉल का नाम",
+    "stallNamePlaceholder": "अपना स्टॉल नाम दर्ज करें",
+    "cuisineType": "भोजन शैली",
+    "cuisine": "भोजन शैली चुनें",
+    "profilePhoto": "प्रोफ़ाइल फोटो",
+    "changePhoto": "फोटो बदलें",
+    "uploadPhoto": "क्लिक करें या ड्रैग करके अपलोड करें",
+    "uploadPhotoSubtext": "PNG, JPG 5MB तक",
+    "operatingHours": "कार्य समय",
+    "setCommonHours": "समान समय सेट करें",
+    "enable": "सक्षम करें",
+    "disable": "अक्षम करें",
+    "commonStartTime": "सामान्य आरंभ समय",
+    "commonEndTime": "सामान्य समाप्ति समय",
+    "applyToAllDays": "सभी दिनों पर लागू करें",
+    "startTime": "आरंभ समय",
+    "endTime": "समाप्ति समय",
+    "addStall": "स्टॉल जोड़ें",
+    "days": {
+      "monday": "सोमवार",
+      "tuesday": "मঙ্গলবার",
+      "wednesday": "बुधवार",
+      "thursday": "गुरुवार",
+      "friday": "शुक्रवार",
+      "saturday": "शनिवार",
+      "sunday": "रविवार"
+    }
+  },
+  "addEvent": {
+    "title": {
+      "add": "नया ईवेंट जोड़ें",
+      "edit": "ईवेंट संपादित करें"
+    },
+    "subtitle": {
+      "add": "नया ईवेंट बनाने के लिए विवरण भरें",
+      "edit": "नीचे ईवेंट जानकारी अपडेट करें"
+    },
+    "fields": {
+      "eventName": {
+        "label": "ईवेंट नाम",
+        "placeholder": "ईवेंट नाम दर्ज करें"
+      },
+      "startDate": {
+        "label": "आरंभ तिथि"
+      },
+      "endDate": {
+        "label": "समाप्ति तिथि"
+      },
+      "startTime": {
+        "label": "आरंभ समय"
+      },
+      "endTime": {
+        "label": "समाप्ति समय"
+      },
+      "searchLocation": {
+        "label": "स्थान खोजें",
+        "placeholder": "स्थान खोजें"
+      },
+      "address": {
+        "label": "पता"
+      }
+    },
+    "buttons": {
+      "cancel": "रद्द करें",
+      "add": "ईवेंट जोड़ें",
+      "update": "अपडेट करें"
+    },
+    "calendar": {
+      "days": {
+        "sun": "रवि",
+        "mon": "सोम",
+        "tue": "मंगल",
+        "wed": "बुध",
+        "thu": "गुरु",
+        "fri": "शुक्र",
+        "sat": "शनि"
+      }
+    },
+    "timeDisplay": {
+      "startTime": "आरंभ समय",
+      "endTime": "समाप्ति समय"
+    },
+    "limits": {
+      "eventName": "{{current}}/{{limit}} अक्षर",
+      "address": "{{current}}/{{limit}} अक्षर"
+    },
+    "validation": {
+      "required": "यह फ़ील्ड आवश्यक है",
+      "invalidTime": "कृपया मान्य समय चुनें"
+    }
+  },
+  "eventOrganizers": {
+    "addOrganizer": "ईवेंट आयोजक जोड़ें",
+    "editOrganizer": "ईवेंट आयोजक संपादित करें",
+    "viewDetailsTitle": "आयोजक विवरण",
+    "fields": {
+      "id": "आईडी",
+      "name": "नाम",
+      "contactNumber": "संपर्क नंबर",
+      "email": "ईमेल",
+      "username": "उपयोगकर्ता नाम",
+      "eventPortfolio": "ईवेंट पोर्टफोलियो",
+      "events": "ईवेंट",
+      "password": "पासवर्ड"
+    },
+    "showPassword": "पासवर्ड दिखाएँ",
+    "hidePassword": "पासवर्ड छुपाएँ",
+    "copyPassword": "पासवर्ड कॉपी करें",
+    "placeholders": {
+      "username": "उपयोगकर्ता नाम दर्ज करें",
+      "password": "पासवर्ड दर्ज करें"
+    },
+    "errors": {
+      "nameRequired": "नाम आवश्यक है",
+      "nameMinLength": "नाम कम से कम 2 अक्षर लंबा होना चाहिए",
+      "contactRequired": "संपर्क नंबर आवश्यक है",
+      "invalidContact": "कृपया मान्य संपर्क नंबर दर्ज करें",
+      "emailRequired": "ईमेल आवश्यक है",
+      "invalidEmail": "कृपया मान्य ईमेल पता दर्ज करें",
+      "usernameRequired": "उपयोगकर्ता नाम आवश्यक है",
+      "usernameMinLength": "उपयोगकर्ता नाम कम से कम 3 अक्षर लंबा होना चाहिए",
+      "usernameInvalid": "उपयोगकर्ता नाम केवल अक्षर, अंक और अंडरस्कोर हो सकते हैं",
+      "passwordRequired": "पासवर्ड आवश्यक है",
+      "passwordMinLength": "पासवर्ड कम से कम 8 अक्षर लंबा होना चाहिए",
+      "passwordComplexity": "पासवर्ड में कम से कम एक बड़ा अक्षर, एक छोटा अक्षर, और एक संख्या होनी चाहिए"
+    },
+    "existingStallModal": {
+      "title": "मौजूदा स्टॉल चुनें",
+      "searchPlaceholder": "नाम या भोजन शैली से खोजें",
+      "selected": "चयनित",
+      "noResults": "कोई स्टॉल नहीं मिला",
+      "detailsTitle": "स्टॉल जानकारी",
+      "profilePhoto": "प्रोफ़ाइल फोटो",
+      "basicDetails": "मूल विवरण",
+      "stallName": "स्टॉल का नाम",
+      "cuisine": "भोजन शैली",
+      "stallId": "स्टॉल आईडी",
+      "operatingHours": "कार्य समय",
+      "editAdd": "संपादित & जोड़ें",
+      "addEvent": "ईवेंट में जोड़ें"
+    }
+  },
+  "days": {
+    "mon": "सोम",
+    "tue": "मंगल",
+    "wed": "बुध",
+    "thu": "गुरु",
+    "fri": "शुक्र",
+    "sat": "शनि",
+    "sun": "रवि"
+  },
+  "feeupdatemodel": {
+    "servicefee": "सेवा शुल्‍क",
+    "servicefeepercentage": "सेवा शुल्‍क प्रतिशत",
+    "serviceinfo": "प्रत्येक लेनदेन पर लागू होने वाला प्रतिशत दर्ज करें।",
+    "cancel": "रद्द करें",
+    "update": "अपडेट करें",
+    "updating": "अपडेट हो रहा है...",
+    "validation": {
+      "feeRequired": "शुल्‍क प्रतिशत आवश्यक है",
+      "invalidFee": "अमान्य प्रतिशत",
+      "feeRange": "प्रतिशत 0 और 100 के बीच होना चाहिए"
+    }
+  },
+  "breadcrumbs": {
+    "dashboard": "डैशबोर्ड",
+    "vendors": "विक्रेता",
+    "stalls": "स्टॉल",
+    "stallDetails": "स्टॉल विवरण"
+  },
+  "restaurantSidebar": {
+    "backToDashboard": "डैशबोर्ड पर वापस जाएँ",
+    "backToAdmin": "एडमिन पर वापस जाएँ",
+    "menu": {
+      "restaurantProfile": "रेस्टोरेंट प्रोफ़ाइल",
+      "vendorProfile": "विक्रेता प्रोफ़ाइल",
+      "ratings": "रेटिंग",
+      "timings": "समय",
+      "locations": "स्थान"
+    }
+  },
+  "orderDetails": {
+    "order": "आदेश",
+    "itemsTitle": "आदेश आइटम",
+    "column": {
+      "item": "आइटम",
+      "quantity": "मात्रा",
+      "price": "मूल्य",
+      "total": "कुल"
+    },
+    "customerInfoTitle": "ग्राहक जानकारी",
+    "customerNameLabel": "नाम",
+    "customerAddressLabel": "पता",
+    "customerPhoneLabel": "फोन",
+    "summaryTitle": "आदेश सारांश",
+    "subtotal": "उप-योग",
+    "tax": "कर",
+    "total": "कुल",
+    "paymentTitle": "भुगतान विधि",
+    "status": {
+      "delivered": "पूर्ण किया गया",
+      "cancelled": "रद्द किया गया",
+      "inprogress": "प्रगति में",
+      "accepted": "स्वीकृत",
+      "other": "अन्य"
+    }
+  },
+  "common": {
+    "save": "सहेजें",
+    "add": "जोड़ें",
+    "close": "बंद करें",
+    "cancel": "रद्द करें",
+    "delete": "हटाएँ",
+    "edit": "संपादित करें",
+    "deleting": "हटाया जा रहा है...",
+    "signedOutSuccessfully": "सफलतापूर्वक साइन आउट हुआ",
+    "confirmSignOut": "क्या आप वाकई साइन आउट करना चाहते हैं?",
+    "signOutMessage": "जारी रखने के लिए आपको फिर से लॉगिन करना होगा।",
+    "signOut": "साइन आउट"
+  }
+}

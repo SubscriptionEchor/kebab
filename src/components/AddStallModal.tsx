@@ -1,13 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, Upload, Clock, Check } from 'lucide-react';
+import { X, Upload, Clock, Check, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useMutation } from '@apollo/client';
+import { CREATE_STALL } from '../lib/graphql/mutations/stalls';
+import { toast } from 'sonner';
+import { uploadImage } from '../lib/api/upload';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import dayjs from 'dayjs';
-import { MenuItem } from '@mui/material';
+import { MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 
 interface AddStallModalProps {
   isOpen: boolean;
@@ -15,6 +19,9 @@ interface AddStallModalProps {
   onSubmit: (data: {
     name: string;
     cuisine: string;
+    username: string;
+    password: string;
+    country: string;
     profilePhoto: File | null;
     timings: {
       [key: string]: {
@@ -24,6 +31,7 @@ interface AddStallModalProps {
       };
     };
   }) => void;
+  eventId: string;
   initialData?: {
     name: string;
     cuisine: string;
@@ -37,28 +45,32 @@ interface AddStallModalProps {
   };
 }
 
+interface ErrorsMap {
+  [key: string]: string;
+}
+
 const DAYS = [
-  { id: 'monday', label: 'Monday' },
-  { id: 'tuesday', label: 'Tuesday' },
-  { id: 'wednesday', label: 'Wednesday' },
-  { id: 'thursday', label: 'Thursday' },
-  { id: 'friday', label: 'Friday' },
-  { id: 'saturday', label: 'Saturday' },
-  { id: 'sunday', label: 'Sunday' }
+  { id: 'monday', label: 'days.monday' },
+  { id: 'tuesday', label: 'days.tuesday' },
+  { id: 'wednesday', label: 'days.wednesday' },
+  { id: 'thursday', label: 'days.thursday' },
+  { id: 'friday', label: 'days.friday' },
+  { id: 'saturday', label: 'days.saturday' },
+  { id: 'sunday', label: 'days.sunday' }
 ];
 
 const CUISINES = [
-  'Arabian',
-  'Chinese',
-  'Indian',
-  'Italian',
-  'Japanese',
-  'Korean',
-  'Mexican',
-  'Thai',
-  'Turkish',
-  'Vietnamese',
-  'Other'
+  { id: 'Arabian', label: 'addStall.cuisines.arabian' },
+  { id: 'Chinese', label: 'addStall.cuisines.chinese' },
+  { id: 'Indian', label: 'addStall.cuisines.indian' },
+  { id: 'Italian', label: 'addStall.cuisines.italian' },
+  { id: 'Japanese', label: 'addStall.cuisines.japanese' },
+  { id: 'Korean', label: 'addStall.cuisines.korean' },
+  { id: 'Mexican', label: 'addStall.cuisines.mexican' },
+  { id: 'Thai', label: 'addStall.cuisines.thai' },
+  { id: 'Turkish', label: 'addStall.cuisines.turkish' },
+  { id: 'Vietnamese', label: 'addStall.cuisines.vietnamese' },
+  { id: 'Other', label: 'addStall.cuisines.other' }
 ];
 
 const STALL_NAME_LIMIT = 50;
@@ -166,13 +178,18 @@ const theme = createTheme({
   },
 });
 
-export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }: AddStallModalProps) {
+export default function AddStallModal({ isOpen, onClose, onSubmit, eventId, initialData }: AddStallModalProps) {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [createStall, { loading: isCreatingStall }] = useMutation(CREATE_STALL);
   
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     cuisine: initialData?.cuisine || '',
+    username: '',
+    password: '',
+    country: 'GERMANY',
     profilePhoto: null as File | null,
     timings: initialData?.timings || DAYS.reduce((acc, day) => ({
       ...acc,
@@ -193,6 +210,9 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
       setFormData({
         name: '',
         cuisine: '',
+        username: '',
+        password: '',
+        country: 'GERMANY',
         profilePhoto: null,
         timings: DAYS.reduce((acc, day) => ({
           ...acc,
@@ -213,9 +233,26 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const imageUrl = URL.createObjectURL(file);
-      setFormData({ ...formData, profilePhoto: file });
-      setPreviewUrl(imageUrl);
+      handleImageUpload(file);
+    }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const result = await uploadImage(formData);
+      
+      if (result.success && result.url) {
+        setPreviewUrl(result.url);
+        setFormData(prev => ({ ...prev, profilePhoto: file }));
+        toast.success("Image uploaded successfully");
+      } else {
+        throw new Error("Failed to upload image");
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Failed to upload image");
     }
   };
 
@@ -273,46 +310,100 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.profilePhoto) {
-      return; // Handle error case
+    if (!formData.name || !formData.cuisine) {
+      toast.error("Please fill in all required fields");
+      return;
     }
 
-    onSubmit({
-      name: formData.name,
-      cuisine: formData.cuisine,
-      profilePhoto: formData.profilePhoto,
-      timings: formData.timings
-    });
+    try {
+      // Format timings for API
+      const openingTimes = Object.entries(formData.timings).map(([day, timing]) => {
+        const dayCode = day.substring(0, 3).toUpperCase();
+        return {
+          day: dayCode,
+          times: timing.isOpen ? [{
+            startTime: timing.startTime.split(':'),
+            endTime: timing.endTime.split(':')
+          }] : [],
+          isOpen: timing.isOpen
+        };
+      });
 
-    // Clear form data
-    setFormData({
-      name: '',
-      cuisine: '',
-      profilePhoto: null,
-      timings: DAYS.reduce((acc, day) => ({
-        ...acc,
-        [day.id]: { startTime: '09:00', endTime: '17:00', isOpen: false }
-      }), {} as { [key: string]: { startTime: string; endTime: string; isOpen: boolean } })
-    });
+      // Get image URL from preview if available
+      const imageUrl = previewUrl || null;
 
-    // Clear preview URL and revoke object URL to prevent memory leaks
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
+      // Create stall via API
+      const { data } = await createStall({
+        variables: {
+          restaurant: {
+            name: formData.name,
+            cuisines: [formData.cuisine],
+            username: formData.username,
+            password: formData.password,
+            country: formData.country.toLowerCase(),
+            image: imageUrl,
+            openingTimes,
+            address: "Event Location",
+            location: {
+              type: "Point",
+              coordinates: [11.7504214, 52.88458019999999] // Default coordinates
+            }
+          },
+          eventId: eventId // Explicitly use the eventId prop
+        }
+      });
+
+      if (data?.createStall) {
+        toast.success("Stall created successfully");
+        
+        // Pass the created stall to parent component
+        onSubmit({
+          name: formData.name,
+          cuisine: formData.cuisine,
+          username: formData.username,
+          password: formData.password,
+          country: formData.country,
+          profilePhoto: formData.profilePhoto,
+          timings: formData.timings
+        });
+
+        // Clear form data
+        setFormData({
+          name: '',
+          cuisine: '',
+          username: '',
+          password: '',
+          country: 'GERMANY',
+          profilePhoto: null,
+          timings: DAYS.reduce((acc, day) => ({
+            ...acc,
+            [day.id]: { startTime: '09:00', endTime: '17:00', isOpen: false }
+          }), {} as { [key: string]: { startTime: string; endTime: string; isOpen: boolean } })
+        });
+
+        // Clear preview URL and revoke object URL to prevent memory leaks
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+        }
+        setPreviewUrl(null);
+
+        // Reset common hours
+        setCommonTiming({
+          startTime: '09:00',
+          endTime: '17:00'
+        });
+        setIsCommonHoursEnabled(false);
+
+        // Close modal
+        onClose();
+      }
+    } catch (error) {
+      console.error("Error creating stall:", error);
+      toast.error("Failed to create stall");
     }
-    setPreviewUrl(null);
-
-    // Reset common hours
-    setCommonTiming({
-      startTime: '09:00',
-      endTime: '17:00'
-    });
-    setIsCommonHoursEnabled(false);
-
-    // Close modal
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -325,7 +416,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
               {/* Header */}
               <div className="sticky top-0 z-20 bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-900">Add New Stall</h2>
+                <h2 className="text-xl font-semibold text-gray-900">{t('addStall.title')}</h2>
                 <button
                   onClick={onClose}
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -340,14 +431,14 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                   {/* Stall Name */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Stall Name
+                      {t('addStall.stallName')}
                     </label>
                     <TextField
                       fullWidth
                       value={formData.name}
                       onChange={handleNameChange}
                       variant="outlined"
-                      placeholder="Enter your stall name"
+                      placeholder={t('addStall.stallNamePlaceholder')}
                       required
                       InputProps={{
                         endAdornment: (
@@ -364,7 +455,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                   {/* Cuisine Dropdown */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Cuisine Type
+                      {t('addStall.cuisineType')}
                     </label>
                     <TextField
                       select
@@ -382,8 +473,8 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                       }}
                     >
                       {CUISINES.map(cuisine => (
-                        <MenuItem key={cuisine} value={cuisine}>
-                          {cuisine}
+                        <MenuItem key={cuisine.id} value={cuisine.id}>
+                          {t(cuisine.label)}
                         </MenuItem>
                       ))}
                     </TextField>
@@ -392,9 +483,9 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                   {/* Profile Photo Upload */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Profile Photo
+                      {t('addStall.profilePhoto')}
                     </label>
-                    <div className="w-full">
+                    <div className="w-full" onClick={() => fileInputRef.current?.click()}>
                       {previewUrl ? (
                         <div className="relative group rounded-xl overflow-hidden">
                           <img
@@ -407,23 +498,21 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                             }}
                           />
                           <div
-                            onClick={() => fileInputRef.current?.click()}
                             className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer"
                           >
                             <div className="text-white text-center">
                               <Upload className="h-8 w-8 mx-auto mb-2" />
-                              <p className="text-sm">Change Photo</p>
+                              <p className="text-sm">{t('addStall.changePhoto')}</p>
                             </div>
                           </div>
                         </div>
                       ) : (
                         <div
-                          onClick={() => fileInputRef.current?.click()}
                           className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-brand-primary hover:bg-brand-primary/5 transition-all duration-200 cursor-pointer"
                         >
                           <Upload className="h-10 w-10 mx-auto text-gray-400 mb-3" />
-                          <p className="text-sm text-gray-600 font-medium">Click to upload or drag and drop</p>
-                          <p className="text-xs text-gray-400 mt-2">PNG, JPG up to 5MB</p>
+                          <p className="text-sm text-gray-600 font-medium">{t('addStall.uploadPhoto')}</p>
+                          <p className="text-xs text-gray-400 mt-2">{t('addStall.uploadPhotoSubtext')}</p>
                         </div>
                       )}
                       <input
@@ -432,7 +521,6 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                         accept="image/*"
                         onChange={handleFileChange}
                         className="hidden"
-                        required
                       />
                     </div>
                   </div>
@@ -440,12 +528,12 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                   {/* Operating Hours */}
                   <div className="space-y-6">
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-gray-900">Operating Hours</h3>
+                      <h3 className="text-lg font-medium text-gray-900">{t('addStall.operatingHours')}</h3>
                       
                       {/* Common Time Settings */}
                       <div className="bg-gray-50 rounded-xl p-4 space-y-4">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium text-gray-600">Set Common Hours</p>
+                          <p className="text-sm font-medium text-gray-600">{t('addStall.setCommonHours')}</p>
                           <button
                             type="button"
                             onClick={() => setIsCommonHoursEnabled(!isCommonHoursEnabled)}
@@ -458,12 +546,12 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                             {isCommonHoursEnabled ? (
                               <>
                                 <X className="h-4 w-4" />
-                                Disable
+                                {t('addStall.disable')}
                               </>
                             ) : (
                               <>
                                 <Check className="h-4 w-4" />
-                                Enable
+                                {t('addStall.enable')}
                               </>
                             )}
                           </button>
@@ -474,7 +562,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                               <div className="col-span-1 sm:col-span-2">
                                 <TimePicker
-                                  label="Common Start Time"
+                                  label={t('addStall.commonStartTime')}
                                   value={dayjs(commonTiming.startTime, 'HH:mm')}
                                   onChange={(value) => {
                                     if (value) {
@@ -492,7 +580,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                               </div>
                               <div className="col-span-1 sm:col-span-2">
                                 <TimePicker
-                                  label="Common End Time"
+                                  label={t('addStall.commonEndTime')}
                                   value={dayjs(commonTiming.endTime, 'HH:mm')}
                                   onChange={(value) => {
                                     if (value) {
@@ -515,7 +603,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                               className="w-full sm:w-auto px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium flex items-center justify-center gap-2 border border-gray-200"
                             >
                               <Clock className="h-4 w-4" />
-                              Apply to All Days
+                              {t('addStall.applyToAllDays')}
                             </button>
                           </>
                         )}
@@ -544,13 +632,13 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                                 >
                                   {formData.timings[day.id].isOpen && <Check className="w-4 h-4" />}
                                 </button>
-                                <span className="font-medium text-gray-700">{day.label}</span>
+                                <span className="font-medium text-gray-700">{t(`addStall.days.${day.id}`)}</span>
                               </div>
 
                               {formData.timings[day.id].isOpen && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                   <TimePicker
-                                    label="Start Time"
+                                    label={t('addStall.startTime')}
                                     value={dayjs(formData.timings[day.id].startTime, 'HH:mm')}
                                     onChange={(value) => {
                                       if (value) {
@@ -566,7 +654,7 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                                     }}
                                   />
                                   <TimePicker
-                                    label="End Time"
+                                    label={t('addStall.endTime')}
                                     value={dayjs(formData.timings[day.id].endTime, 'HH:mm')}
                                     onChange={(value) => {
                                       if (value) {
@@ -591,6 +679,52 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                   </div>
                 </div>
 
+                {/* Username and Password */}
+                <div className="space-y-6 px-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Login Credentials</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Username
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.username}
+                        onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Password
+                      </label>
+                      <input
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Country Selection */}
+                <div className="px-6 space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Country</label>
+                  <FormControl fullWidth variant="outlined">
+                    <Select
+                      value={formData.country}
+                      onChange={(e) => setFormData({ ...formData, country: e.target.value as string })}
+                      required
+                    >
+                      <MenuItem value="GERMANY">Germany</MenuItem>
+                      <MenuItem value="AUSTRIA">Austria</MenuItem>
+                    </Select>
+                  </FormControl>
+                </div>
+
                 {/* Action Buttons */}
                 <div className="sticky bottom-0 z-20 bg-white px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-3">
                   <button
@@ -598,14 +732,24 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
                     onClick={onClose}
                     className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                   <button
                     type="submit"
                     className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 transition-colors font-medium flex items-center justify-center gap-2"
+                    disabled={isCreatingStall}
                   >
-                    <Check className="h-4 w-4" />
-                    Add Stall
+                    {isCreatingStall ? (
+                      <>
+                        <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="h-4 w-4" />
+                        {t('addStall.addStall')}
+                      </>
+                    )}
                   </button>
                 </div>
               </form>
@@ -615,4 +759,4 @@ export default function AddStallModal({ isOpen, onClose, onSubmit, initialData }
       </LocalizationProvider>
     </ThemeProvider>
   );
-} 
+}

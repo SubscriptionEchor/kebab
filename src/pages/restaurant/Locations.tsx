@@ -84,9 +84,10 @@ function MapClickHandler({
 export default function RestaurantLocations() {
   const { t } = useTranslation();
   const { restaurantId } = useParams();
-  const [position, setPosition] = useState<[number, number]>([40.7128, -74.0060]); // Default to NYC
+  const [position, setPosition] = useState<[number, number]>([52.52, 13.405]);
   const [isValidZone, setIsValidZone] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const [operationalZones, setOperationalZones] = useState<OperationalZone[]>([]);
 
   const [checkZoneRestrictions] = useLazyQuery(CHECK_ZONE_RESTRICTIONS, {
@@ -297,7 +298,14 @@ export default function RestaurantLocations() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6">
         {/* Map Section */}
-        <MapsComponent position={position} setIsValidZone={setIsValidZone} setPosition={setPosition} />
+        <MapsComponent 
+          position={position} 
+          setIsValidZone={setIsValidZone} 
+          setPosition={setPosition}
+          searchText={searchText}
+          setSearchText={setSearchText}
+          country={data?.restaurant?.country || 'GERMANY'}
+        />
 
         {/* Address Section */}
         <div className="space-y-6">

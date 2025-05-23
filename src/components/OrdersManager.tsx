@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { getCurrencySymbol } from '../utils/currency';
 
 interface OrderItem {
   id: string;
@@ -25,19 +26,21 @@ interface OrdersManagerProps {
   onPreparationTimeChange: (orderId: string, minutes: number) => void;
 }
 
-export default function OrdersManager({ orders, onStatusChange, onPreparationTimeChange }: OrdersManagerProps) {
+export default function OrdersManager({
+  orders,
+  onStatusChange,
+  onPreparationTimeChange
+}: OrdersManagerProps) {
   const { t } = useTranslation();
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
   const [preparationTimes, setPreparationTimes] = useState<Record<string, number>>({});
+  const currencySymbol = getCurrencySymbol();
 
   const toggleOrderExpansion = (orderId: string) => {
-    const newExpandedOrders = new Set(expandedOrders);
-    if (newExpandedOrders.has(orderId)) {
-      newExpandedOrders.delete(orderId);
-    } else {
-      newExpandedOrders.add(orderId);
-    }
-    setExpandedOrders(newExpandedOrders);
+    const next = new Set(expandedOrders);
+    if (next.has(orderId)) next.delete(orderId);
+    else next.add(orderId);
+    setExpandedOrders(next);
   };
 
   const handlePreparationTimeChange = (orderId: string, minutes: number) => {
@@ -62,9 +65,7 @@ export default function OrdersManager({ orders, onStatusChange, onPreparationTim
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
-  };
+  const formatDate = (dt: string) => new Date(dt).toLocaleString();
 
   if (orders.length === 0) {
     return (
@@ -76,7 +77,7 @@ export default function OrdersManager({ orders, onStatusChange, onPreparationTim
 
   return (
     <div className="space-y-4">
-      {orders.map((order) => (
+      {orders.map(order => (
         <div
           key={order.id}
           className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
@@ -88,25 +89,27 @@ export default function OrdersManager({ orders, onStatusChange, onPreparationTim
                 onClick={() => toggleOrderExpansion(order.id)}
                 className="text-gray-500 hover:text-gray-700"
               >
-                {expandedOrders.has(order.id) ? (
-                  <ChevronUp className="h-5 w-5" />
-                ) : (
-                  <ChevronDown className="h-5 w-5" />
-                )}
+                {expandedOrders.has(order.id)
+                  ? <ChevronUp className="h-5 w-5" />
+                  : <ChevronDown className="h-5 w-5" />}
               </button>
               <div>
                 <h3 className="text-lg font-medium text-gray-900">
                   {order.orderNumber}
                 </h3>
-                <p className="text-sm text-gray-500">{order.customerName}</p>
+                <p className="text-sm text-gray-500">
+                  {order.customerName}
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}>
+              <span
+                className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}
+              >
                 {t(`orders.${order.status}`)}
               </span>
               <span className="text-sm font-medium text-gray-900">
-                €{order.total.toFixed(2)}
+                {currencySymbol}{order.total.toFixed(2)}
               </span>
             </div>
           </div>
@@ -117,20 +120,20 @@ export default function OrdersManager({ orders, onStatusChange, onPreparationTim
               {/* Order Items */}
               <div>
                 <h4 className="text-sm font-medium text-gray-900 mb-2">
-                  {t('orders.items')}
+                  {t('orders.item')}
                 </h4>
                 <div className="space-y-2">
-                  {order.items.map((item) => (
+                  {order.items.map(item => (
                     <div
                       key={item.id}
                       className="flex items-center justify-between text-sm"
                     >
                       <div className="flex items-center">
-                        <span className="font-medium">{item.quantity}x</span>
+                        <span className="font-medium">{item.quantity}×</span>
                         <span className="ml-2">{item.name}</span>
                       </div>
                       <span className="text-gray-500">
-                        €{(item.price * item.quantity).toFixed(2)}
+                        {currencySymbol}{(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   ))}
@@ -151,20 +154,25 @@ export default function OrdersManager({ orders, onStatusChange, onPreparationTim
                     <div className="flex items-center space-x-2">
                       <input
                         type="number"
-                        min="1"
-                        max="120"
-                        value={preparationTimes[order.id] || ''}
-                        onChange={(e) => handlePreparationTimeChange(order.id, parseInt(e.target.value))}
-                        className="w-16 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                        min={1}
+                        max={120}
+                        value={preparationTimes[order.id] ?? ''}
+                        onChange={e => handlePreparationTimeChange(
+                          order.id,
+                          parseInt(e.target.value, 10) || 0
+                        )}
                         placeholder={t('orders.minutes')}
+                        className="w-16 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                       />
-                      <span className="text-sm text-gray-500">{t('orders.minutes')}</span>
+                      <span className="text-sm text-gray-500">
+                        {t('orders.minutes')}
+                      </span>
                     </div>
                   )}
 
                   <select
                     value={order.status}
-                    onChange={(e) => onStatusChange(order.id, e.target.value as Order['status'])}
+                    onChange={e => onStatusChange(order.id, e.target.value as Order['status'])}
                     className="text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                   >
                     <option value="pending">{t('orders.pending')}</option>
@@ -181,4 +189,4 @@ export default function OrdersManager({ orders, onStatusChange, onPreparationTim
       ))}
     </div>
   );
-} 
+}

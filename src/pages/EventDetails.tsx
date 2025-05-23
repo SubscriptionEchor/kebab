@@ -1,11 +1,16 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, Home, Plus, Search, ChevronDown, Pencil, Trash2, Calendar, Filter, Copy, Check, Power } from 'lucide-react';
+import { ChevronRight, Home, Plus, Search, ChevronDown, Pencil, Trash2, Calendar, Filter, Copy, Check, Power, Store, MoreVertical, Eye, X, Star } from 'lucide-react';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import AddStallModal from '../components/AddStallModal';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import ExistingStallModal from '../components/ExistingStallModal';
 import KebabMenu from '../components/KebabMenu';
+import { useQuery, useMutation } from '@apollo/client';
+import { GET_STALLS_BY_EVENT_ID, UPDATE_EVENT } from '../lib/graphql/queries/eventOrganizers';
+import { DELETE_STALL, UPDATE_STALL_STATUS, LINK_STALL_TO_EVENT } from '../lib/graphql/mutations/stalls';
+import LoadingState from '../components/LoadingState';
+import { toast } from 'sonner';
 
 interface Stall {
   id: string;
@@ -22,66 +27,63 @@ interface Stall {
   };
 }
 
+interface ApiStall {
+  _id: string;
+  restaurantDisplayNumber?: string;
+  name: string;
+  image: string;
+  cuisines: string[];
+  isActive: boolean;
+  isAvailable: boolean;
+  openingTimes: {
+    day: string;
+    times: {
+      startTime: string[];
+      endTime: string[];
+    }[];
+    isOpen: boolean;
+  }[];
+  reviewAverage: number;
+  reviewCount: number;
+  phone: string;
+}
+
+interface FormData {
+  name: string;
+  cuisine: string;
+  username: string;
+  password: string;
+  country: string;
+  profilePhoto: File | null;
+  timings: {
+    [key: string]: {
+      startTime: string;
+      endTime: string;
+      isOpen: boolean;
+    };
+  };
+}
+
 export default function EventDetails() {
   const { t } = useTranslation();
   const { organizerId, eventId } = useParams();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [stalls, setStalls] = useState<Stall[]>([
-    {
-      id: 'STL123456',
-      name: 'Taco Stand',
-      cuisine: 'Mexican',
-      profilePhoto: 'https://example.com/taco-stand.jpg',
-      isActive: true,
-      timings: {
-        monday: { startTime: '10:00', endTime: '18:00', isOpen: true },
-        tuesday: { startTime: '10:00', endTime: '18:00', isOpen: true },
-        wednesday: { startTime: '10:00', endTime: '18:00', isOpen: true },
-        thursday: { startTime: '10:00', endTime: '18:00', isOpen: true },
-        friday: { startTime: '10:00', endTime: '18:00', isOpen: true },
-        saturday: { startTime: '10:00', endTime: '18:00', isOpen: true },
-        sunday: { startTime: '10:00', endTime: '18:00', isOpen: true },
-      }
-    },
-    {
-      id: 'STL789012',
-      name: 'Pizza Corner',
-      cuisine: 'Italian',
-      profilePhoto: 'https://example.com/pizza-corner.jpg',
-      isActive: true,
-      timings: {
-        monday: { startTime: '11:00', endTime: '19:00', isOpen: true },
-        tuesday: { startTime: '11:00', endTime: '19:00', isOpen: true },
-        wednesday: { startTime: '11:00', endTime: '19:00', isOpen: true },
-        thursday: { startTime: '11:00', endTime: '19:00', isOpen: true },
-        friday: { startTime: '11:00', endTime: '19:00', isOpen: true },
-        saturday: { startTime: '11:00', endTime: '19:00', isOpen: true },
-        sunday: { startTime: '11:00', endTime: '19:00', isOpen: true },
-      }
-    }
-  ]);
+  const [stalls, setStalls] = useState<Stall[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedStallId, setSelectedStallId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isTogglingStatus, setIsTogglingStatus] = useState<string | null>(null);
   const [isExistingStallModalOpen, setIsExistingStallModalOpen] = useState(false);
-  const [formData, setFormData] = useState<{
-    name: string;
-    cuisine: string;
-    profilePhoto: File | null;
-    timings: {
-      [key: string]: {
-        startTime: string;
-        endTime: string;
-        isOpen: boolean;
-      };
-    };
-  }>({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     cuisine: '',
+    username: '',
+    password: '',
+    country: 'GERMANY',
     profilePhoto: null,
     timings: {
       monday: { startTime: '', endTime: '', isOpen: true },
@@ -101,9 +103,103 @@ export default function EventDetails() {
   const [selectedStallFilter, setSelectedStallFilter] = useState<string>('all');
 
   // Mock data for sales and orders
-  const [overviewData, setOverviewData] = useState({
+  const [overviewData] = useState({
     totalSales: 12500,
     totalOrders: 450
+  });
+  
+  // State for stall details modal
+  const [showStallDetails, setShowStallDetails] = useState(false);
+  const [stallDetails, setStallDetails] = useState<any>(null);
+  const [isLoadingStallDetails, setIsLoadingStallDetails] = useState(false);
+
+  // Delete stall mutation
+  const [deleteStall] = useMutation(DELETE_STALL, {
+    refetchQueries: [{ query: GET_STALLS_BY_EVENT_ID, variables: { eventId } }],
+    onCompleted: () => {
+      toast.success("Stall deleted successfully");
+    },
+    onError: (error) => {
+      console.error("Error deleting stall:", error);
+      toast.error("Failed to delete stall");
+    }
+  });
+
+  // Update stall status mutation
+  const [updateStallStatus] = useMutation(UPDATE_STALL_STATUS, {
+    refetchQueries: [{ query: GET_STALLS_BY_EVENT_ID, variables: { eventId } }],
+    onCompleted: () => {
+      toast.success("Stall status updated successfully");
+    },
+    onError: (error) => {
+      console.error("Error updating stall status:", error);
+      toast.error("Failed to update stall status");
+    }
+  });
+
+  // Link stall to event mutation
+  const [linkStallToEvent] = useMutation(LINK_STALL_TO_EVENT, {
+    refetchQueries: [{ query: GET_STALLS_BY_EVENT_ID, variables: { eventId } }],
+    onError: (error) => {
+      console.error('Error linking stall to event:', error);
+      toast.error('Failed to add stall to event');
+    }
+  });
+
+  // Fetch stalls data from API
+  const { data: stallsData, loading: stallsLoading, error: stallsError } = useQuery(GET_STALLS_BY_EVENT_ID, {
+    variables: { eventId },
+    skip: !eventId,
+    onCompleted: (data) => {
+      if (data?.getStallsByEventId) {
+        const formattedStalls = data.getStallsByEventId.map((stall: ApiStall) => {
+          // Convert API stall format to our local format
+          const timings: { [key: string]: { startTime: string; endTime: string; isOpen: boolean } } = {};
+          
+          // Process opening times
+          stall.openingTimes?.forEach(time => {
+            const day = time.day.toLowerCase();
+            const dayKey = day === 'mon' ? 'monday' : 
+                          day === 'tue' ? 'tuesday' : 
+                          day === 'wed' ? 'wednesday' : 
+                          day === 'thu' ? 'thursday' : 
+                          day === 'fri' ? 'friday' : 
+                          day === 'sat' ? 'saturday' : 'sunday';
+            
+            if (time.times && time.times.length > 0) {
+              const startTimeArr = time.times[0].startTime;
+              const endTimeArr = time.times[0].endTime;
+              
+              timings[dayKey] = {
+                startTime: startTimeArr.length >= 2 ? `${startTimeArr[0]}:${startTimeArr[1]}` : '09:00',
+                endTime: endTimeArr.length >= 2 ? `${endTimeArr[0]}:${endTimeArr[1]}` : '17:00',
+                isOpen: time.isOpen
+              };
+            } else {
+              timings[dayKey] = { startTime: '09:00', endTime: '17:00', isOpen: false };
+            }
+          });
+          
+          // Fill in any missing days
+          ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].forEach(day => {
+            if (!timings[day]) {
+              timings[day] = { startTime: '09:00', endTime: '17:00', isOpen: false };
+            }
+          });
+          
+          return {
+            id: stall.restaurantDisplayNumber || stall._id, // Use restaurantDisplayNumber as stall ID
+            name: stall.name,
+            cuisine: stall.cuisines?.length > 0 ? stall.cuisines[0] : 'Various',
+            profilePhoto: stall.image || '/images/default-stall.png',
+            isActive: stall.isActive && stall.isAvailable,
+            timings
+          };
+        });
+        
+        setStalls(formattedStalls);
+      }
+    }
   });
 
   const [sortConfig, setSortConfig] = useState<{
@@ -112,8 +208,6 @@ export default function EventDetails() {
   } | null>(null);
 
   const [imageCache, setImageCache] = useState<{ [key: string]: string }>({});
-
-  console.log('EventDetails - Mounted with params:', { organizerId, eventId });
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -135,43 +229,62 @@ export default function EventDetails() {
     return `STL${randomNum}`;
   };
 
-  const handleAddStall = (data: {
-    name: string;
-    cuisine: string;
-    profilePhoto: File | null;
-    timings: {
-      [key: string]: {
-        startTime: string;
-        endTime: string;
-        isOpen: boolean;
-      };
-    };
-  }) => {
+  const handleAddStall = async (data: FormData) => {
     if (selectedStallForEdit) {
-      // Update existing stall
-      setStalls(prevStalls => prevStalls.map(stall => 
-        stall.id === selectedStallForEdit.id 
-          ? { ...stall, name: data.name, cuisine: data.cuisine, timings: data.timings }
-          : stall
-      ));
-      setSelectedStallForEdit(null);
+      try {
+        // Update existing stall
+        setStalls(prevStalls => prevStalls.map(stall => 
+          stall.id === selectedStallForEdit.id 
+            ? { ...stall, name: data.name, cuisine: data.cuisine, timings: data.timings }
+            : stall
+        ));
+        setSelectedStallForEdit(null);
+      } catch (error) {
+        console.error("Error updating stall:", error);
+        toast.error("Failed to update stall");
+      }
     } else {
-      // Add new stall with generated ID
-      const newStall: Stall = {
-        id: generateStallId(),
-        name: data.name,
-        cuisine: data.cuisine,
-        profilePhoto: 'https://example.com/placeholder.jpg',
-        isActive: true,
-        timings: data.timings
-      };
-      setStalls([...stalls, newStall]);
+      try {
+        // The actual API call is handled in the AddStallModal component
+        // Here we just update the local state with the new stall
+        const newStall: Stall = {
+          id: generateStallId(), // This will be replaced by the actual ID from the API
+          name: data.name,
+          cuisine: data.cuisine,
+          profilePhoto: 'https://example.com/placeholder.jpg',
+          isActive: true,
+          timings: data.timings
+        };
+        setStalls([...stalls, newStall]);
+      } catch (error) {
+        console.error("Error adding stall:", error);
+        toast.error("Failed to add stall");
+      }
     }
   };
 
   const handleViewStall = (stallId: string) => {
-    console.log('EventDetails - Viewing stall:', { stallId, organizerId, eventId });
-    navigate(`/event-organizers/${organizerId}/events/${eventId}/stalls/${stallId}`);
+    // Find the stall in our local state to get the MongoDB ID
+    const stall = stalls.find(s => s.id === stallId);
+    if (!stall) {
+      toast.error("Stall not found");
+      return;
+    }
+    
+    // Get the actual MongoDB ID from the stalls data
+    const stallData = stallsData?.getStallsByEventId?.find(
+      (s: any) => s.restaurantDisplayNumber === stallId || s._id === stallId
+    );
+    
+    if (!stallData) {
+      toast.error("Stall data not found");
+      return;
+    }
+    
+    // Navigate to the stall dashboard using the MongoDB ID
+    navigate(`/vendor/restaurants/${stallData._id}`, {
+      state: { restaurantData: stallData }
+    });
   };
 
   const handleDeleteClick = (stallId: string) => {
@@ -179,15 +292,29 @@ export default function EventDetails() {
     setIsDeleteModalOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (!selectedStallId) return;
 
     setIsDeleting(true);
-    // Filter out the deleted stall
-    setStalls(prevStalls => prevStalls.filter(stall => stall.id !== selectedStallId));
-    setIsDeleting(false);
-    setIsDeleteModalOpen(false);
-    setSelectedStallId(null);
+    
+    try {
+      // Call the delete mutation
+      await deleteStall({
+        variables: {
+          id: selectedStallId
+        }
+      });
+      
+      // Update local state
+      setStalls(prevStalls => prevStalls.filter(stall => stall.id !== selectedStallId));
+      setIsDeleteModalOpen(false);
+      setSelectedStallId(null);
+    } catch (error) {
+      console.error("Error deleting stall:", error);
+      toast.error("Failed to delete stall");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const dayAbbreviations: { [key: string]: string } = {
@@ -291,9 +418,52 @@ export default function EventDetails() {
     setIsDropdownOpen(false);
   };
 
-  const handleExistingStallAdd = (stall: Stall) => {
-    // Add the selected stall to the current event's stalls
-    setStalls(prevStalls => [...prevStalls, stall]);
+  const handleExistingStallAdd = async (stall: any) => {
+    try {
+      // Call the linkStallToEvent mutation
+      const { data } = await linkStallToEvent({
+        variables: {
+          eventId: eventId,
+          restaurantId: stall.id
+        }
+      });
+
+      if (data?.linkStallToEvent) {
+        // Convert the response data to match our local stall format
+        const linkedStall = data.linkStallToEvent;
+        const formattedStall: Stall = {
+          id: linkedStall.restaurantDisplayNumber || linkedStall._id,
+          name: linkedStall.name,
+          cuisine: linkedStall.cuisines?.[0] || 'Various',
+          profilePhoto: linkedStall.image || '/images/default-stall.png',
+          isActive: linkedStall.isActive && linkedStall.isAvailable,
+          timings: linkedStall.openingTimes.reduce((acc: any, time: any) => {
+            const day = time.day.toLowerCase();
+            const dayKey = day === 'mon' ? 'monday' : 
+                          day === 'tue' ? 'tuesday' : 
+                          day === 'wed' ? 'wednesday' : 
+                          day === 'thu' ? 'thursday' : 
+                          day === 'fri' ? 'friday' : 
+                          day === 'sat' ? 'saturday' : 'sunday';
+            
+            acc[dayKey] = {
+              startTime: time.times?.[0]?.startTime?.join(':') || '09:00',
+              endTime: time.times?.[0]?.endTime?.join(':') || '17:00',
+              isOpen: time.isOpen
+            };
+            return acc;
+          }, {})
+        };
+
+        // Update local state with the new stall
+        setStalls(prevStalls => [...prevStalls, formattedStall]);
+        toast.success('Stall added successfully');
+        setIsExistingStallModalOpen(false);
+      }
+    } catch (error) {
+      console.error('Error linking stall to event:', error);
+      toast.error('Failed to add stall to event');
+    }
   };
 
   const handleExistingStallEdit = (stall: Stall) => {
@@ -301,6 +471,9 @@ export default function EventDetails() {
     setFormData({
       name: stall.name,
       cuisine: stall.cuisine,
+      username: '',
+      password: '',
+      country: 'GERMANY',
       profilePhoto: null,
       timings: stall.timings
     });
@@ -312,10 +485,12 @@ export default function EventDetails() {
     setFormData({
       name: stall.name,
       cuisine: stall.cuisine,
+      username: '',
+      password: '',
+      country: 'GERMANY',
       profilePhoto: null,
       timings: stall.timings
     });
-    setIsModalOpen(true);
   };
 
   const handleDateRangeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -351,19 +526,128 @@ export default function EventDetails() {
     return imageCache[stall.id];
   };
 
-  const handleCopyStallId = (stallId: string) => {
-    navigator.clipboard.writeText(stallId);
-    // You might want to show a toast notification here
+  const handleViewStallDetails = async (stallId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    setIsLoadingStallDetails(true);
+    
+    // Find the stall in our local state to get the MongoDB ID
+    const stall = stalls.find(s => s.id === stallId);
+    if (!stall) {
+      toast.error("Stall not found");
+      setIsLoadingStallDetails(false);
+      return;
+    }
+    
+    // Get the actual MongoDB ID from the stalls data
+    const stallData = stallsData?.getStallsByEventId?.find(
+      (s: any) => s.restaurantDisplayNumber === stallId || s._id === stallId
+    );
+    
+    if (!stallData) {
+      toast.error("Stall data not found");
+      setIsLoadingStallDetails(false);
+      return;
+    }
+    
+    const mongoDbId = stallData._id;
+    
+    try {
+      // Make API call to fetch stall details
+      const response = await fetch('https://del-qa-api.kebapp-chefs.com/graphql', {
+        method: 'POST',
+        headers: {
+          'accept': '*/*',
+          'accept-language': 'en-US,en;q=0.9',
+          'authorization': localStorage.getItem('kebab_admin_auth') ? 
+            `Bearer ${JSON.parse(localStorage.getItem('kebab_admin_auth') || '{}').token}` : '',
+          'content-type': 'application/json',
+          'lang': 'en',
+        },
+        body: JSON.stringify({
+          operationName: 'Restaurant',
+          variables: { id: mongoDbId },
+          query: `query Restaurant($id: String) {
+            restaurant(id: $id) {
+              username
+              password
+              _id
+              name
+              image
+              phone
+              logo
+              address
+              reviewCount
+              reviewAverage
+              shopType
+              cuisines
+              googleMapLink
+              __typename
+              orderPrefix
+              onboardingApplicationId
+              owner {
+                email
+                _id
+                __typename
+              }
+              __typename
+            }
+          }`
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.data?.restaurant) {
+        setStallDetails(result.data.restaurant);
+        setShowStallDetails(true);
+      } else {
+        throw new Error("Failed to fetch stall details");
+      }
+    } catch (error) {
+      console.error("Error fetching stall details:", error);
+      toast.error("Failed to fetch stall details");
+    } finally {
+      setIsLoadingStallDetails(false);
+    }
   };
 
-  const handleToggleStall = (stallId: string) => {
-    setStalls(prevStalls => 
-      prevStalls.map(stall => 
-        stall.id === stallId 
-          ? { ...stall, isActive: !stall.isActive }
-          : stall
-      )
-    );
+  const handleCopyStallId = (stallId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(stallId);
+    toast.success("Stall ID copied to clipboard");
+  };
+
+  const handleToggleStall = async (stallId: string, currentStatus: boolean, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (isTogglingStatus === stallId) return;
+    
+    setIsTogglingStatus(stallId);
+    
+    try {
+      // Call the update status mutation
+      await updateStallStatus({
+        variables: {
+          id: stallId,
+          isAvailable: !currentStatus
+        }
+      });
+      
+      // Update local state
+      setStalls(prevStalls => 
+        prevStalls.map(stall => 
+          stall.id === stallId 
+            ? { ...stall, isActive: !stall.isActive }
+            : stall
+        )
+      );
+    } catch (error) {
+      console.error("Error toggling stall status:", error);
+      toast.error("Failed to update stall status");
+    } finally {
+      setIsTogglingStatus(null);
+    }
   };
 
   return (
@@ -377,7 +661,7 @@ export default function EventDetails() {
               className="flex items-center text-sm text-gray-500 hover:text-gray-700"
             >
               <Home className="h-4 w-4 mr-1" />
-              Dashboard
+              {t('eventDetails.breadcrumbs.dashboard')}
             </Link>
           </li>
           <li className="flex items-center">
@@ -386,7 +670,7 @@ export default function EventDetails() {
               to="/dashboard/event-organizers"
               className="text-sm text-gray-500 hover:text-gray-700"
             >
-              Event Organizers
+              {t('eventDetails.breadcrumbs.eventOrganizers')}
             </Link>
           </li>
           <li className="flex items-center">
@@ -395,26 +679,26 @@ export default function EventDetails() {
               to={`/dashboard/event-organizers/${organizerId}`}
               className="text-sm text-gray-500 hover:text-gray-700"
             >
-              Event Organizer Details
+              {t('eventDetails.breadcrumbs.organizerDetails')}
             </Link>
           </li>
           <li className="flex items-center">
             <ChevronRight className="h-4 w-4 text-gray-400 mx-2 flex-shrink-0" />
             <span className="text-sm text-gray-700 font-medium">
-              Event Details
+              {t('eventDetails.pageTitle')}
             </span>
           </li>
         </ol>
       </nav>
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Event Details</h1>
+        <h1 className="text-2xl font-semibold">{t('eventDetails.pageTitle')}</h1>
       </div>
 
       {/* Overview Section */}
-      <div className="mb-12">
+      {/* <div className="mb-12">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Overview</h2>
+          <h2 className="text-xl font-semibold">{t('eventDetails.overview.title')}</h2>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200">
               <Calendar className="h-4 w-4 text-gray-500" />
@@ -425,7 +709,7 @@ export default function EventDetails() {
                 onChange={handleDateRangeChange}
                 className="text-sm border-none focus:outline-none"
               />
-              <span className="text-gray-400">to</span>
+              <span className="text-gray-400">{t('eventDetails.overview.dateRangeSeparator')}</span>
               <input
                 type="date"
                 name="end"
@@ -441,21 +725,21 @@ export default function EventDetails() {
                 onChange={handleStallFilterChange}
                 className="text-sm border-none focus:outline-none"
               >
-                <option value="all">All Stalls</option>
+                <option value="all">{t('eventDetails.overview.filter.allStalls')}</option>
                 {stalls.map(stall => (
                   <option key={stall.id} value={stall.id}>{stall.name}</option>
                 ))}
               </select>
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Total Sales Card */}
-          <div className="bg-white rounded-lg shadow p-6">
+          {/* <div className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm text-gray-500">Total Sales</p>
+                <p className="text-sm text-gray-500">{t('eventDetails.overview.totalSales')}</p>
                 <h3 className="text-2xl font-semibold mt-1">${overviewData.totalSales.toLocaleString()}</h3>
               </div>
               <div className="bg-green-50 p-3 rounded-lg">
@@ -466,16 +750,16 @@ export default function EventDetails() {
             </div>
             <div className="mt-4">
               <div className="h-2 bg-gray-100 rounded-full">
-                <div className="h-2 bg-green-500 rounded-full" style={{ width: '75%' }}></div>
+                <div className="h-2 bg-green-500 rounded-full" style={{ width: '75%' }} />
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Total Orders Card */}
-          <div className="bg-white rounded-lg shadow p-6">
+          {/* <div className="bg-white rounded-lg shadow p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm text-gray-500">Total Orders</p>
+                <p className="text-sm text-gray-500">{t('eventDetails.overview.totalOrders')}</p>
                 <h3 className="text-2xl font-semibold mt-1">{overviewData.totalOrders.toLocaleString()}</h3>
               </div>
               <div className="bg-blue-50 p-3 rounded-lg">
@@ -486,23 +770,23 @@ export default function EventDetails() {
             </div>
             <div className="mt-4">
               <div className="h-2 bg-gray-100 rounded-full">
-                <div className="h-2 bg-blue-500 rounded-full" style={{ width: '60%' }}></div>
+                <div className="h-2 bg-blue-500 rounded-full" style={{ width: '60%' }} />
               </div>
             </div>
-          </div>
-        </div>
+          </div> */}
+        {/* </div> */}
       </div>
 
       {/* Stalls Table */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Stalls</h2>
+          <h2 className="text-xl font-semibold">{t('eventDetails.stalls.title')}</h2>
           <div className="flex items-center gap-4">
             <div className="relative w-[300px]">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Search stalls by name or cuisine"
+                placeholder={t('eventDetails.stalls.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary"
@@ -514,7 +798,7 @@ export default function EventDetails() {
                 className="flex items-center gap-2 px-4 py-2 bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors"
               >
                 <Plus className="h-5 w-5" />
-                Add New Stall
+                {t('eventDetails.stalls.addNew')}
                 <ChevronDown className={`h-4 w-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               
@@ -525,14 +809,14 @@ export default function EventDetails() {
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                   >
                     <Plus className="h-4 w-4" />
-                    New Stall
+                    {t('eventDetails.stalls.newStall')}
                   </button>
                   <button
                     onClick={handleAddExistingStall}
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                   >
                     <ChevronRight className="h-4 w-4" />
-                    Existing Stall
+                    {t('eventDetails.stalls.existingStall')}
                   </button>
                 </div>
               )}
@@ -540,11 +824,38 @@ export default function EventDetails() {
           </div>
         </div>
         <div className="bg-white rounded-lg shadow overflow-hidden">
+          {stallsLoading ? (
+            <div className="p-6">
+              <LoadingState rows={3} />
+            </div>
+          ) : stallsError ? (
+            <div className="p-6 text-center">
+              <p className="text-red-500 font-medium">Failed to load stalls</p>
+              <p className="text-gray-600 mt-2">There was an error loading the stalls. Please try again.</p>
+            </div>
+          ) : stalls.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Store className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No stalls found</h3>
+              <p className="text-gray-500 max-w-md mx-auto mb-6">
+                This event doesn't have any stalls yet. Add stalls to start managing them.
+              </p>
+              <button
+                onClick={handleAddNewStall}
+                className="px-4 py-2 bg-brand-primary text-black rounded-md hover:bg-brand-primary/90 transition-colors inline-flex items-center"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Your First Stall
+              </button>
+            </div>
+          ) : (
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Stall ID
+                  {t('eventDetails.stalls.table.headers.stallId')}
                 </th>
                 <th 
                   scope="col" 
@@ -552,7 +863,7 @@ export default function EventDetails() {
                   onClick={() => handleSort('name')}
                 >
                   <div className="flex items-center gap-2">
-                    Stall Name
+                    {t('eventDetails.stalls.table.headers.stallName')}
                     {sortConfig?.key === 'name' && (
                       <ChevronDown className={`h-4 w-4 transition-transform ${sortConfig.direction === 'descending' ? 'rotate-180' : ''}`} />
                     )}
@@ -564,34 +875,35 @@ export default function EventDetails() {
                   onClick={() => handleSort('cuisine')}
                 >
                   <div className="flex items-center gap-2">
-                    Cuisine
+                    {t('eventDetails.stalls.table.headers.cuisine')}
                     {sortConfig?.key === 'cuisine' && (
                       <ChevronDown className={`h-4 w-4 transition-transform ${sortConfig.direction === 'descending' ? 'rotate-180' : ''}`} />
                     )}
                   </div>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Profile Photo
+                  {t('eventDetails.stalls.table.headers.profilePhoto')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Operating Hours
+                  {t('eventDetails.stalls.table.headers.operatingHours')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  {t('eventDetails.stalls.table.headers.status')}
                 </th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {t('eventDetails.stalls.table.headers.actions')}
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {sortedStalls.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
+                  {/* <td colSpan={7} className="px-6 py-12 text-center"> */}
+                  <td colSpan={7} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center justify-center text-gray-500">
                       <Search className="h-12 w-12 mb-4 text-gray-400" />
-                      <p className="text-lg font-medium">No stalls found</p>
-                      <p className="text-sm mt-1">Try adjusting your search or filters</p>
+                      <p className="text-lg font-medium">{t('eventDetails.stalls.table.empty.noStalls')}</p>
+                      <p className="text-sm mt-1">{t('eventDetails.stalls.table.empty.adjustSearch')}</p>
                     </div>
                   </td>
                 </tr>
@@ -600,11 +912,11 @@ export default function EventDetails() {
                   <tr key={stall.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-mono text-gray-600 tracking-wider">{stall.id}</span>
+                        <span className="text-sm font-mono text-gray-600 tracking-wider">{stall.id || 'N/A'}</span>
                         <button
-                          onClick={() => handleCopyStallId(stall.id)}
+                          onClick={(e) => handleCopyStallId(stall.id, e)}
                           className="text-gray-400 hover:text-gray-600 transition-colors"
-                          title="Copy Stall ID"
+                          title={t('eventDetails.stalls.table.copyStallId')}
                         >
                           <Copy className="h-4 w-4" />
                         </button>
@@ -628,43 +940,48 @@ export default function EventDetails() {
                           className="h-full w-full rounded-full object-cover"
                           loading="lazy"
                         />
-                        <div className="absolute inset-0 rounded-full bg-gray-100 animate-pulse" style={{ display: imageCache[stall.id] ? 'none' : 'block' }} />
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="space-y-1.5">
+                      <div className="text-sm text-gray-500">
                         {formatTimings(stall.timings).map((timing, index) => (
-                          <div key={index} className="flex items-start gap-2 text-sm">
-                            <div className="font-medium text-gray-900 min-w-[130px]">
-                              {timing.days.join(', ')}:
-                            </div>
-                            <div className="text-gray-600">
-                              {timing.time}
-                            </div>
+                          <div key={index} className="mb-1 last:mb-0">
+                            <span className="font-medium">{timing.days.join(', ')}</span>
+                            <span className="mx-2">•</span>
+                            <span>{timing.time}</span>
                           </div>
                         ))}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
-                        onClick={() => handleToggleStall(stall.id)}
-                        className={`p-2 rounded-full transition-colors ${
-                          stall.isActive 
-                            ? 'bg-green-100 text-green-600 hover:bg-green-200' 
-                            : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-                        }`}
-                        title={stall.isActive ? 'Deactivate Stall' : 'Activate Stall'}
+                        onClick={(e) => handleToggleStall(stall.id, stall.isActive, e)}
+                        className={`p-2 rounded-full ${stall.isActive ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}
+                        disabled={isTogglingStatus === stall.id}
                       >
-                        <Power className="h-4 w-4" />
+                        {isTogglingStatus === stall.id ? (
+                          <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Power className="h-4 w-4" />
+                        )}
                       </button>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleViewStall(stall.id)}
-                          className="px-3 py-1.5 bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors"
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end space-x-2">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewStall(stall.id);
+                          }}
+                          className="px-3 py-1.5 bg-brand-primary text-white rounded-md hover:bg-brand-primary/90 transition-colors flex items-center"
+                          disabled={isLoadingStallDetails}
                         >
-                          View
+                          {isLoadingStallDetails ? (
+                            <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
+                          ) : (
+                            <Eye className="h-4 w-4 mr-1" />
+                          )}
+                          {t('eventDetails.stalls.table.view')}
                         </button>
                         <KebabMenu
                           onEdit={() => handleEditClick(stall)}
@@ -677,41 +994,213 @@ export default function EventDetails() {
               )}
             </tbody>
           </table>
+          )}
         </div>
       </div>
 
-      <AddStallModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedStallForEdit(null);
-        }}
-        onSubmit={handleAddStall}
-        initialData={selectedStallForEdit ? {
-          name: selectedStallForEdit.name,
-          cuisine: selectedStallForEdit.cuisine,
-          timings: selectedStallForEdit.timings
-        } : undefined}
-      />
+      {/* Add Stall Modal */}
+      {isModalOpen && (
+        <AddStallModal
+          eventId={eventId || ''}
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedStallForEdit(null);
+          }}
+          onSubmit={handleAddStall}
+          initialData={selectedStallForEdit ? formData : undefined}
+        />
+      )}
 
-      <ExistingStallModal
-        isOpen={isExistingStallModalOpen}
-        onClose={() => setIsExistingStallModalOpen(false)}
-        onAdd={handleExistingStallAdd}
-        onEdit={handleExistingStallEdit}
-      />
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <DeleteConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleDeleteConfirm}
+          isSubmitting={isDeleting}
+          title={t('eventDetails.stalls.table.delete.title')}
+          message={t('eventDetails.stalls.table.delete.message')}
+        />
+      )}
 
-      <DeleteConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setIsDeleteModalOpen(false);
-          setSelectedStallId(null);
-        }}
-        onConfirm={handleDeleteConfirm}
-        title="Delete Stall"
-        message="Are you sure you want to delete this stall? This action cannot be undone."
-        isSubmitting={isDeleting}
-      />
+      {/* Existing Stall Modal */}
+      {isExistingStallModalOpen && (
+        <ExistingStallModal
+          isOpen={isExistingStallModalOpen}
+          onClose={() => setIsExistingStallModalOpen(false)}
+          onAdd={handleExistingStallAdd}
+          ownerId={organizerId}
+        />
+      )}
+      
+      {/* Stall Details Modal */}
+      {showStallDetails && stallDetails && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 my-8">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">Stall Details</h2>
+              <button
+                onClick={() => setShowStallDetails(false)}
+                className="text-gray-500 hover:text-gray-700 p-1 hover:bg-gray-100 rounded transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 max-h-[70vh] overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Basic Info */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-gray-900">Basic Information</h3>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">Stall ID</label>
+                    <div className="mt-1 flex items-center">
+                      <span className="text-sm font-mono text-gray-900">{stallDetails.restaurantDisplayNumber || stallDetails._id}</span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(stallDetails.restaurantDisplayNumber || stallDetails._id);
+                          toast.success("ID copied to clipboard");
+                        }}
+                        className="ml-2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">Name</label>
+                    <p className="mt-1 text-sm text-gray-900">{stallDetails.name}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">Cuisine</label>
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      {stallDetails.cuisines?.map((cuisine: string, index: number) => (
+                        <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-accent text-black">
+                          {cuisine}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">Phone</label>
+                    <p className="mt-1 text-sm text-gray-900">{stallDetails.phone || 'Not provided'}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">Address</label>
+                    <p className="mt-1 text-sm text-gray-900">{stallDetails.address || 'Not provided'}</p>
+                  </div>
+                </div>
+                
+                {/* Credentials & Ratings */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-gray-900">Credentials & Ratings</h3>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">Username</label>
+                    <p className="mt-1 text-sm text-gray-900">{stallDetails.username || 'Not set'}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">Password</label>
+                    <p className="mt-1 text-sm text-gray-900">{stallDetails.password}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">Order Prefix</label>
+                    <p className="mt-1 text-sm text-gray-900">{stallDetails.orderPrefix || 'Not set'}</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">Ratings</label>
+                    <div className="mt-1 flex items-center">
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                        <span className="ml-1 text-sm font-medium text-gray-900">{stallDetails.reviewAverage?.toFixed(1) || '0.0'}</span>
+                      </div>
+                      <span className="mx-2 text-gray-300">•</span>
+                      <span className="text-sm text-gray-500">{stallDetails.reviewCount || 0} reviews</span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">Owner</label>
+                    <p className="mt-1 text-sm text-gray-900">{stallDetails.owner?.email || 'Not assigned'}</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Images */}
+              <div className="mt-8">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Images</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-2">Profile Image</label>
+                    <div className="h-48 w-full bg-gray-100 rounded-lg overflow-hidden">
+                      {stallDetails.image ? (
+                        <img 
+                          src={stallDetails.image} 
+                          alt={`${stallDetails.name} profile`} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/images/default-stall.png';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Store className="h-12 w-12 text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500 mb-2">Logo</label>
+                    <div className="h-48 w-full bg-gray-100 rounded-lg overflow-hidden">
+                      {stallDetails.logo ? (
+                        <img 
+                          src={stallDetails.logo} 
+                          alt={`${stallDetails.name} logo`} 
+                          className="w-full h-full object-contain p-4"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/images/default-logo.png';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Store className="h-12 w-12 text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-between items-center p-6 border-t border-gray-200">
+              <button
+                onClick={() => setShowStallDetails(false)}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  setShowStallDetails(false);
+                  handleViewStall(stallDetails._id);
+                }}
+                className="px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 transition-colors"
+              >
+                Manage Stall
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-} 
+}

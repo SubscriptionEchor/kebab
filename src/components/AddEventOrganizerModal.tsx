@@ -5,14 +5,13 @@ import { X, AlertCircle, Eye, EyeOff } from 'lucide-react';
 interface AddEventOrganizerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { name: string; contactNumber: string; email: string; username: string; password: string }) => void;
+  onSubmit: (data: { name: string; contactNumber: string; email: string; password: string }) => void;
 }
 
 interface FormErrors {
   name?: string;
   contactNumber?: string;
   email?: string;
-  username?: string;
   password?: string;
 }
 
@@ -20,7 +19,6 @@ interface FormTouched {
   name: boolean;
   contactNumber: boolean;
   email: boolean;
-  username: boolean;
   password: boolean;
 }
 
@@ -30,7 +28,6 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
     name: '',
     contactNumber: '',
     email: '',
-    username: '',
     password: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -38,7 +35,6 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
     name: false,
     contactNumber: false,
     email: false,
-    username: false,
     password: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,26 +44,21 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
   const validateField = (name: keyof typeof formData, value: string): string | undefined => {
     switch (name) {
       case 'name':
-        if (!value.trim()) return t('eventOrganizers.errors.nameRequired');
-        if (value.length < 2) return 'Name must be at least 2 characters long';
+        if (!value.trim()) return t('errors.nameRequired');
+        if (value.length < 2) return t('errors.nameMinLength');
         return undefined;
       case 'contactNumber':
-        if (!value.trim()) return t('eventOrganizers.errors.contactRequired');
-        if (!/^\+?[\d\s-]{10,}$/.test(value)) return t('eventOrganizers.errors.invalidContact');
+        if (!value.trim()) return t('errors.contactRequired');
+        if (!/^\+?[\d\s-]{10,}$/.test(value)) return t('errors.invalidContact');
         return undefined;
       case 'email':
-        if (!value.trim()) return t('eventOrganizers.errors.emailRequired');
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('eventOrganizers.errors.invalidEmail');
-        return undefined;
-      case 'username':
-        if (!value.trim()) return 'Username is required';
-        if (value.length < 3) return 'Username must be at least 3 characters long';
-        if (!/^[a-zA-Z0-9_]+$/.test(value)) return 'Username can only contain letters, numbers, and underscores';
+        if (!value.trim()) return t('errors.emailRequired');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return t('errors.invalidEmail');
         return undefined;
       case 'password':
-        if (!value.trim()) return 'Password is required';
-        if (value.length < 8) return 'Password must be at least 8 characters long';
-        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) return 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
+        if (!value.trim()) return t('errors.passwordRequired');
+        if (value.length < 8) return t('errors.passwordMinLength');
+        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) return t('errors.passwordComplexity');
         return undefined;
       default:
         return undefined;
@@ -101,7 +92,7 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
   // Check if form is valid
   const isFormValid = () => {
     // Check if all required fields are filled and valid
-    const requiredFields = ['name', 'contactNumber', 'email', 'username', 'password'] as const;
+    const requiredFields = ['name', 'contactNumber', 'email', 'password'] as const;
     const isAllFieldsValid = requiredFields.every(field => {
       const value = formData[field];
       return value.trim() !== '' && !validateField(field, value);
@@ -133,9 +124,14 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
     
     if (validateForm()) {
       try {
-        await onSubmit(formData);
-        setFormData({ name: '', contactNumber: '', email: '', username: '', password: '' });
-        setTouched({ name: false, contactNumber: false, email: false, username: false, password: false });
+        await onSubmit({
+          name: formData.name,
+          contactNumber: formData.contactNumber,
+          email: formData.email,
+          password: formData.password
+        });
+        setFormData({ name: '', contactNumber: '', email: '', password: '' });
+        setTouched({ name: false, contactNumber: false, email: false, password: false });
         setErrors({});
         onClose();
       } catch (error) {
@@ -149,8 +145,13 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
   // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setFormData({ name: '', contactNumber: '', email: '', username: '', password: '' });
-      setTouched({ name: false, contactNumber: false, email: false, username: false, password: false });
+      setFormData({
+        name: '',
+        contactNumber: '',
+        email: '',
+        password: '',
+      });
+      setTouched({ name: false, contactNumber: false, email: false, password: false });
       setErrors({});
     }
   }, [isOpen]);
@@ -243,7 +244,7 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
             )}
           </div>
 
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Username
               <span className="text-red-500">*</span>
@@ -265,11 +266,11 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
                 {errors.username}
               </div>
             )}
-          </div>
+          </div> */}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
+              {t('eventOrganizers.password')}
               <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -281,7 +282,7 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
                 className={`w-full px-3 py-2 border rounded-md transition-colors ${
                   errors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-brand-primary'
                 }`}
-                placeholder="Enter password"
+                placeholder={t('eventOrganizers.placeholders.password')}
                 disabled={isSubmitting}
               />
               <button
@@ -289,6 +290,7 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                 disabled={isSubmitting}
+                aria-label={showPassword ? t('eventOrganizers.hidePassword') : t('eventOrganizers.showPassword')}
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -319,11 +321,11 @@ export default function AddEventOrganizerModal({ isOpen, onClose, onSubmit }: Ad
               className="px-4 py-2 bg-brand-primary text-black rounded-md hover:bg-brand-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isSubmitting || !isFormValid()}
             >
-              {isSubmitting ? 'Creating...' : t('eventOrganizers.createOrganizer')}
+              {isSubmitting ? t('eventOrganizers.creating') : t('eventOrganizers.createOrganizer')}
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-} 
+}

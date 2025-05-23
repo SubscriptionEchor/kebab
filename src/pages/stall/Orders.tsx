@@ -38,7 +38,22 @@ export default function Orders() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [showStatusFilter, setShowStatusFilter] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<{
+    id: string;
+    items: {
+      id: string;
+      title: string;
+      quantity: number;
+      variation: { title: string; price: number };
+      addons?: Array<{ options?: Array<{ price: number }> }>;
+    }[];
+    orderAmount: number;
+    taxationAmount: number;
+    paymentMethod: string;
+    orderStatus: string;
+    user?: { name?: string; phone?: string };
+    deliveryAddress?: { deliveryAddress?: string };
+  } | null>(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const rowsPerPage = 10;
   const currencySymbol = getCurrencySymbol();
@@ -53,35 +68,35 @@ export default function Orders() {
       'Chicken Wings', 'French Fries', 'Onion Rings', 'Mozzarella Sticks',
       'Chocolate Cake', 'Cheesecake', 'Ice Cream', 'Apple Pie'
     ];
-    
+
     const orders: Order[] = [];
-    
+
     for (let i = 1; i <= 50; i++) {
       const numItems = Math.floor(Math.random() * 5) + 1;
       const items: OrderItem[] = [];
       let subtotal = 0;
-      
+
       for (let j = 0; j < numItems; j++) {
         const dishName = dishes[Math.floor(Math.random() * dishes.length)];
         const price = parseFloat((Math.random() * 15 + 5).toFixed(2));
         const quantity = Math.floor(Math.random() * 3) + 1;
-        
+
         items.push({
           id: `item-${i}-${j}`,
           name: dishName,
           price: price,
           quantity: quantity
         });
-        
+
         subtotal += price * quantity;
       }
-      
+
       const tax = subtotal * 0.1; // 10% tax
       const total = subtotal + tax;
       const status = statuses[Math.floor(Math.random() * statuses.length)];
       const date = new Date();
       date.setDate(date.getDate() - Math.floor(Math.random() * 30));
-      
+
       orders.push({
         id: `ORD-${10000 + i}`,
         orderNumber: `ORD-${10000 + i}`,
@@ -97,31 +112,31 @@ export default function Orders() {
         customerPhone: `+1 ${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`
       });
     }
-    
+
     return orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, []);
 
   // Filter orders based on search query and status filter
   const filteredOrders = useMemo(() => {
     return mockOrders.filter(order => {
-      const matchesSearch = 
+      const matchesSearch =
         order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.status.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-      
+
       return matchesSearch && matchesStatus;
     });
   }, [mockOrders, searchQuery, statusFilter]);
-  
+
   // Paginate orders
   const paginatedOrders = useMemo(() => {
     const startIndex = (currentPage - 1) * rowsPerPage;
     return filteredOrders.slice(startIndex, startIndex + rowsPerPage);
   }, [filteredOrders, currentPage]);
-  
+
   const totalPages = Math.ceil(filteredOrders.length / rowsPerPage);
 
   useEffect(() => {
@@ -132,15 +147,36 @@ export default function Orders() {
   }, []);
 
   const handleStatusChange = async (orderId: string, status: string) => {
+    console.log(orderId, status)
     // Implementation of handleStatusChange
   };
 
   const handlePreparationTimeChange = async (orderId: string, preparationTime: number) => {
     // Implementation of handlePreparationTimeChange
+    console.log(orderId, preparationTime)
   };
 
   const handleViewOrder = (order: Order) => {
-    setSelectedOrder(order);
+    setSelectedOrder({
+      id: order.id,
+      items: order.items.map(item => ({
+        id: item.id,
+        title: item.name,
+        quantity: item.quantity,
+        variation: { title: '', price: item.price }
+      })),
+      orderAmount: order.total,
+      taxationAmount: order.tax,
+      paymentMethod: order.paymentMethod,
+      orderStatus: order.status,
+      user: {
+        name: order.customerName,
+        phone: order.customerPhone
+      },
+      deliveryAddress: order.customerAddress ? {
+        deliveryAddress: order.customerAddress
+      } : undefined
+    });
     setShowOrderDetails(true);
   };
 
@@ -230,7 +266,7 @@ export default function Orders() {
               </div>
             )}
           </div>
-          
+
           {/* Search Input */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -255,29 +291,29 @@ export default function Orders() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Order
+                  {t('orders.orderHeader')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Items
+                  {t('orders.itemsHeader')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Payment
+                  {t('orders.paymentHeader')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  {t('orders.statusHeader')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
+                  {t('orders.dateHeader')}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {t('orders.actionsHeader')}
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {paginatedOrders.map((order) => (
-                <tr 
-                  key={order.id} 
+                <tr
+                  key={order.id}
                   className="hover:bg-gray-50 transition-colors cursor-pointer"
                   onClick={() => handleViewOrder(order)}
                 >
@@ -299,13 +335,12 @@ export default function Orders() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                       order.status === 'preparing' ? 'bg-blue-100 text-blue-800' :
-                      order.status === 'ready' ? 'bg-green-100 text-green-800' :
-                      order.status === 'completed' ? 'bg-gray-100 text-gray-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
+                        order.status === 'ready' ? 'bg-green-100 text-green-800' :
+                          order.status === 'completed' ? 'bg-gray-100 text-gray-800' :
+                            'bg-red-100 text-red-800'
+                      }`}>
                       {t(`orders.${order.status}`)}
                     </span>
                   </td>
@@ -332,20 +367,20 @@ export default function Orders() {
             </tbody>
           </table>
         </div>
-        
+
         {/* Empty State */}
         {filteredOrders.length === 0 && (
           <div className="text-center py-12">
             <ShoppingBag className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">{t('orders.noorders')}</h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              {searchQuery || statusFilter !== 'all' 
+              {searchQuery || statusFilter !== 'all'
                 ? t('orders.tryadjustingsearch')
                 : t('orders.orderswillappear')}
             </p>
           </div>
         )}
-        
+
         {/* Pagination */}
         {filteredOrders.length > 0 && (
           <div className="px-4 py-3 bg-white border-t border-gray-200">
@@ -357,17 +392,17 @@ export default function Orders() {
           </div>
         )}
       </div>
-      
+
       {/* Order Details Modal */}
       <OrderDetailsModal
         isOpen={showOrderDetails}
         onClose={() => setShowOrderDetails(false)}
         order={selectedOrder}
       />
-      
+
       {/* Click outside handler for status filter */}
       {showStatusFilter && (
-        <div 
+        <div
           className="fixed inset-0 z-0"
           onClick={() => setShowStatusFilter(false)}
         />

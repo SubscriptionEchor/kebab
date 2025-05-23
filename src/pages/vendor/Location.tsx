@@ -5,10 +5,7 @@ import { Icon, LeafletMouseEvent } from 'leaflet';
 import { toast } from 'sonner';
 import debounce from 'lodash/debounce';
 import { getEnvVar } from '../../utils/env';
-
-const OSM_SEARCH_URL = getEnvVar('MAPS_URL');
-const TILE_URL = getEnvVar('TILES_URL');
-
+import { useTranslation } from 'react-i18next';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default marker icon
@@ -36,6 +33,7 @@ function MapClickHandler({ onMapClick }: { onMapClick: (e: LeafletMouseEvent) =>
 }
 
 export default function VendorLocation() {
+  const { t } = useTranslation();
   const [address, setAddress] = useState('');
   const [position, setPosition] = useState<[number, number]>([40.7128, -74.0060]); // Default to NYC
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +43,11 @@ export default function VendorLocation() {
     lon: string;
   }>>([]);
   const [showResults, setShowResults] = useState(false);
+  const [country, setCountry] = useState('GERMANY');
+
+  // Update OSM search URL when country changes
+  const OSM_SEARCH_URL = getEnvVar('MAPS_URL', country);
+  const TILE_URL = getEnvVar('TILES_URL');
 
   // Debounced search function
   const searchAddress = debounce(async (query: string) => {
@@ -137,7 +140,18 @@ export default function VendorLocation() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6">
         {/* Map Section */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="h-[600px]">
+          <div className="h-[600px] relative">
+            {/* Country Selection Dropdown */}
+            <div className="absolute top-4 right-4 z-[1000] bg-white rounded-md shadow-sm border border-gray-200">
+              <select
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                className="px-3 py-2 text-sm border-0 focus:ring-0 focus:outline-none bg-transparent"
+              >
+                <option value="GERMANY">Germany</option>
+                <option value="AUSTRIA">Austria</option>
+              </select>
+            </div>
             <MapContainer
               center={position}
               zoom={13} 
@@ -239,18 +253,22 @@ export default function VendorLocation() {
             <ul className="space-y-2 text-sm text-gray-600">
               <li className="flex items-start">
                 <span className="flex-shrink-0 w-5 h-5 rounded-full bg-brand-accent flex items-center justify-center text-xs font-medium mr-2">1</span>
-                Enter your restaurant's address in the search box
+                Select your country from the dropdown
               </li>
               <li className="flex items-start">
                 <span className="flex-shrink-0 w-5 h-5 rounded-full bg-brand-accent flex items-center justify-center text-xs font-medium mr-2">2</span>
-                Click "Search Address" to locate on map
+                Enter your restaurant's address in the search box
               </li>
               <li className="flex items-start">
                 <span className="flex-shrink-0 w-5 h-5 rounded-full bg-brand-accent flex items-center justify-center text-xs font-medium mr-2">3</span>
-                Fine-tune the location by clicking on the map
+                Click "Search Address" to locate on map
               </li>
               <li className="flex items-start">
                 <span className="flex-shrink-0 w-5 h-5 rounded-full bg-brand-accent flex items-center justify-center text-xs font-medium mr-2">4</span>
+                Fine-tune the location by clicking on the map
+              </li>
+              <li className="flex items-start">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-brand-accent flex items-center justify-center text-xs font-medium mr-2">5</span>
                 Click "Save Changes" to update your location
               </li>
             </ul>

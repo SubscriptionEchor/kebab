@@ -1,4 +1,4 @@
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { ADMIN_DASHBOARD_BOOTSTRAP } from '../lib/graphql/queries/admin';
 import { toast } from 'sonner';
@@ -13,6 +13,7 @@ interface CurrencyContextType {
   currencySymbol: string;
   isLoading: boolean;
   error: Error | null;
+  bootStrapData: any
 }
 
 const CurrencyContext = createContext<CurrencyContextType | null>(null);
@@ -65,6 +66,7 @@ const setCurrencyConfig = (config: CurrencyConfig): void => {
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
+  const [bootStrapData, setBootStrapData] = useState([])
 
   // Query to fetch and update currency config
   const { loading, error } = useQuery(ADMIN_DASHBOARD_BOOTSTRAP, {
@@ -77,9 +79,10 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
           if (!config.currencySymbol) {
             throw new Error('No currency symbol in API response');
           }
-          
+
           // Save to localStorage
           setCurrencyConfig(config);
+          setBootStrapData(data.adminDashboardBootstrap)
 
           if (import.meta.env.DEV) {
             console.log('Currency config updated from API:', config);
@@ -100,7 +103,8 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   const value = {
     currencySymbol: getCurrencySymbol(),
     isLoading: loading,
-    error: error || null
+    error: error || null,
+    bootStrapData
   };
 
   return (
@@ -110,7 +114,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   );
 }
 
-function useCurrency() {
+export function useCurrency() {
   const context = useContext(CurrencyContext);
   if (!context) {
     throw new Error('useCurrency must be used within a CurrencyProvider');

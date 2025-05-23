@@ -39,6 +39,7 @@ export default function RestaurantProfile() {
     password?: string;
     minimumOrder?: string;
     deliveryTime?: string;
+    orderPrefix?: string;
   }
 
   const [editRestaurant] = useMutation(EDIT_RESTAURANT, {
@@ -69,9 +70,12 @@ export default function RestaurantProfile() {
           email: data.restaurant.owner?.email || '',
           phone: data.restaurant.phone || '',
           name: data.restaurant.name || '',
+          username: data.restaurant.username || '',
+          password: data.restaurant.password || '',
           address: data.restaurant.address || '',
           shopType: data.restaurant.shopType || '',
-          cuisines: data.restaurant.cuisines || []
+          cuisines: data.restaurant.cuisines || [],
+          orderPrefix: data.restaurant.orderPrefix || '',
         });
 
         if (data.restaurant.image) {
@@ -145,7 +149,7 @@ export default function RestaurantProfile() {
         cuisines: formData.cuisines,
         tax: restaurantData?.restaurant?.tax,
         isAvailable: restaurantData?.restaurant?.isAvailable,
-        orderPrefix: restaurantData?.restaurant?.orderPrefix,
+        orderPrefix: formData.orderPrefix,
         orderId: restaurantData?.restaurant?.orderId,
         slug: restaurantData?.restaurant?.slug,
         location: restaurantData?.restaurant?.location,
