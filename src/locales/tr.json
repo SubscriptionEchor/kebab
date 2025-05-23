@@ -12,6 +12,7 @@
     "emailrequired": "E-posta gerekli",
     "passwordrequired": "Şifre gerekli"
   },
+  
   "homepage": {
     "welcomeback": "Tekrar hoş geldiniz",
     "activeusers": "Aktif kullanıcılar",
@@ -53,7 +54,8 @@
     "cuisines": "Mutfaklar",
     "banners": "Bannerlar",
     "signout": "Çıkış Yap",
-    "openmenu": "Menüyü Aç"
+    "openmenu": "Menüyü Aç",
+    "eventorganizers": "Etkinlik Organizatörleri"
   },
   "active": {
     "activerestaurants": "Aktif Restoranlar",
